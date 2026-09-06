@@ -245,44 +245,115 @@ input::placeholder { color: rgba(247,241,227,.4); }
 #seat-marker-2 { top: 8px; left: 50%; transform: translateX(-50%); }
 #seat-marker-3 { left: 8px; top: 50%; transform: translateY(-50%); }
 
-.table-center {
+/* ---------- Bulles d'annonce (enchères / coinche) ---------- */
+.speech-bubble {
   position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-.trick-area {
-  display: grid;
-  grid-template-columns: repeat(2, 34px);
-  gap: 4px;
-  min-height: 96px;
-  align-content: center;
-  justify-content: center;
-}
-.contract-badge {
-  background: rgba(0,0,0,.4);
-  border: 1px solid var(--gold);
-  color: var(--gold-light);
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px) scale(.85);
+  margin-bottom: 8px;
+  background: var(--cream);
+  color: var(--ink);
+  font-weight: 800;
   font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
+  padding: 5px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0,0,0,.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  z-index: 5;
+}
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--cream);
+}
+.speech-bubble.visible { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+.speech-bubble.fade-out { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(.9); }
+
+#seat-marker-2 .speech-bubble { bottom: auto; top: 100%; margin-bottom: 0; margin-top: 8px; }
+#seat-marker-2 .speech-bubble::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--cream); }
+
+/* ---------- Cartes posées devant chaque joueur ---------- */
+.trick-slot {
+  position: absolute;
+  z-index: 2;
+  transition: opacity .2s ease;
+}
+#trick-slot-0 { bottom: 52px; left: 50%; transform: translateX(-50%); }
+#trick-slot-1 { right: 92px; top: 50%; transform: translateY(-50%); }
+#trick-slot-2 { top: 52px; left: 50%; transform: translateX(-50%); }
+#trick-slot-3 { left: 92px; top: 50%; transform: translateY(-50%); }
+
+.contract-tag {
+  font-weight: 800;
+  margin-left: 4px;
 }
 
-.info-strip { display: flex; gap: 10px; margin-top: 10px; }
-.bidding-log, .tricks-info {
-  flex: 1;
+/* ---------- Pli ramassé : pile cliquable en haut à droite ---------- */
+.trick-pile {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(217,164,65,.45);
+  border-radius: 10px;
+  padding: 4px 9px 4px 5px;
+  z-index: 4;
+  opacity: .72;
+  transition: transform .2s, opacity .2s, border-color .2s, box-shadow .2s;
+}
+.trick-pile-a { bottom: 8px; left: calc(50% + 50px); }
+.trick-pile-b { top: calc(50% + 48px); right: 8px; }
+.trick-pile.clickable { cursor: pointer; }
+.trick-pile.pile-winner { opacity: 1; border-color: var(--gold); }
+.trick-pile.pile-winner:hover { box-shadow: 0 0 12px rgba(217,164,65,.5); }
+.trick-pile.pile-arrival { animation: pile-arrival .55s ease-out; }
+@keyframes pile-arrival {
+  0% { transform: scale(.86); opacity: .25; }
+  65% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.trick-pile-card {
+  width: 20px;
+  height: 28px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(45deg, var(--wood), var(--wood) 3px, var(--wood-light) 3px, var(--wood-light) 6px);
+  border: 1px solid var(--gold);
+}
+.trick-pile-count { font-size: 12px; font-weight: 800; color: var(--gold-light); }
+.trick-pile-label { color: var(--gold-light); font-size: 10px; font-weight: 800; }
+
+.last-trick-popup {
+  position: absolute;
+  top: 44px;
+  right: 8px;
+  background: var(--wood);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: 10px;
+  z-index: 6;
+  box-shadow: 0 10px 24px rgba(0,0,0,.5);
+}
+.last-trick-title { font-size: 11px; opacity: .7; margin-bottom: 6px; text-align: center; }
+.last-trick-row { display: flex; gap: 6px; }
+
+.info-strip { margin-top: 10px; }
+.tricks-info {
   background: rgba(0,0,0,.25);
   border-radius: 10px;
   padding: 8px 10px;
   font-size: 12px;
-  max-height: 90px;
-  overflow-y: auto;
+  text-align: center;
+  opacity: .85;
 }
-.bidding-log div, .tricks-info div { margin-bottom: 3px; opacity: .85; }
 
 /* ---------- Main / cartes ---------- */
 .hand-panel {
@@ -338,6 +409,12 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .playing-card.small { width: 34px; height: 48px; }
 .playing-card.small .pc-rank { font-size: 11px; }
 .playing-card.small .pc-suit { font-size: 13px; }
+.playing-card.trick-flying { animation: trick-to-pile 1.25s ease-in forwards; }
+@keyframes trick-to-pile {
+  0% { opacity: 1; transform: scale(1); }
+  55% { opacity: .85; transform: scale(.72) translateY(-5px); }
+  100% { opacity: 0; transform: scale(.18) translateY(-16px); }
+}
 
 .playing-card.legal { transform: translateY(-8px); box-shadow: 0 8px 16px rgba(217,164,65,.5); border: 2px solid var(--gold); }
 .playing-card.disabled { opacity: .4; filter: grayscale(.4); }
@@ -361,8 +438,17 @@ input::placeholder { color: rgba(247,241,227,.4); }
   padding: 10px;
   margin-bottom: 10px;
 }
-.bid-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; overflow-x: auto; }
-.bid-suit-symbol { font-size: 20px; width: 22px; text-align: center; }
+.bid-suit-row, .bid-num-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; overflow-x: auto; }
+.bid-suit-btn {
+  background: rgba(255,255,255,.08);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  border: 2px solid transparent;
+}
+.bid-suit-btn.selected { background: rgba(217,164,65,.25); border-color: var(--gold); }
 .bid-chip {
   background: rgba(255,255,255,.1);
   color: var(--cream);
@@ -373,6 +459,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
   flex-shrink: 0;
 }
 .bid-chip:active { background: var(--gold); color: var(--ink); }
+.bid-chip.capot-chip { background: rgba(217,164,65,.25); }
 .bid-actions-row { display: flex; gap: 8px; margin-top: 4px; }
 .bid-actions-row .bid-chip { flex: 1; text-align: center; }
 .bid-chip.pass { background: rgba(255,255,255,.08); }
@@ -382,12 +469,13 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.7);
+  background: rgba(6,37,26,.98);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   padding: 20px;
+  pointer-events: none;
 }
 .overlay-box {
   background: var(--wood);
@@ -397,10 +485,32 @@ input::placeholder { color: rgba(247,241,227,.4); }
   max-width: 380px;
   width: 100%;
   text-align: center;
+  pointer-events: none;
 }
 .overlay-box h2 { margin-top: 0; color: var(--gold-light); }
 .overlay-box .result-line { font-size: 15px; margin: 6px 0; }
 .overlay-box .result-score { font-size: 30px; font-weight: 800; margin: 10px 0; }
+.result-outcome { font-weight: 800; }
+.result-outcome.success { color: #7fd8a6; }
+.result-outcome.failed { color: #f08b8b; }
+.score-teams { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin: 16px 0 10px; font-size: 13px; }
+.score-teams strong:first-child { color: #7fd8a6; }
+.score-teams strong:last-child { color: #9cc2ff; }
+.score-teams span { opacity: .5; font-size: 11px; }
+.score-head, .score-history tr { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
+.score-head { color: rgba(247,241,227,.55); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+.score-history { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 15px; }
+.score-history td, .score-history th { padding: 5px; background: rgba(0,0,0,.16); }
+.score-history tfoot th { color: var(--gold-light); border-top: 1px solid var(--gold); font-size: 18px; }
+.score-caption { font-size: 11px; opacity: .6; margin-top: 3px; text-align: right; }
+.recap-hint { font-size: 11px; color: var(--gold-light); margin: 16px 0 0; }
+
+@media (max-width: 420px) {
+  .trick-pile { padding-right: 5px; }
+  .trick-pile-a { left: calc(50% + 38px); }
+  .trick-pile-b { top: calc(50% + 42px); right: 8px; }
+  .trick-pile-label { display: none; }
+}
 
 @media (min-width: 700px) {
   .hand-panel { max-width: 700px; margin: 0 auto; width: 100%; }

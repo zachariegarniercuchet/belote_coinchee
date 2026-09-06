@@ -7,6 +7,16 @@
   let myName = null;
   let mySeatChosen = null; // 0-3 ou "board", mémorisé pour se rasseoir après reconnexion
   let lastLobbyState = null;
+  let lastRenderedState = null;
+  let dismissedDonneNumber = null;
+  let recapState = null;
+  let recapDonneNumber = null;
+  let lastTrickAnimationKey = null;
+
+  // Bulles d'annonce (enchères / coinche) : elles restent affichées tant que
+  // dure la phase d'enchères (la nouvelle annonce d'un joueur remplace la
+  // précédente), puis disparaissent une fois la phase terminée.
+  const bidBubbleState = { donne: null, count: 0, clearedForPhase: false };
 
   // ------------------------------------------------------------------
   // Navigation entre écrans
@@ -209,6 +219,7 @@
   }
 
   function renderGame(state) {
+    lastRenderedState = state;
     if (state.your_seat !== undefined && state.your_seat !== "board") {
       mySeatChosen = state.your_seat;
     } else if (state.your_seat === "board") {
@@ -234,57 +245,174 @@
   }
 
   function renderBoardPanel(state) {
+    lastRenderedState = state;
+
     for (let seat = 0; seat < 4; seat++) {
       const marker = document.getElementById("seat-marker-" + seat);
       const name = nameOf(state, seat) + (state.your_seat === seat ? " (toi)" : "");
+      const existingBubble = marker.querySelector(".speech-bubble");
+
+      let nameHtml = escapeHtml(name);
+      if (state.contract && state.contract.player === seat) {
+        const c = state.contract;
+        const color = (c.suit === "COEUR" || c.suit === "CARREAU") ? "#e0576a" : "#f7f1e3";
+        let tag = (c.is_capot ? "Capot" : c.points) + " " + c.symbol;
+        if (c.coinche_state === "COINCHE") tag += " (coinché)";
+        if (c.coinche_state === "SURCOINCHE") tag += " (surcoinché)";
+        nameHtml += ' <span class="contract-tag" style="color:' + color + '">' + escapeHtml(tag) + "</span>";
+      }
+
       marker.innerHTML =
-        '<div class="sm-name">' + escapeHtml(name) + "</div>" +
+        '<div class="sm-name">' + nameHtml + "</div>" +
         '<div class="sm-cards">' + (state.hand_counts[String(seat)] || 0) + " cartes</div>";
+      if (existingBubble) marker.appendChild(existingBubble); // on préserve une bulle en cours d'affichage
       marker.classList.toggle("active-turn", state.waiting_seat === seat);
       marker.classList.toggle("dealer", state.dealer === seat);
     }
 
-    const trickArea = document.getElementById("trick-area");
-    trickArea.innerHTML = "";
+    // Cartes posées "devant" chaque joueur pendant le pli en cours (ou pendant
+    // la courte pause où le pli complet reste visible avant d'être ramassé).
+    for (let seat = 0; seat < 4; seat++) {
+      document.getElementById("trick-slot-" + seat).innerHTML = "";
+    }
     let plays = state.current_trick && state.current_trick.length ? state.current_trick : state.completed_trick;
     if (plays && plays.length) {
+      const isCollectedTrick = !(state.current_trick && state.current_trick.length);
       plays.forEach(p => {
-        const slot = document.createElement("div");
-        slot.className = "card-slot";
-        const label = document.createElement("div");
-        label.textContent = nameOf(state, p.seat);
-        slot.appendChild(cardEl(p.card, "small"));
-        slot.appendChild(label);
-        trickArea.appendChild(slot);
+        const slot = document.getElementById("trick-slot-" + p.seat);
+        slot.appendChild(cardEl(p.card, "small" + (isCollectedTrick ? " trick-flying" : "")));
       });
     }
 
-    const badge = document.getElementById("contract-badge");
-    if (state.contract) {
-      const c = state.contract;
-      let txt = (c.is_capot ? "Capot" : c.points) + " " + c.symbol + " — " + nameOf(state, c.player);
-      if (c.coinche_state === "COINCHE") txt += " (coinché)";
-      if (c.coinche_state === "SURCOINCHE") txt += " (surcoinché)";
-      badge.textContent = txt;
-      badge.classList.remove("hidden");
-    } else {
-      badge.classList.add("hidden");
-    }
-
-    const log = document.getElementById("bidding-log");
-    log.innerHTML = "";
-    state.bidding_history.slice(-10).forEach(h => {
-      const d = document.createElement("div");
-      d.textContent = nameOf(state, h.seat) + " : " + h.label;
-      log.appendChild(d);
-    });
-    log.scrollTop = log.scrollHeight;
+    renderTrickPile(state);
+    handleBidBubbles(state);
 
     const tricksInfo = document.getElementById("tricks-info");
-    tricksInfo.innerHTML =
-      "<div>Donne n°" + (state.donne_number || 1) + "</div>" +
-      "<div>Plis : Équipe A " + state.tricks_won_this_donne["0"] +
-      " — Équipe B " + state.tricks_won_this_donne["1"] + "</div>";
+    tricksInfo.textContent =
+      "Donne n°" + (state.donne_number || 1) +
+      " · Plis — Équipe A " + state.tricks_won_this_donne["0"] +
+      " · Équipe B " + state.tricks_won_this_donne["1"];
+  }
+
+  // ------------------------------------------------------------------
+  // Pli ramassé : pile cliquable en haut à droite (dernier pli uniquement)
+  // ------------------------------------------------------------------
+  function renderTrickPile(state) {
+    const piles = [document.getElementById("trick-pile-a"), document.getElementById("trick-pile-b")];
+    const popup = document.getElementById("last-trick-popup");
+    const hasLastTrick = state.last_completed_trick && state.last_completed_trick.length;
+    const winnerSeat = state.last_completed_trick_winner_seat;
+    const winnerTeam = winnerSeat === null || winnerSeat === undefined ? null : winnerSeat % 2;
+
+    piles.forEach((pile, team) => {
+      const count = state.tricks_won_this_donne[String(team)] || 0;
+      pile.classList.toggle("clickable", hasLastTrick && winnerTeam === team);
+      pile.classList.toggle("pile-winner", hasLastTrick && winnerTeam === team);
+      pile.querySelector(".trick-pile-count").textContent = count + (count === 1 ? " pli" : " plis");
+    });
+
+    if (!hasLastTrick) {
+      popup.classList.add("hidden");
+    }
+
+    const animationKey = state.donne_number + ":" + (state.tricks_won_this_donne["0"] || 0) + ":" + (state.tricks_won_this_donne["1"] || 0);
+    if (hasLastTrick && animationKey !== lastTrickAnimationKey) {
+      lastTrickAnimationKey = animationKey;
+      const pile = piles[winnerTeam];
+      pile.classList.remove("pile-arrival");
+      void pile.offsetWidth;
+      pile.classList.add("pile-arrival");
+    }
+
+    if (!popup.classList.contains("hidden")) {
+      renderLastTrickPopup(state);
+    }
+  }
+
+  function renderLastTrickPopup(state) {
+    const content = document.getElementById("last-trick-popup-content");
+    content.innerHTML = "";
+    if (!state.last_completed_trick || !state.last_completed_trick.length) return;
+
+    const title = document.createElement("div");
+    title.className = "last-trick-title";
+    title.textContent = "Dernier pli · Équipe " + (state.last_completed_trick_winner_seat % 2 === 0 ? "A" : "B");
+    content.appendChild(title);
+
+    const row = document.createElement("div");
+    row.className = "last-trick-row";
+    state.last_completed_trick.forEach(p => {
+      const slot = document.createElement("div");
+      slot.className = "card-slot";
+      slot.appendChild(cardEl(p.card, "small"));
+      const label = document.createElement("div");
+      label.textContent = nameOf(state, p.seat) +
+        (state.last_completed_trick_winner_seat === p.seat ? " 🏆" : "");
+      slot.appendChild(label);
+      row.appendChild(slot);
+    });
+    content.appendChild(row);
+  }
+
+  ["trick-pile-a", "trick-pile-b"].forEach(id => document.getElementById(id).addEventListener("click", event => {
+    if (!event.currentTarget.classList.contains("clickable")) return;
+    const popup = document.getElementById("last-trick-popup");
+    const willShow = popup.classList.contains("hidden");
+    if (willShow && lastRenderedState) {
+      renderLastTrickPopup(lastRenderedState);
+      popup.classList.remove("hidden");
+    } else {
+      popup.classList.add("hidden");
+    }
+  }));
+
+  // ------------------------------------------------------------------
+  // Bulles d'annonce pendant les enchères ("90 ♦", "Coinché"...)
+  // ------------------------------------------------------------------
+  function handleBidBubbles(state) {
+    if (state.donne_number !== bidBubbleState.donne) {
+      bidBubbleState.donne = state.donne_number;
+      bidBubbleState.count = 0;
+      bidBubbleState.clearedForPhase = false;
+      document.querySelectorAll(".speech-bubble").forEach(b => b.remove());
+    }
+
+    if (state.phase !== "bidding") {
+      // La phase d'enchères est terminée : les bulles laissent place à
+      // l'étiquette de contrat affichée à côté du nom du preneur.
+      if (!bidBubbleState.clearedForPhase) {
+        document.querySelectorAll(".speech-bubble").forEach(b => b.remove());
+        bidBubbleState.clearedForPhase = true;
+      }
+      return;
+    }
+
+    const hist = state.bidding_history || [];
+    if (hist.length > bidBubbleState.count) {
+      hist.slice(bidBubbleState.count).forEach(h => showBidBubble(h.seat, h));
+      bidBubbleState.count = hist.length;
+    }
+  }
+
+  function showBidBubble(seat, entry) {
+    const marker = document.getElementById("seat-marker-" + seat);
+    if (!marker) return;
+
+    let bubble = marker.querySelector(".speech-bubble");
+    if (!bubble) {
+      bubble = document.createElement("div");
+      bubble.className = "speech-bubble";
+      marker.appendChild(bubble);
+    }
+    bubble.textContent = entry.label;
+    // Comme sur les cartes : rouge pour cœur/carreau, noir pour pique/trèfle.
+    if (entry.type === "ENCHERE" && entry.suit) {
+      bubble.style.color = (entry.suit === "COEUR" || entry.suit === "CARREAU") ? "#b3273a" : "#1a1a1a";
+    } else {
+      bubble.style.color = "";
+    }
+    bubble.classList.remove("fade-out");
+    bubble.classList.add("visible");
   }
 
   function renderHandPanel(state) {
@@ -338,29 +466,69 @@
     const surcoincheAction = actions.find(a => a.type === "SURCOINCHE");
     const enchereActions = actions.filter(a => a.type === "ENCHERE");
 
-    const bySuit = {};
-    enchereActions.forEach(a => {
-      (bySuit[a.suit] = bySuit[a.suit] || []).push(a);
-    });
+    if (enchereActions.length) {
+      // Une couleur, puis un chiffre : la légalité d'un montant ne dépend pas
+      // de la couleur choisie, donc pas besoin d'une grille couleur × chiffre.
+      const suits = [];
+      const seenSuits = {};
+      enchereActions.forEach(a => {
+        if (!seenSuits[a.suit]) {
+          seenSuits[a.suit] = true;
+          suits.push({ name: a.suit, symbol: a.symbol });
+        }
+      });
 
-    Object.keys(bySuit).forEach(suit => {
-      const list = bySuit[suit].sort((a, b) => (a.is_capot ? 9999 : a.points) - (b.is_capot ? 9999 : b.points));
-      const row = document.createElement("div");
-      row.className = "bid-row";
-      const symbol = document.createElement("span");
-      symbol.className = "bid-suit-symbol";
-      symbol.textContent = list[0].symbol;
-      symbol.style.color = (suit === "COEUR" || suit === "CARREAU") ? "#e0576a" : "#f7f1e3";
-      row.appendChild(symbol);
-      list.forEach(a => {
+      const pointsSet = new Set();
+      let hasCapot = false;
+      enchereActions.forEach(a => {
+        if (a.is_capot) hasCapot = true;
+        else if (a.points != null) pointsSet.add(a.points);
+      });
+
+      let selectedSuit = suits[0].name;
+      const suitButtons = {};
+
+      const suitRow = document.createElement("div");
+      suitRow.className = "bid-suit-row";
+      suits.forEach(s => {
+        const btn = document.createElement("button");
+        btn.className = "bid-suit-btn" + (s.name === selectedSuit ? " selected" : "");
+        btn.textContent = s.symbol;
+        btn.style.color = (s.name === "COEUR" || s.name === "CARREAU") ? "#e0576a" : "#f7f1e3";
+        btn.onclick = () => {
+          selectedSuit = s.name;
+          Object.values(suitButtons).forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+        };
+        suitButtons[s.name] = btn;
+        suitRow.appendChild(btn);
+      });
+      container.appendChild(suitRow);
+
+      const numRow = document.createElement("div");
+      numRow.className = "bid-num-row";
+      Array.from(pointsSet).sort((a, b) => a - b).forEach(pts => {
         const chip = document.createElement("button");
         chip.className = "bid-chip";
-        chip.textContent = a.is_capot ? "Capot" : String(a.points);
-        chip.onclick = () => socket.emit("bid_choice", { code: roomCode, index: a.index });
-        row.appendChild(chip);
+        chip.textContent = String(pts);
+        chip.onclick = () => {
+          const match = enchereActions.find(a => a.suit === selectedSuit && !a.is_capot && a.points === pts);
+          if (match) socket.emit("bid_choice", { code: roomCode, index: match.index });
+        };
+        numRow.appendChild(chip);
       });
-      container.appendChild(row);
-    });
+      if (hasCapot) {
+        const chip = document.createElement("button");
+        chip.className = "bid-chip capot-chip";
+        chip.textContent = "Capot";
+        chip.onclick = () => {
+          const match = enchereActions.find(a => a.suit === selectedSuit && a.is_capot);
+          if (match) socket.emit("bid_choice", { code: roomCode, index: match.index });
+        };
+        numRow.appendChild(chip);
+      }
+      container.appendChild(numRow);
+    }
 
     const actionsRow = document.createElement("div");
     actionsRow.className = "bid-actions-row";
@@ -391,28 +559,51 @@
   function renderDonneRecap(state) {
     const overlay = document.getElementById("donne-recap");
     const content = document.getElementById("donne-recap-content");
-    if (state.phase === "donne_end" && state.last_donne_result) {
-      const r = state.last_donne_result;
-      const c = state.contract;
+    if (state.last_donne_result && state.donne_number !== recapDonneNumber) {
+      recapState = state;
+      recapDonneNumber = state.donne_number;
+    }
+
+    if (recapState && dismissedDonneNumber !== recapDonneNumber) {
+      const r = recapState.last_donne_result;
+      const c = recapState.contract;
       const contractLine = c
-        ? "Contrat : " + (c.is_capot ? "Capot" : c.points) + " " + c.symbol + " (" + nameOf(state, c.player) + ")"
+        ? "Contrat : " + (c.is_capot ? "Capot" : c.points) + " " + c.symbol + " (" + nameOf(recapState, c.player) + ")"
         : "";
+      const teamA = nameOf(recapState, 0) + " et " + nameOf(recapState, 2);
+      const teamB = nameOf(recapState, 1) + " et " + nameOf(recapState, 3);
+      const rows = (recapState.score_history || []).map(score =>
+        "<tr><td>" + score["0"] + "</td><td>" + score["1"] + "</td></tr>"
+      ).join("");
       content.innerHTML =
         "<h2>Fin de la donne</h2>" +
         '<p class="result-line">' + contractLine + "</p>" +
-        '<p class="result-line">' + (r.contract_reached ? "Contrat réussi ✅" : "Contrat chuté ❌") + "</p>" +
-        '<p class="result-score">' + r.final_scores["0"] + " — " + r.final_scores["1"] + "</p>" +
-        '<p class="hint">Total : Équipe A ' + state.cumulative_scores["0"] +
-        " · Équipe B " + state.cumulative_scores["1"] + "</p>";
+        '<p class="result-line">Points faits : Équipe A <strong>' + r.raw_points["0"] +
+        "</strong> · Équipe B <strong>" + r.raw_points["1"] + "</strong></p>" +
+        '<p class="result-line result-outcome ' + (r.contract_reached ? "success" : "failed") + '">' +
+        (r.contract_reached ? "Contrat réussi" : "Contrat raté") + "</p>" +
+        '<div class="score-teams"><strong>' + escapeHtml(teamA) + '</strong><span>vs</span><strong>' + escapeHtml(teamB) + '</strong></div>' +
+        '<div class="score-head"><span>Équipe A</span><span>Équipe B</span></div>' +
+        '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
+        '<div class="score-caption">Total</div>' +
+        '<p class="recap-hint">Clique sur le plateau pour continuer</p>';
       overlay.classList.remove("hidden");
-    } else if (state.phase === "donne_annulee") {
+    } else if (state.phase === "donne_annulee" && !recapState) {
       content.innerHTML =
         "<h2>Donne annulée</h2><p>Personne n'a assez enchéri (minimum 80). Nouvelle donne dans un instant...</p>";
       overlay.classList.remove("hidden");
-    } else {
+    } else if (!recapState || dismissedDonneNumber === recapDonneNumber) {
       overlay.classList.add("hidden");
     }
   }
+
+  document.getElementById("board-panel").addEventListener("click", () => {
+    if (recapState || (lastRenderedState && lastRenderedState.phase === "donne_annulee")) {
+      dismissedDonneNumber = recapDonneNumber;
+      socket.emit("dismiss_recap", { code: roomCode });
+      document.getElementById("donne-recap").classList.add("hidden");
+    }
+  });
 
   function renderGameOver(state) {
     const overlay = document.getElementById("gameover-overlay");

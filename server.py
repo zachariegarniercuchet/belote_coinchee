@@ -262,6 +262,13 @@ def on_request_state(data):
         socketio.emit("lobby_update", room.lobby_state(), to=request.sid)
 
 
+@socketio.on("dismiss_recap")
+def on_dismiss_recap(data):
+    room = rooms.get((data or {}).get("code"))
+    if room and room.game_session:
+        room.game_session.dismiss_recap()
+
+
 @socketio.on("new_game")
 def on_new_game(data):
     room = rooms.get((data or {}).get("code"))

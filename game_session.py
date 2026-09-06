@@ -15,6 +15,7 @@ On ne modifie aucun fichier du package `belote/` : on le réutilise tel quel.
 
 from __future__ import annotations
 
+import random
 import threading
 import time
 
@@ -30,8 +31,9 @@ from extensions import socketio
 from rooms import PLAYER_SEATS
 from serialize import bid_action_to_dict, card_from_id, card_id, card_to_dict, sorted_hand
 
-DONNE_RECAP_PAUSE = 6.0      # secondes affichées entre deux donnes
-TRICK_COLLECT_PAUSE = 1.6    # secondes pour "voir" le pli complet avant qu'il ne soit ramassé
+TRICK_COLLECT_PAUSE_RANGE = (1.6, 2.3)   # secondes pour "voir" le pli complet avant qu'il ne soit ramassé
+BOT_BID_THINK_RANGE = (0.9, 1.9)     # secondes de "réflexion" simulée d'un bot avant d'enchérir
+BOT_CARD_THINK_RANGE = (0.8, 1.7)    # secondes de "réflexion" simulée d'un bot avant de jouer une carte
 
 
 class GameContext:
@@ -46,6 +48,8 @@ class GameContext:
         self.current_trick: TrickState | None = None
         self.completed_trick_cards = None   # liste (seat, card) du dernier pli, affichée brièvement
         self.last_trick_winner_seat = None
+        self.last_completed_trick = None        # persiste jusqu'au pli suivant (pour la pile cliquable)
+        self.last_completed_trick_winner_seat = None
         self.tricks_won_this_donne = {0: 0, 1: 0}
         self.last_donne_result = None
         self.waiting_seat = None
@@ -89,6 +93,7 @@ class NetworkGame(Game):
             for team, pts in log.result.final_scores.items():
                 self.cumulative_scores[team] += pts
             self._check_end_conditions(log.result)
+        self.session.broadcast()
         self.dealer = (self.dealer - 1) % 4
         return log
 
@@ -107,6 +112,8 @@ class NetworkGame(Game):
         ctx.phase = "bidding"
         ctx.current_trick = None
         ctx.completed_trick_cards = None
+        ctx.last_completed_trick = None
+        ctx.last_completed_trick_winner_seat = None
         ctx.last_donne_result = None
         ctx.tricks_won_this_donne = {0: 0, 1: 0}
 
@@ -121,6 +128,9 @@ class NetworkGame(Game):
             ctx.waiting_kind = "bid"
             ctx.pending_legal_bid = legal
             self.session.broadcast()
+
+            if not isinstance(self.players[p], NetworkPlayer):
+                self.session.sleep(random.uniform(*BOT_BID_THINK_RANGE))
 
             action = self.players[p].choose_bid(hands[p], bidding_state, legal)
             bidding_state.apply(action)
@@ -166,6 +176,9 @@ class NetworkGame(Game):
                 ctx.pending_legal_cards = legal
                 self.session.broadcast()
 
+                if not isinstance(self.players[p], NetworkPlayer):
+                    self.session.sleep(random.uniform(*BOT_CARD_THINK_RANGE))
+
                 card = self.players[p].choose_card(hands[p], trick, legal)
                 if card not in legal:
                     raise ValueError(f"Le joueur {p} a tenté de jouer une carte illégale: {card}")
@@ -189,9 +202,11 @@ class NetworkGame(Game):
 
             ctx.completed_trick_cards = list(trick.plays)
             ctx.last_trick_winner_seat = winner
+            ctx.last_completed_trick = list(trick.plays)
+            ctx.last_completed_trick_winner_seat = winner
             ctx.current_trick = None
             self.session.broadcast()
-            self.session.sleep(TRICK_COLLECT_PAUSE)
+            self.session.sleep(random.uniform(*TRICK_COLLECT_PAUSE_RANGE))
 
             leader = winner
 
@@ -211,7 +226,6 @@ class NetworkGame(Game):
         ctx.last_donne_result = result
         ctx.phase = "donne_end"
         ctx.hands = {p: [] for p in PLAYER_SEATS}
-        self.session.broadcast()
         return log
 
 
@@ -229,14 +243,21 @@ class GameSession:
         self._pending_seat = None
         self._pending_kind = None
         self._pending_choice = None
+        self._recap_closed = threading.Event()
 
         players = {}
+        bot_names = {
+            0: "Théo Bot",
+            1: "Anna Bot",
+            2: "Jade Bot",
+            3: "Gabin Bot",
+        }
         for p in PLAYER_SEATS:
             seat = room.seats[p]
             if seat.occupied:
                 players[p] = NetworkPlayer(p, self, seat.name)
             elif fill_bots:
-                players[p] = HeuristicBot(p, name=f"Bot {p + 1}")
+                players[p] = HeuristicBot(p, name=bot_names[p])
             else:
                 raise ValueError("Sièges incomplets et remplissage par bots désactivé.")
         self.players = players
@@ -247,10 +268,12 @@ class GameSession:
     def run(self):
         try:
             while not self.game.finished and not self._stop:
-                self.game.play_one_donne()
+                log = self.game.play_one_donne()
                 if self.game.finished or self._stop:
                     break
-                self.sleep(DONNE_RECAP_PAUSE)
+                if log.result is not None:
+                    self._recap_closed.wait()
+                    self._recap_closed.clear()
         except Exception as exc:  # ne doit jamais planter le thread silencieusement
             self.ctx.phase = "error"
             self.ctx.error_message = str(exc)
@@ -265,6 +288,10 @@ class GameSession:
 
     def stop(self):
         self._stop = True
+        self._recap_closed.set()
+
+    def dismiss_recap(self):
+        self._recap_closed.set()
 
     def sleep(self, seconds: float):
         end = time.time() + seconds
@@ -332,7 +359,15 @@ class GameSession:
         bs = self.ctx.bidding_state
         if not bs:
             return []
-        return [{"seat": p, "label": repr(a)} for p, a in bs.history]
+        return [
+            {
+                "seat": p,
+                "label": repr(a),
+                "type": a.type.name,
+                "suit": a.suit.name if a.suit else None,
+            }
+            for p, a in bs.history
+        ]
 
     def _trick_plays_dict(self, plays):
         if not plays:
@@ -369,7 +404,10 @@ class GameSession:
                 "1": self.game.cumulative_scores.get(1, 0),
             },
             "seats_names": {
-                str(k): self.room.seats[k].name for k in (0, 1, 2, 3, "board")
+                str(k): (
+                    self.players[k].name if k in self.players
+                    else self.room.seats[k].name
+                ) for k in (0, 1, 2, 3)
             },
             "board_present": bool(board_seat and board_seat.occupied),
             "waiting_seat": ctx.waiting_seat,
@@ -382,12 +420,22 @@ class GameSession:
             "current_trick": self._trick_plays_dict(ctx.current_trick.plays if ctx.current_trick else []),
             "completed_trick": self._trick_plays_dict(ctx.completed_trick_cards),
             "last_trick_winner_seat": ctx.last_trick_winner_seat,
+            "last_completed_trick": self._trick_plays_dict(ctx.last_completed_trick),
+            "last_completed_trick_winner_seat": ctx.last_completed_trick_winner_seat,
             "hand_counts": {str(p): len(ctx.hands.get(p, [])) for p in PLAYER_SEATS},
             "tricks_won_this_donne": {
                 "0": ctx.tricks_won_this_donne.get(0, 0),
                 "1": ctx.tricks_won_this_donne.get(1, 0),
             },
             "last_donne_result": self._result_dict(),
+            "score_history": [
+                {
+                    "0": log.result.final_scores.get(0, 0),
+                    "1": log.result.final_scores.get(1, 0),
+                }
+                for log in self.game.donne_logs
+                if log.result is not None
+            ],
             "game_over": self.finished,
             "winner_team": self.winner_team,
         }
