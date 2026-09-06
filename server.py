@@ -276,8 +276,11 @@ def on_request_state(data):
 @socketio.on("dismiss_recap")
 def on_dismiss_recap(data):
     room = rooms.get((data or {}).get("code"))
-    if room and room.game_session:
-        room.game_session.dismiss_recap()
+    if not room or not room.game_session:
+        return
+    seat = room.seat_of_sid(request.sid)
+    if seat is not None:
+        room.game_session.dismiss_recap(seat)
 
 
 @socketio.on("new_game")

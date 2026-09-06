@@ -566,6 +566,11 @@
   function renderDonneRecap(state) {
     const overlay = document.getElementById("donne-recap");
     const content = document.getElementById("donne-recap-content");
+    const canViewRecap = !state.board_present || state.your_seat === "board";
+    if (!canViewRecap) {
+      overlay.classList.add("hidden");
+      return;
+    }
     if (state.last_donne_result && state.donne_number !== recapDonneNumber) {
       recapState = state;
       recapDonneNumber = state.donne_number;
@@ -593,7 +598,7 @@
         '<div class="score-head"><span>Équipe A</span><span>Équipe B</span></div>' +
         '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
         '<div class="score-caption">Total</div>' +
-        '<p class="recap-hint">Clique sur le plateau pour continuer</p>';
+        '<p class="recap-hint">Clique n’importe où pour continuer</p>';
       overlay.classList.remove("hidden");
     } else if (state.phase === "donne_annulee" && !recapState) {
       content.innerHTML =
@@ -604,8 +609,10 @@
     }
   }
 
-  document.getElementById("board-panel").addEventListener("click", () => {
-    if (recapState || (lastRenderedState && lastRenderedState.phase === "donne_annulee")) {
+  document.addEventListener("click", () => {
+    const canDismiss = lastRenderedState &&
+      (!lastRenderedState.board_present || lastRenderedState.your_seat === "board");
+    if (canDismiss && (recapState || (lastRenderedState.phase === "donne_annulee"))) {
       dismissedDonneNumber = recapDonneNumber;
       socket.emit("dismiss_recap", { code: roomCode });
       document.getElementById("donne-recap").classList.add("hidden");

@@ -93,6 +93,8 @@ class NetworkGame(Game):
             for team, pts in log.result.final_scores.items():
                 self.cumulative_scores[team] += pts
             self._check_end_conditions(log.result)
+        if log.result is not None:
+            self.session.prepare_recap()
         self.session.broadcast()
         self.dealer = (self.dealer - 1) % 4
         return log
@@ -244,6 +246,7 @@ class GameSession:
         self._pending_kind = None
         self._pending_choice = None
         self._recap_closed = threading.Event()
+        self._recap_pending_seats = set()
 
         players = {}
         bot_names = {
@@ -272,7 +275,7 @@ class GameSession:
                 if self.game.finished or self._stop:
                     break
                 if log.result is not None:
-                    self._recap_closed.wait()
+                    self._wait_for_recap()
                     self._recap_closed.clear()
         except Exception as exc:  # ne doit jamais planter le thread silencieusement
             self.ctx.phase = "error"
@@ -290,8 +293,36 @@ class GameSession:
         self._stop = True
         self._recap_closed.set()
 
-    def dismiss_recap(self):
-        self._recap_closed.set()
+    def _wait_for_recap(self):
+        with self._lock:
+            pending = bool(self._recap_pending_seats)
+        if not pending:
+            return
+        self._recap_closed.wait()
+        with self._lock:
+            self._recap_pending_seats.clear()
+
+    def prepare_recap(self):
+        with self.room.lock:
+            board = self.room.seats.get("board")
+            if board and board.occupied:
+                pending = {"board"}
+            else:
+                pending = {
+                    seat for seat in PLAYER_SEATS if self.room.seats[seat].occupied
+                }
+        with self._lock:
+            self._recap_pending_seats = pending
+            if not pending:
+                self._recap_closed.set()
+
+    def dismiss_recap(self, seat):
+        with self._lock:
+            if seat not in self._recap_pending_seats:
+                return
+            self._recap_pending_seats.remove(seat)
+            if not self._recap_pending_seats:
+                self._recap_closed.set()
 
     def sleep(self, seconds: float):
         end = time.time() + seconds
