@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Belote Coinchée</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="toast" class="toast hidden"></div>
+
+<!-- ============ ÉCRAN ACCUEIL ============ -->
+<section id="screen-home" class="screen">
+  <div class="home-card">
+    <h1 class="logo">♠ Belote <span>Coinchée</span> ♦</h1>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="join">Rejoindre</button>
+      <button class="tab-btn" data-tab="create">Créer un salon</button>
+    </div>
+
+    <div id="tab-join" class="tab-panel">
+      <label>Ton prénom</label>
+      <input id="join-name" type="text" placeholder="Ton prénom" maxlength="20" autocomplete="off">
+      <label>Code du salon</label>
+      <input id="join-code" type="text" placeholder="ex. K7QM" maxlength="4" autocomplete="off"
+             style="text-transform:uppercase">
+      <button id="btn-join" class="btn btn-primary">Rejoindre le salon</button>
+    </div>
+
+    <div id="tab-create" class="tab-panel hidden">
+      <label>Ton prénom</label>
+      <input id="create-name" type="text" placeholder="Ton prénom" maxlength="20" autocomplete="off">
+      <button id="btn-create" class="btn btn-primary">Créer un nouveau salon</button>
+      <p class="hint">Lance ceci depuis l'ordinateur qui fait tourner le serveur, ou depuis n'importe quel appareil du réseau.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ÉCRAN SALON (LOBBY) ============ -->
+<section id="screen-lobby" class="screen hidden">
+  <div class="lobby-wrap">
+    <div class="lobby-header">
+      <div>
+        <div class="room-code-label">Code du salon</div>
+        <div id="lobby-code" class="room-code">----</div>
+      </div>
+      <img id="lobby-qr" class="qr" alt="QR code du salon">
+    </div>
+    <p id="lobby-url" class="hint small"></p>
+
+    <div id="seats" class="seats"></div>
+
+    <div class="lobby-settings">
+      <label class="row">
+        Score cible
+        <select id="target-score">
+          <option value="500">500</option>
+          <option value="1000" selected>1000</option>
+          <option value="1500">1500</option>
+          <option value="2000">2000</option>
+        </select>
+      </label>
+      <label class="row checkbox-row">
+        <input type="checkbox" id="fill-bots">
+        Compléter les sièges vides avec des bots (pour tester seul·e)
+      </label>
+    </div>
+
+    <button id="btn-start" class="btn btn-primary btn-big">Démarrer la partie</button>
+    <button id="btn-leave-lobby" class="btn btn-ghost">Quitter le salon</button>
+  </div>
+</section>
+
+<!-- ============ ÉCRAN JEU ============ -->
+<section id="screen-game" class="screen hidden">
+
+  <div class="topbar">
+    <span id="game-code" class="topbar-code"></span>
+    <span class="topbar-scores">
+      <span class="team-a">A <b id="score-a">0</b></span>
+      ·
+      <span class="team-b">B <b id="score-b">0</b></span>
+      <span class="target">/ <span id="target-display">1000</span></span>
+    </span>
+  </div>
+
+  <div id="board-panel" class="board-panel hidden">
+    <div class="table-felt">
+      <div class="seat-marker" id="seat-marker-0"></div>
+      <div class="seat-marker" id="seat-marker-1"></div>
+      <div class="seat-marker" id="seat-marker-2"></div>
+      <div class="seat-marker" id="seat-marker-3"></div>
+
+      <div class="trick-slot" id="trick-slot-0"></div>
+      <div class="trick-slot" id="trick-slot-1"></div>
+      <div class="trick-slot" id="trick-slot-2"></div>
+      <div class="trick-slot" id="trick-slot-3"></div>
+
+
+
+      <div id="trick-pile-a" class="trick-pile trick-pile-a" title="Dernier pli de l'équipe A">
+        <div class="trick-pile-card"></div>
+        <div><div class="trick-pile-label">Équipe A</div><div id="trick-pile-count-a" class="trick-pile-count">0 plis</div></div>
+      </div>
+      <div id="trick-pile-b" class="trick-pile trick-pile-b" title="Dernier pli de l'équipe B">
+        <div class="trick-pile-card"></div>
+        <div><div class="trick-pile-label">Équipe B</div><div id="trick-pile-count-b" class="trick-pile-count">0 plis</div></div>
+      </div>
+      <div id="last-trick-popup" class="last-trick-popup hidden">
+        <div id="last-trick-popup-content"></div>
+      </div>
+    </div>
+    <div class="info-strip">
+      <div id="tricks-info" class="tricks-info"></div>
+    </div>
+  </div>
+
+  <div id="hand-panel" class="hand-panel">
+    <div id="turn-banner" class="turn-banner">En attente...</div>
+    <div id="bid-controls" class="bid-controls hidden"></div>
+    <div id="hand-cards" class="hand-cards"></div>
+  </div>
+
+  <div id="donne-recap" class="overlay hidden">
+    <div class="overlay-box" id="donne-recap-content"></div>
+  </div>
+
+  <div id="gameover-overlay" class="overlay hidden">
+    <div class="overlay-box">
+      <h2 id="gameover-title">Partie terminée</h2>
+      <p id="gameover-detail"></p>
+      <button id="btn-new-game" class="btn btn-primary">Retour au salon</button>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+  // Adresse de votre backend Render (a completer). Exemple :
+  // window.BELOTE_BACKEND_URL = "https://belote-coinchee.onrender.com";
+  window.BELOTE_BACKEND_URL = "https://VOTRE-SERVICE.onrender.com";
+
+  // Prefill le code de salon depuis un lien du type
+  // https://.../?code=K7QM (utilise par le QR code / lien de partage).
+  document.addEventListener("DOMContentLoaded", () => {
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (code) {
+      const input = document.getElementById("join-code");
+      if (input) input.value = code.toUpperCase();
+    }
+  });
+</script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -61,6 +61,19 @@ def get_lan_ip() -> str:
 
 LAN_IP = get_lan_ip()
 
+# En local, on devine l'IP Wi-Fi pour que le QR code pointe vers le bon
+# endroit. Une fois deploye (Render, etc.), l'adresse publique n'a plus
+# rien a voir avec une IP locale : definissez PUBLIC_BASE_URL (ex.
+# "https://belote-coinchee.onrender.com") et elle sera utilisee a la place.
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+
+
+def get_base_url(req) -> str:
+    if PUBLIC_BASE_URL:
+        return PUBLIC_BASE_URL
+    port = req.host.split(":")[1] if ":" in req.host else "80"
+    return f"http://{LAN_IP}:{port}"
+
 
 # --------------------------------------------------------------------------
 # Routes HTTP
@@ -68,7 +81,7 @@ LAN_IP = get_lan_ip()
 
 @app.route("/")
 def index():
-    return render_template("index.html", prefill_code="")
+    return render_template("index.html", prefill_code=request.args.get("code", "").upper())
 
 
 @app.route("/static/<path:filename>", endpoint="static")
@@ -88,8 +101,7 @@ def room_info(code):
     room = rooms.get(code)
     if not room:
         abort(404)
-    port = request.host.split(":")[1] if ":" in request.host else "80"
-    return jsonify({"code": room.code, "join_url": f"http://{LAN_IP}:{port}/join/{room.code}"})
+    return jsonify({"code": room.code, "join_url": f"{get_base_url(request)}/?code={room.code}"})
 
 
 @app.route("/room/<code>/qr.png")
@@ -97,8 +109,7 @@ def room_qr(code):
     room = rooms.get(code)
     if not room:
         abort(404)
-    port = request.host.split(":")[1] if ":" in request.host else "80"
-    url = f"http://{LAN_IP}:{port}/join/{room.code}"
+    url = f"{get_base_url(request)}/?code={room.code}"
     img = qrcode.make(url, box_size=8, border=2)
     buf = io.BytesIO()
     img.save(buf, format="PNG")

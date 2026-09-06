@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: belote-coinchee
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: BELOTE_SECRET
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGIN
+        value: "*"
+      - key: PUBLIC_BASE_URL
+        value: ""
