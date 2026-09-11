@@ -208,8 +208,19 @@ class HeuristicBot(Player):
         if not trick_state.plays:
             return self._choose_lead(hand, trick_state, legal_cards, atout)
 
+        # Règle : ne jamais couper si on peut "pisser" — on ne sacrifie un atout
+        # que lorsqu'on y est forcé (legal_cards ne contient alors que de l'atout).
+        non_atout_legal = [c for c in legal_cards if c.suit != atout]
+        pool = non_atout_legal if non_atout_legal else legal_cards
+
+        # Règle 1 : si on détient la carte maîtresse restante d'une couleur qu'on
+        # est en train de fournir, on la joue (ex: As + 10 en main -> on met l'As).
+        master_candidates = [c for c in pool if self._is_master(c, atout, trick_state)]
+        if master_candidates:
+            return max(master_candidates, key=lambda c: self._suit_length(hand, c.suit))
+
         winning_candidates = []
-        for c in legal_cards:
+        for c in pool:
             hypothetical = trick_state.plays + [(trick_state.current_player, c)]
             if trick_winner(hypothetical, atout) == trick_state.current_player:
                 winning_candidates.append(c)
@@ -217,4 +228,4 @@ class HeuristicBot(Player):
         if winning_candidates:
             return min(winning_candidates, key=lambda c: c.points(atout))
 
-        return min(legal_cards, key=lambda c: c.points(atout))
+        return min(pool, key=lambda c: c.points(atout))
