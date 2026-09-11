@@ -62,6 +62,8 @@ class Donne:
             return log
 
         contract = bidding_state.contract
+        for pl in self.players.values():
+            pl.notify_contract(contract)
         atout = contract.suit
         leader = (self.dealer - 1) % 4
 
@@ -89,6 +91,8 @@ class Donne:
             log.trick_winners.append(winner)
 
             leader = winner
+            for pl in self.players.values():
+                pl.notify_trick_result(list(trick.plays), winner)
 
         capot_team = 0 if tricks_won_by_team[0] == 8 else (1 if tricks_won_by_team[1] == 8 else None)
         belote_holder = find_belote_holder(initial_hands, atout)

@@ -33,3 +33,15 @@ class Player(ABC):
     def notify(self, message: str) -> None:
         """Point d'extension optionnel pour informer le joueur d'un événement (log, UI...)."""
         pass
+
+    def notify_contract(self, contract) -> None:
+        """Point d'extension optionnel : informe le joueur du contrat retenu,
+        juste avant le début du jeu de la carte (permet à un bot de savoir s'il
+        est preneur et de réinitialiser sa mémoire de donne)."""
+        pass
+
+    def notify_trick_result(self, plays: list[tuple[int, Card]], winner: int) -> None:
+        """Point d'extension optionnel : informe le joueur du résultat d'un pli
+        terminé (les 4 cartes jouées et le vainqueur), pour lui permettre de
+        mémoriser les cartes sorties."""
+        pass
