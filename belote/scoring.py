@@ -109,13 +109,17 @@ def compute_donne_score(
             score[preneur_team] = raw_total[preneur_team] + contract_amount
             score[defense_team] = raw_total[defense_team]
         else:
-            base = 250 if capot_team == preneur_team else CHUTE_BASE
-            score[preneur_team] = (base + belote_bonus(preneur_team) + contract_amount) * multiplier
-            score[defense_team] = belote_bonus(defense_team)  # belote imprenable uniquement
+            preneur_points = raw_total[preneur_team] - belote_bonus(preneur_team)
+            defense_points = raw_total[defense_team] - belote_bonus(defense_team)
+            score[preneur_team] = (preneur_points + contract_amount) * multiplier + belote_bonus(preneur_team)
+            score[defense_team] = defense_points + belote_bonus(defense_team)
     else:
         score[preneur_team] = belote_bonus(preneur_team)  # belote imprenable uniquement
-        base_defense = CHUTE_BASE + belote_bonus(defense_team) + contract_amount
-        score[defense_team] = base_defense * multiplier if is_coinche else base_defense
+        fail_base = 250 if capot_team == defense_team else CHUTE_BASE
+        defense_total = fail_base + contract_amount
+        if is_coinche:
+            defense_total *= multiplier
+        score[defense_team] = defense_total + belote_bonus(defense_team)
 
     final_scores = {team: round_to_nearest_ten(pts) for team, pts in score.items()}
 

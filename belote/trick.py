@@ -53,13 +53,13 @@ def legal_cards(hand: list[Card], plays_so_far: list[tuple[int, Card]],
     partner_is_master = team_of(best_player) == team_of(current_player)
 
     if suit_led == atout:
-        # La couleur demandée est l'atout lui-même.
+        # La couleur demandée est l'atout lui-même : toujours monter si possible (règle 3),
+        # y compris si notre partenaire est déjà maître (aucune exception ici, cf. règle 4
+        # qui ne concerne que le cas de la coupe, pas l'atout demandé à l'entame).
         if cards_suit_led:  # on a de l'atout : on doit en fournir
-            if partner_is_master:
-                return cards_suit_led  # règle 2.1 généralisée : libre choix parmi l'atout
             best_idx = best_card.atout_strength_index()
             stronger = [c for c in cards_suit_led if c.atout_strength_index() < best_idx]
-            return stronger if stronger else cards_suit_led  # règle 3
+            return stronger if stronger else cards_suit_led  # règle 3, ou plus faible si impossible
         return list(hand)  # pas d'atout : rien n'oblige, défausse libre
 
     # La couleur demandée n'est pas l'atout.
