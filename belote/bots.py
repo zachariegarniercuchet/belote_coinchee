@@ -153,14 +153,23 @@ class HeuristicBot(Player):
 
         opponents = [p for p in range(4) if team_of(p) != team_of(self.player_id)]
         if all(atout in self.void_suits[p] for p in opponents):
-            return None  # les deux adversaires sont sans atout : le reste est forcément chez le partenaire
+            return None  # adversaires sans atout : chasse inutile
 
-        for rank in ATOUT_ORDER:
-            if rank in my_ranks and rank not in played:
-                candidate = next(c for c in my_trumps if c.rank == rank)
-                if candidate in legal_cards:
-                    return candidate
-        return None
+        best_unknown_rank = next(r for r in ATOUT_ORDER if r not in played)
+        my_best_rank = next((r for r in ATOUT_ORDER if r in my_ranks), None)
+
+        if my_best_rank == best_unknown_rank:
+            # Je détiens le maître restant : je peux monter sans risque, je gagne
+            # le pli à coup sûr tout en faisant tomber de l'atout adverse.
+            candidate = next(c for c in my_trumps if c.rank == my_best_rank)
+            return candidate if candidate in legal_cards else None
+
+        # Je ne détiens pas le maître (il est chez l'adversaire) : monter reviendrait
+        # à sacrifier une carte de valeur (ex: le Neuf, 14 pts) pour "forcer" un atout
+        # plus fort chez l'adversaire — mauvais échange. Je joue mon atout le plus
+        # faible : ça teste/use l'atout adverse sans rien perdre en valeur.
+        weakest = max(my_trumps, key=lambda c: c.atout_strength_index())
+        return weakest if weakest in legal_cards else None
 
     def _longest_suit_lead(self, hand, legal_cards, atout):
         non_atout_legal = [c for c in legal_cards if c.suit != atout]
