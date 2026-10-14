@@ -752,34 +752,45 @@
       const totalOf = (tk) => (r.total_points ? r.total_points[tk]
         : (r.raw_points[tk] + ((r.dix_de_der_team !== null && String(r.dix_de_der_team) === tk) ? dixVal : 0)
           + ((r.belote_team !== null && String(r.belote_team) === tk) ? belVal : 0)));
-      const detailOf = (tk) => {
+      const detailTextOf = (tk) => {
         let txt = "Plis " + r.raw_points[tk];
         if (r.dix_de_der_team !== null && String(r.dix_de_der_team) === tk) txt += " + dix de der " + dixVal;
         if (r.belote_team !== null && String(r.belote_team) === tk) txt += " + belote " + belVal;
-        txt += " = <strong>" + totalOf(tk) + "</strong>";
+        txt += " = " + totalOf(tk);
         return txt;
       };
-      let bonusLine = "";
-      if (r.belote_team !== null && r.belote_team !== undefined) {
-        bonusLine += '<p class="result-line">Belote : Équipe ' + (String(r.belote_team) === "0" ? "A" : "B") + " (+" + belVal + ")</p>";
-      }
-      if (r.dix_de_der_team !== null && r.dix_de_der_team !== undefined) {
-        bonusLine += '<p class="result-line">Dix de der : Équipe ' + (String(r.dix_de_der_team) === "0" ? "A" : "B") + " (+" + dixVal + ")</p>";
-      }
+      const preneurLabel = "Équipe " + (String(r.preneur_team) === "0" ? "A" : "B");
+      const f0 = r.final_scores ? r.final_scores["0"] : 0;
+      const f1 = r.final_scores ? r.final_scores["1"] : 0;
+      const markedLine = "Points marqués : Équipe A +" + f0 + " · Équipe B +" + f1;
       content.innerHTML =
         "<h2>Fin de la donne</h2>" +
         '<p class="result-line">' + contractLine + "</p>" +
-        '<p class="result-line">Points pris en compte (plis + dix de der + belote) :</p>' +
-        '<p class="result-line">Équipe A — ' + detailOf("0") + "</p>" +
-        '<p class="result-line">Équipe B — ' + detailOf("1") + "</p>" +
-        bonusLine +
+        '<p class="result-line">Équipe A — <span class="pts-toggle" data-team="0" title="' + detailTextOf("0") + '"><strong>' + totalOf("0") + "</strong></span></p>" +
+        '<p class="result-line">Équipe B — <span class="pts-toggle" data-team="1" title="' + detailTextOf("1") + '"><strong>' + totalOf("1") + "</strong></span></p>" +
+        '<div class="pts-detail hidden" id="pts-detail"></div>' +
         '<p class="result-line result-outcome ' + (r.contract_reached ? "success" : "failed") + '">' +
-        (r.contract_reached ? "Contrat réussi" : "Contrat raté") + "</p>" +
+        (r.contract_reached ? "Contrat réussi (" + preneurLabel + ")" : "Contrat raté (" + preneurLabel + " : 0)") + "</p>" +
+        '<p class="result-line">' + markedLine + "</p>" +
         '<div class="score-teams"><strong>' + escapeHtml(teamA) + '</strong><span>vs</span><strong>' + escapeHtml(teamB) + '</strong></div>' +
         '<div class="score-head"><span>Équipe A</span><span>Équipe B</span></div>' +
         '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
         '<div class="score-caption">Total</div>' +
-        '<p class="recap-hint">Clique n’importe où pour continuer</p>';
+        '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote) — cliquez n’importe où pour continuer</p>';
+      content.querySelectorAll(".pts-toggle").forEach(el => {
+        el.addEventListener("click", ev => {
+          ev.stopPropagation();
+          const d = content.querySelector("#pts-detail");
+          const tk = el.getAttribute("data-team");
+          const txt = (tk === "0" ? "Équipe A : " : "Équipe B : ") + detailTextOf(tk);
+          if (d.textContent === txt && !d.classList.contains("hidden")) {
+            d.classList.add("hidden");
+          } else {
+            d.textContent = txt;
+            d.classList.remove("hidden");
+          }
+        });
+      });
       overlay.classList.remove("hidden");
     } else if (state.phase === "donne_annulee" && !recapState) {
       content.innerHTML =

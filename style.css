@@ -612,6 +612,19 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 .overlay-box h2 { margin-top: 0; color: var(--gold-light); }
 .overlay-box .result-line { font-size: 15px; margin: 6px 0; }
+.pts-toggle {
+  cursor: pointer;
+  border-bottom: 1px dotted var(--gold-light);
+  padding: 0 2px;
+}
+.pts-detail {
+  font-size: 12px;
+  opacity: .8;
+  background: rgba(0,0,0,.25);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 4px 0 6px;
+}
 .overlay-box .result-score { font-size: 30px; font-weight: 800; margin: 10px 0; }
 .result-outcome { font-weight: 800; }
 .result-outcome.success { color: #7fd8a6; }
