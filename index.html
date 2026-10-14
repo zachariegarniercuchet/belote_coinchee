@@ -95,41 +95,40 @@
     </span>
   </div>
 
-  <div id="board-panel" class="board-panel hidden">
-    <div class="table-felt">
-      <div class="seat-marker" id="seat-marker-0"></div>
-      <div class="seat-marker" id="seat-marker-1"></div>
-      <div class="seat-marker" id="seat-marker-2"></div>
-      <div class="seat-marker" id="seat-marker-3"></div>
-
-      <div class="trick-slot" id="trick-slot-0"></div>
-      <div class="trick-slot" id="trick-slot-1"></div>
-      <div class="trick-slot" id="trick-slot-2"></div>
-      <div class="trick-slot" id="trick-slot-3"></div>
-
-
-
-      <div id="trick-pile-a" class="trick-pile trick-pile-a" title="Dernier pli de l'équipe A">
-        <div class="trick-pile-card"></div>
-        <div><div class="trick-pile-label">Équipe A</div><div id="trick-pile-count-a" class="trick-pile-count">0 plis</div></div>
-      </div>
-      <div id="trick-pile-b" class="trick-pile trick-pile-b" title="Dernier pli de l'équipe B">
-        <div class="trick-pile-card"></div>
-        <div><div class="trick-pile-label">Équipe B</div><div id="trick-pile-count-b" class="trick-pile-count">0 plis</div></div>
-      </div>
-      <div id="last-trick-popup" class="last-trick-popup hidden">
-        <div id="last-trick-popup-content"></div>
-      </div>
-    </div>
-    <div class="info-strip">
-      <div id="tricks-info" class="tricks-info"></div>
-    </div>
-  </div>
-
-  <div id="hand-panel" class="hand-panel">
+  <div id="game-table-wrap" class="game-table-wrap">
     <div id="turn-banner" class="turn-banner">En attente...</div>
-    <div id="bid-controls" class="bid-controls hidden"></div>
-    <div id="hand-cards" class="hand-cards"></div>
+    <div id="board-panel" class="board-panel">
+      <div class="table-felt">
+        <div class="seat-marker" id="seat-marker-0"></div>
+        <div class="seat-marker" id="seat-marker-1"></div>
+        <div class="seat-marker" id="seat-marker-2"></div>
+        <div class="seat-marker" id="seat-marker-3"></div>
+
+        <div class="trick-slot" id="trick-slot-0"></div>
+        <div class="trick-slot" id="trick-slot-1"></div>
+        <div class="trick-slot" id="trick-slot-2"></div>
+        <div class="trick-slot" id="trick-slot-3"></div>
+
+
+
+        <div id="trick-pile-a" class="trick-pile trick-pile-a" title="Dernier pli de l'équipe A">
+          <div class="trick-pile-card"></div>
+          <div><div class="trick-pile-label">Équipe A</div><div id="trick-pile-count-a" class="trick-pile-count">0 plis</div></div>
+        </div>
+        <div id="trick-pile-b" class="trick-pile trick-pile-b" title="Dernier pli de l'équipe B">
+          <div class="trick-pile-card"></div>
+          <div><div class="trick-pile-label">Équipe B</div><div id="trick-pile-count-b" class="trick-pile-count">0 plis</div></div>
+        </div>
+        <div id="last-trick-popup" class="last-trick-popup hidden">
+          <div id="last-trick-popup-content"></div>
+        </div>
+        <div id="bid-controls" class="bid-controls hidden"></div>
+        <div id="hand-cards" class="hand-cards"></div>
+      </div>
+      <div class="info-strip">
+        <div id="tricks-info" class="tricks-info"></div>
+      </div>
+    </div>
   </div>
 
   <div id="donne-recap" class="overlay hidden">

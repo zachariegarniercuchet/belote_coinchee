@@ -25,6 +25,10 @@
   // précédente), puis disparaissent une fois la phase terminée.
   const bidBubbleState = { donne: null, count: 0, clearedForPhase: false };
 
+  // Formulaire d'enchère (popup centrale) : on choisit couleur + montant,
+  // puis on valide avec "Confirmer". Mémorisé entre deux state_update.
+  const bidFormState = { key: null, suit: null, points: null, isCapot: false };
+
   // ------------------------------------------------------------------
   // Navigation entre écrans
   // ------------------------------------------------------------------
@@ -313,13 +317,11 @@
     document.getElementById("target-display").textContent = state.target_score;
 
     const isBoard = state.your_seat === "board";
-    const showBoardPanel = isBoard || !state.board_present;
 
-    document.getElementById("board-panel").classList.toggle("hidden", !showBoardPanel);
-    document.getElementById("hand-panel").classList.toggle("hidden", isBoard);
+    document.getElementById("board-panel").classList.remove("hidden");
 
-    if (showBoardPanel) renderBoardPanel(state);
-    if (!isBoard) renderHandPanel(state);
+    renderBoardPanel(state);
+    renderHandPanel(state);
 
     renderDonneRecap(state);
     renderGameOver(state);
@@ -344,8 +346,7 @@
       }
 
       marker.innerHTML =
-        '<div class="sm-name">' + nameHtml + "</div>" +
-        '<div class="sm-cards">' + (state.hand_counts[String(seat)] || 0) + " cartes</div>";
+        '<div class="sm-name">' + nameHtml + "</div>";
       if (existingBubble) marker.appendChild(existingBubble); // on préserve une bulle en cours d'affichage
       marker.classList.toggle("active-turn", state.waiting_seat === seat);
       marker.classList.toggle("dealer", state.dealer === seat);
@@ -372,7 +373,9 @@
     tricksInfo.textContent =
       "Donne n°" + (state.donne_number || 1) +
       " · Plis — Équipe A " + state.tricks_won_this_donne["0"] +
-      " · Équipe B " + state.tricks_won_this_donne["1"];
+      " · Équipe B " + state.tricks_won_this_donne["1"] +
+      ((state.belote_team !== null && state.belote_team !== undefined)
+        ? " · Belote Équipe " + (String(state.belote_team) === "0" ? "A" : "B") + " (+20)" : "");
   }
 
   // ------------------------------------------------------------------
@@ -525,14 +528,50 @@
     const handWrap = document.getElementById("hand-cards");
     handWrap.innerHTML = "";
     const cardMode = state.your_turn && state.waiting_kind === "card";
-    state.your_hand.forEach(card => {
+    const n = state.your_hand.length;
+    const center = (n - 1) / 2;
+    state.your_hand.forEach((card, i) => {
       const legal = cardMode && state.legal_card_ids.includes(card.id);
       const cls = cardMode ? (legal ? "legal" : "disabled") : "";
       const el = cardEl(card, cls);
+      const off = i - center;
+      el.style.setProperty("--r", (off * 7).toFixed(1) + "deg");
+      el.style.setProperty("--y", (Math.abs(off) * Math.abs(off) * 2.2).toFixed(1) + "px");
+      el.style.zIndex = String(i);
       if (legal) {
-        el.addEventListener("click", () => {
-          socket.emit("play_card", { code: roomCode, card_id: card.id });
+        let downX = 0, downY = 0, dx = 0, dy = 0, isDown = false, isDrag = false;
+        el.addEventListener("pointerdown", e => {
+          isDown = true; isDrag = false; dx = 0; dy = 0;
+          downX = e.clientX; downY = e.clientY;
+          try { el.setPointerCapture(e.pointerId); } catch (_) {}
         });
+        el.addEventListener("pointermove", e => {
+          if (!isDown) return;
+          dx = e.clientX - downX; dy = e.clientY - downY;
+          if (Math.abs(dx) + Math.abs(dy) > 10) {
+            isDrag = true;
+            el.classList.add("dragging");
+            el.style.transform = "translate(" + dx + "px," + dy + "px) scale(1.08)";
+          }
+        });
+        const resetDrag = () => {
+          isDown = false;
+          el.classList.remove("dragging");
+          el.style.transform = "";
+        };
+        el.addEventListener("pointerup", e => {
+          const wasDrag = isDrag;
+          const upDy = e.clientY - downY;
+          resetDrag();
+          if (wasDrag) {
+            // Glissé vers le plateau (vers le haut) = jouer la carte.
+            if (upDy < -60) socket.emit("play_card", { code: roomCode, card_id: card.id });
+          } else {
+            // Simple tap / clic = jouer la carte.
+            socket.emit("play_card", { code: roomCode, card_id: card.id });
+          }
+        });
+        el.addEventListener("pointercancel", resetDrag);
       }
       handWrap.appendChild(el);
     });
@@ -540,7 +579,20 @@
 
   function renderBidControls(actions) {
     const container = document.getElementById("bid-controls");
+    const key = actions.map(a => a.index + ":" + a.type + ":" + (a.suit || "") + ":" + (a.points == null ? "" : a.points) + ":" + (a.is_capot ? "C" : "")).join("|");
+    if (bidFormState.key !== key) {
+      bidFormState.key = key;
+      bidFormState.points = null;
+      bidFormState.isCapot = false;
+      const firstEnchere = actions.find(a => a.type === "ENCHERE");
+      bidFormState.suit = firstEnchere ? firstEnchere.suit : null;
+    }
     container.innerHTML = "";
+
+    const title = document.createElement("h3");
+    title.className = "bid-title";
+    title.textContent = "Que prends-tu ?";
+    container.appendChild(title);
 
     const passAction = actions.find(a => a.type === "PASSE");
     const coincheAction = actions.find(a => a.type === "COINCHE");
@@ -548,8 +600,6 @@
     const enchereActions = actions.filter(a => a.type === "ENCHERE");
 
     if (enchereActions.length) {
-      // Une couleur, puis un chiffre : la légalité d'un montant ne dépend pas
-      // de la couleur choisie, donc pas besoin d'une grille couleur × chiffre.
       const suits = [];
       const seenSuits = {};
       enchereActions.forEach(a => {
@@ -558,6 +608,7 @@
           suits.push({ name: a.suit, symbol: a.symbol });
         }
       });
+      if (!suits.find(s => s.name === bidFormState.suit)) bidFormState.suit = suits[0].name;
 
       const pointsSet = new Set();
       let hasCapot = false;
@@ -566,49 +617,84 @@
         else if (a.points != null) pointsSet.add(a.points);
       });
 
-      let selectedSuit = suits[0].name;
-      const suitButtons = {};
+      const suitLabel = document.createElement("div");
+      suitLabel.className = "bid-section-label";
+      suitLabel.textContent = "Couleur";
+      container.appendChild(suitLabel);
 
       const suitRow = document.createElement("div");
       suitRow.className = "bid-suit-row";
+      const suitButtons = {};
       suits.forEach(s => {
         const btn = document.createElement("button");
-        btn.className = "bid-suit-btn" + (s.name === selectedSuit ? " selected" : "");
+        btn.className = "bid-suit-btn" + (s.name === bidFormState.suit ? " selected" : "");
         btn.textContent = s.symbol;
         btn.style.color = (s.name === "COEUR" || s.name === "CARREAU") ? "#e0576a" : "#f7f1e3";
         btn.onclick = () => {
-          selectedSuit = s.name;
-          Object.values(suitButtons).forEach(b => b.classList.remove("selected"));
-          btn.classList.add("selected");
+          bidFormState.suit = s.name;
+          Object.entries(suitButtons).forEach(([name, b]) => b.classList.toggle("selected", name === s.name));
+          refreshConfirm();
         };
         suitButtons[s.name] = btn;
         suitRow.appendChild(btn);
       });
       container.appendChild(suitRow);
 
+      const numLabel = document.createElement("div");
+      numLabel.className = "bid-section-label";
+      numLabel.textContent = "Montant";
+      container.appendChild(numLabel);
+
       const numRow = document.createElement("div");
       numRow.className = "bid-num-row";
+      const pointButtons = [];
       Array.from(pointsSet).sort((a, b) => a - b).forEach(pts => {
         const chip = document.createElement("button");
-        chip.className = "bid-chip";
+        chip.className = "bid-chip" + (bidFormState.points === pts && !bidFormState.isCapot ? " selected" : "");
         chip.textContent = String(pts);
         chip.onclick = () => {
-          const match = enchereActions.find(a => a.suit === selectedSuit && !a.is_capot && a.points === pts);
-          if (match) socket.emit("bid_choice", { code: roomCode, index: match.index });
+          bidFormState.points = pts;
+          bidFormState.isCapot = false;
+          pointButtons.forEach(b => b.classList.remove("selected"));
+          if (capotChip) capotChip.classList.remove("selected");
+          chip.classList.add("selected");
+          refreshConfirm();
         };
+        pointButtons.push(chip);
         numRow.appendChild(chip);
       });
+      let capotChip = null;
       if (hasCapot) {
-        const chip = document.createElement("button");
-        chip.className = "bid-chip capot-chip";
-        chip.textContent = "Capot";
-        chip.onclick = () => {
-          const match = enchereActions.find(a => a.suit === selectedSuit && a.is_capot);
-          if (match) socket.emit("bid_choice", { code: roomCode, index: match.index });
+        capotChip = document.createElement("button");
+        capotChip.className = "bid-chip capot-chip" + (bidFormState.isCapot ? " selected" : "");
+        capotChip.textContent = "Capot";
+        capotChip.onclick = () => {
+          bidFormState.isCapot = true;
+          bidFormState.points = null;
+          pointButtons.forEach(b => b.classList.remove("selected"));
+          capotChip.classList.add("selected");
+          refreshConfirm();
         };
-        numRow.appendChild(chip);
+        numRow.appendChild(capotChip);
       }
       container.appendChild(numRow);
+
+      const confirmBtn = document.createElement("button");
+      confirmBtn.className = "bid-chip bid-confirm-btn";
+      confirmBtn.textContent = "Confirmer";
+      const refreshConfirm = () => {
+        const ok = bidFormState.suit && (bidFormState.isCapot || bidFormState.points != null) &&
+          enchereActions.some(a => a.suit === bidFormState.suit && !!a.is_capot === bidFormState.isCapot &&
+            (bidFormState.isCapot || a.points === bidFormState.points));
+        confirmBtn.disabled = !ok;
+      };
+      confirmBtn.onclick = () => {
+        const match = enchereActions.find(a => a.suit === bidFormState.suit && !!a.is_capot === bidFormState.isCapot &&
+          (bidFormState.isCapot || a.points === bidFormState.points));
+        if (match) socket.emit("bid_choice", { code: roomCode, index: match.index });
+      };
+      refreshConfirm();
+      container.appendChild(confirmBtn);
     }
 
     const actionsRow = document.createElement("div");
@@ -634,7 +720,7 @@
       b.onclick = () => socket.emit("bid_choice", { code: roomCode, index: surcoincheAction.index });
       actionsRow.appendChild(b);
     }
-    container.appendChild(actionsRow);
+    if (actionsRow.childNodes.length) container.appendChild(actionsRow);
   }
 
   function renderDonneRecap(state) {
@@ -661,11 +747,32 @@
       const rows = (recapState.score_history || []).map(score =>
         "<tr><td>" + score["0"] + "</td><td>" + score["1"] + "</td></tr>"
       ).join("");
+      const dixVal = r.dix_de_der_value || 10;
+      const belVal = r.belote_bonus || 20;
+      const totalOf = (tk) => (r.total_points ? r.total_points[tk]
+        : (r.raw_points[tk] + ((r.dix_de_der_team !== null && String(r.dix_de_der_team) === tk) ? dixVal : 0)
+          + ((r.belote_team !== null && String(r.belote_team) === tk) ? belVal : 0)));
+      const detailOf = (tk) => {
+        let txt = "Plis " + r.raw_points[tk];
+        if (r.dix_de_der_team !== null && String(r.dix_de_der_team) === tk) txt += " + dix de der " + dixVal;
+        if (r.belote_team !== null && String(r.belote_team) === tk) txt += " + belote " + belVal;
+        txt += " = <strong>" + totalOf(tk) + "</strong>";
+        return txt;
+      };
+      let bonusLine = "";
+      if (r.belote_team !== null && r.belote_team !== undefined) {
+        bonusLine += '<p class="result-line">Belote : Équipe ' + (String(r.belote_team) === "0" ? "A" : "B") + " (+" + belVal + ")</p>";
+      }
+      if (r.dix_de_der_team !== null && r.dix_de_der_team !== undefined) {
+        bonusLine += '<p class="result-line">Dix de der : Équipe ' + (String(r.dix_de_der_team) === "0" ? "A" : "B") + " (+" + dixVal + ")</p>";
+      }
       content.innerHTML =
         "<h2>Fin de la donne</h2>" +
         '<p class="result-line">' + contractLine + "</p>" +
-        '<p class="result-line">Points faits : Équipe A <strong>' + r.raw_points["0"] +
-        "</strong> · Équipe B <strong>" + r.raw_points["1"] + "</strong></p>" +
+        '<p class="result-line">Points pris en compte (plis + dix de der + belote) :</p>' +
+        '<p class="result-line">Équipe A — ' + detailOf("0") + "</p>" +
+        '<p class="result-line">Équipe B — ' + detailOf("1") + "</p>" +
+        bonusLine +
         '<p class="result-line result-outcome ' + (r.contract_reached ? "success" : "failed") + '">' +
         (r.contract_reached ? "Contrat réussi" : "Contrat raté") + "</p>" +
         '<div class="score-teams"><strong>' + escapeHtml(teamA) + '</strong><span>vs</span><strong>' + escapeHtml(teamB) + '</strong></div>' +

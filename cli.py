@@ -45,7 +45,25 @@ def print_donne_summary(log) -> None:
 
     r = log.result
     print("-" * 60)
-    print(f"Points de plis : équipe 0 = {r.raw_points.get(0, 0)}, équipe 1 = {r.raw_points.get(1, 0)}")
+    from belote.scoring import BELOTE_BONUS, DIX_DE_DER_CAPOT, DIX_DE_DER_NORMAL
+    dix_value = DIX_DE_DER_CAPOT if r.capot_team is not None else DIX_DE_DER_NORMAL
+    totals = dict(r.total_points) if getattr(r, "total_points", None) else None
+    if totals is None:
+        totals = {}
+        for team in (0, 1):
+            t = r.raw_points.get(team, 0)
+            if r.dix_de_der_team == team:
+                t += dix_value
+            if r.belote_team == team:
+                t += BELOTE_BONUS
+            totals[team] = t
+    for team in (0, 1):
+        parts = [f"plis {r.raw_points.get(team, 0)}"]
+        if r.dix_de_der_team == team:
+            parts.append(f"dix de der +{dix_value}")
+        if r.belote_team == team:
+            parts.append(f"belote +{BELOTE_BONUS}")
+        print(f"Équipe {team} : {' + '.join(parts)} = {totals[team]} pris en compte pour le contrat")
     if r.belote_team is not None:
         print(f"Belote/Rebelote pour l'équipe {r.belote_team} (+20)")
     if r.capot_team is not None:

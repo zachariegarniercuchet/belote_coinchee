@@ -47,6 +47,7 @@ class DonneResult:
     contract_reached: bool
     score_before_rounding: dict[int, int]
     final_scores: dict[int, int]        # arrondis à la dizaine
+    total_points: dict[int, int] | None = None  # plis + dix de der + belote (base de comparaison du contrat)
 
     def __repr__(self) -> str:
         return (f"Résultat: preneurs(équipe {self.preneur_team})="
@@ -133,4 +134,5 @@ def compute_donne_score(
         contract_reached=success,
         score_before_rounding=score,
         final_scores=final_scores,
+        total_points=dict(raw_total),
     )

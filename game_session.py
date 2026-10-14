@@ -52,6 +52,8 @@ class GameContext:
         self.last_completed_trick_winner_seat = None
         self.tricks_won_this_donne = {0: 0, 1: 0}
         self.last_donne_result = None
+        self.belote_team = None          # équipe détenant la belote (connue dès la fin des enchères)
+        self.belote_holder_seat = None   # siège du détenteur Roi+Dame d'atout
         self.waiting_seat = None
         self.waiting_kind = None       # "bid" | "card" | None
         self.pending_legal_bid = None
@@ -121,6 +123,8 @@ class NetworkGame(Game):
 
         bidding_state = BiddingState(dealer=dealer)
         ctx.bidding_state = bidding_state
+        ctx.belote_team = None
+        ctx.belote_holder_seat = None
         self.session.broadcast()
 
         while not bidding_state.finished:
@@ -158,6 +162,13 @@ class NetworkGame(Game):
         contract = bidding_state.contract
         atout = contract.suit
         leader = (dealer - 1) % 4
+        # Belote connue dès la fin des enchères (mains de départ + atout) :
+        # on l'annonce tout de suite pour que ce soit visible pendant le jeu,
+        # et on la réutilise en fin de donne pour le score.
+        belote_holder = find_belote_holder(initial_hands, atout)
+        belote_team = team_of(belote_holder) if belote_holder is not None else None
+        ctx.belote_holder_seat = belote_holder
+        ctx.belote_team = belote_team
         trick_points = {0: 0, 1: 0}
         tricks_won_by_team = {0: 0, 1: 0}
         last_trick_winner = leader
@@ -213,8 +224,6 @@ class NetworkGame(Game):
             leader = winner
 
         capot_team = 0 if tricks_won_by_team[0] == 8 else (1 if tricks_won_by_team[1] == 8 else None)
-        belote_holder = find_belote_holder(initial_hands, atout)
-        belote_team = team_of(belote_holder) if belote_holder is not None else None
 
         result = compute_donne_score(
             contract=contract,
@@ -420,6 +429,19 @@ class GameSession:
         r = self.ctx.last_donne_result
         if r is None:
             return None
+        from belote.scoring import BELOTE_BONUS, DIX_DE_DER_CAPOT, DIX_DE_DER_NORMAL
+        dix_value = DIX_DE_DER_CAPOT if r.capot_team is not None else DIX_DE_DER_NORMAL
+        totals = dict(r.total_points) if r.total_points is not None else {}
+        if not totals:
+            # Repli pour d'anciens objets sans total_points : plis + dix + belote.
+            totals = {}
+            for team in (0, 1):
+                t = r.raw_points.get(team, 0)
+                if r.dix_de_der_team == team:
+                    t += dix_value
+                if r.belote_team == team:
+                    t += BELOTE_BONUS
+                totals[team] = t
         return {
             "preneur_team": r.preneur_team,
             "defense_team": r.defense_team,
@@ -429,6 +451,9 @@ class GameSession:
             "capot_team": r.capot_team,
             "belote_team": r.belote_team,
             "dix_de_der_team": r.dix_de_der_team,
+            "dix_de_der_value": dix_value,
+            "belote_bonus": BELOTE_BONUS,
+            "total_points": {"0": totals.get(0, 0), "1": totals.get(1, 0)},
         }
 
     def _build_common(self):
@@ -469,6 +494,8 @@ class GameSession:
                 "0": ctx.tricks_won_this_donne.get(0, 0),
                 "1": ctx.tricks_won_this_donne.get(1, 0),
             },
+            "belote_team": ctx.belote_team,
+            "belote_holder_seat": ctx.belote_holder_seat,
             "last_donne_result": self._result_dict(),
             "score_history": [
                 {
