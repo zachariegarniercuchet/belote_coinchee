@@ -564,28 +564,27 @@ input::placeholder { color: rgba(247,241,227,.4); }
   font-size: 10px;
 }
 
-/* ---------- Enchères : tiroir du bas (bottom sheet), gros boutons tactiles ---------- */
+/* ---------- Enchères : panneau compact centré, la main reste visible ---------- */
 .bid-controls {
-  position: fixed;
-  bottom: 0;
+  position: absolute;
+  top: 42%;
   left: 50%;
-  transform: translateX(-50%);
-  width: min(560px, 100%);
-  max-height: 64dvh;
+  transform: translate(-50%, -50%);
+  width: min(300px, 86%);
+  max-height: 62%;
   overflow-y: auto;
   margin: 0;
   background: var(--wood);
   border: 1px solid var(--gold);
-  border-bottom: none;
-  border-radius: 18px 18px 0 0;
-  padding: 12px 14px calc(14px + env(safe-area-inset-bottom));
-  z-index: 50;
-  box-shadow: 0 -12px 32px rgba(0,0,0,.6);
-  animation: sheet-up .25s ease-out;
+  border-radius: 16px;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+  z-index: 8;
+  box-shadow: 0 12px 32px rgba(0,0,0,.6);
+  animation: bid-pop .22s ease-out;
 }
-@keyframes sheet-up {
-  from { transform: translateX(-50%) translateY(30px); opacity: .4; }
-  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+@keyframes bid-pop {
+  from { transform: translate(-50%, -50%) scale(.92); opacity: .4; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 .bid-controls.hidden { display: none !important; }
 .bid-title {
@@ -606,11 +605,11 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .bid-suit-row, .bid-num-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; overflow-x: auto; flex-wrap: wrap; }
 .bid-suit-btn {
   background: rgba(255,255,255,.08);
-  min-width: 56px;
-  min-height: 52px;
-  padding: 8px 12px;
+  min-width: 52px;
+  min-height: 48px;
+  padding: 6px 10px;
   border-radius: 12px;
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1;
   flex-shrink: 0;
   border: 2px solid transparent;
@@ -619,10 +618,10 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .bid-chip {
   background: rgba(255,255,255,.1);
   color: var(--cream);
-  min-height: 48px;
-  padding: 10px 16px;
+  min-height: 44px;
+  padding: 8px 14px;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -637,9 +636,9 @@ input::placeholder { color: rgba(247,241,227,.4); }
   display: block;
   width: 100%;
   margin-top: 10px;
-  padding: 14px;
+  padding: 12px;
   border-radius: 12px;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   background: linear-gradient(180deg, var(--gold-light), var(--gold));
   color: var(--ink);
