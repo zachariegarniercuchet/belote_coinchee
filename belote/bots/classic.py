@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import random
 
-from .bidding import ActionType, BidAction, BiddingState
-from .cards import Card, Suit, Rank, ATOUT_POINTS, ATOUT_ORDER, NONATOUT_ORDER
-from .player import Player
-from .trick import TrickState, trick_winner, team_of, partner_of
+from ..bidding import ActionType, BidAction, BiddingState
+from ..cards import Card, Suit, Rank, ATOUT_POINTS, ATOUT_ORDER, NONATOUT_ORDER
+from ..player import Player
+from ..trick import TrickState, trick_winner, team_of, partner_of
 
 
 class RandomBot(Player):

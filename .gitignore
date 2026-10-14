@@ -1,1 +1,10 @@
 what to fix.txt
+
+# Poids des modèles ML des bots (dossier belote/bots/weights/, créé à la
+# demande — voir belote/bots/README.md §3) : chacun les dépose en local, on
+# ne versionne pas les gros binaires.
+belote/bots/weights/*.pt
+belote/bots/weights/*.onnx
+belote/bots/weights/*.bin
+belote/bots/weights/*.pkl
+belote/bots/weights/*.safetensors

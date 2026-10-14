@@ -11,7 +11,8 @@ from __future__ import annotations
 import random
 import sys
 
-from belote import Game, HeuristicBot
+from belote import Game
+from belote.bots import DEFAULT_BOT_ID, create_bot, list_bots
 from belote.human_cli import HumanCLIPlayer
 
 
@@ -58,13 +59,21 @@ def main() -> None:
     n_humans = ask_int("Combien de joueurs humains ? (0 à 4)", 1, 0, 4)
     target = ask_int("Score à atteindre pour gagner la partie", 1000, 100, 5000)
 
+    print("\nBots disponibles :")
+    for b in list_bots():
+        print(f"  {b['id']:>10} : {b['label']} ({'★' * b['level']}{'☆' * (5 - b['level'])}) — {b['description']}")
+    bot_id = input(f"Quel bot pour les sièges non humains ? [{DEFAULT_BOT_ID}] : ").strip() or DEFAULT_BOT_ID
+    if bot_id not in {b["id"] for b in list_bots()}:
+        print(f"Bot inconnu, on garde {DEFAULT_BOT_ID}.")
+        bot_id = DEFAULT_BOT_ID
+
     players = {}
     for i in range(4):
         if i < n_humans:
             name = input(f"Nom du joueur humain en position {i} : ").strip() or f"Joueur{i}"
             players[i] = HumanCLIPlayer(i, name)
         else:
-            players[i] = HeuristicBot(i, name=f"Bot{i}")
+            players[i] = create_bot(bot_id, i, name=f"Bot{i}")
 
     print("\nPlaces à table (équipe 0 = joueurs 0 et 2, équipe 1 = joueurs 1 et 3) :")
     for i in range(4):

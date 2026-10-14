@@ -34,6 +34,7 @@ from flask_socketio import join_room as sio_join_room
 from extensions import socketio
 from game_session import GameSession
 from rooms import PLAYER_SEATS, RoomManager
+from belote.bots import is_valid_bot, list_bots
 
 app = Flask(__name__, template_folder=".", static_folder=None)
 app.config["SECRET_KEY"] = os.environ.get("BELOTE_SECRET", "belote-coinchee-local-secret")
@@ -115,6 +116,12 @@ def room_qr(code):
     img.save(buf, format="PNG")
     buf.seek(0)
     return send_file(buf, mimetype="image/png")
+
+
+@app.route("/api/bots")
+def api_bots():
+    """Catalogue des bots (pour le sélecteur du lobby)."""
+    return jsonify(list_bots())
 
 
 # --------------------------------------------------------------------------
@@ -200,6 +207,25 @@ def on_leave_seat(data):
     _emit_lobby_update(room)
 
 
+@socketio.on("set_bot")
+def on_set_bot(data):
+    """Le lobby choisit quel bot occupera un siège vide au démarrage."""
+    room = rooms.get((data or {}).get("code"))
+    if not room:
+        return
+    if room.game_session and not room.game_session.finished:
+        return  # partie en cours : choix verrouillés
+    try:
+        seat_key = int((data or {}).get("seat"))
+    except (TypeError, ValueError):
+        return
+    bot_id = ((data or {}).get("bot_id") or "").strip()
+    if not is_valid_bot(bot_id):
+        return
+    if room.set_bot_choice(seat_key, bot_id):
+        _emit_lobby_update(room)
+
+
 @socketio.on("start_game")
 def on_start_game(data):
     code = (data or {}).get("code")
@@ -215,6 +241,18 @@ def on_start_game(data):
         target_score = 1000
     target_score = max(100, min(target_score, 5000))
     fill_bots = bool((data or {}).get("fill_bots", False))
+    # Choix de bots par siège envoyés par le lobby ({seat: bot_id}) ; le
+    # serveur ne retient que les ids valides, sur des sièges encore vides.
+    raw_bots = (data or {}).get("bots") or {}
+    bot_ids = {}
+    if isinstance(raw_bots, dict):
+        for key, bid in raw_bots.items():
+            try:
+                seat = int(key)
+            except (TypeError, ValueError):
+                continue
+            if seat in PLAYER_SEATS and isinstance(bid, str) and is_valid_bot(bid.strip()):
+                bot_ids[seat] = bid.strip()
 
     if not fill_bots and not room.players_ready():
         socketio.emit(
@@ -225,7 +263,12 @@ def on_start_game(data):
         return
 
     room.target_score = target_score
-    session = GameSession(room, target_score=target_score, fill_bots=True)
+    # Mémorise les choix dans la room pour cohérence (lobby + reconnexion).
+    with room.lock:
+        for seat, bid in bot_ids.items():
+            if not room.seats[seat].occupied:
+                room.bot_choices[seat] = bid
+    session = GameSession(room, target_score=target_score, fill_bots=True, bot_ids=bot_ids)
     room.game_session = session
     socketio.start_background_task(session.run)
 

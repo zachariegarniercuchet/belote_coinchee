@@ -20,7 +20,7 @@ import threading
 import time
 
 from belote.bidding import BiddingState
-from belote.bots import HeuristicBot
+from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_info
 from belote.cards import cut_deck, deal, new_shuffled_deck
 from belote.game import DonneLog, Game
 from belote.player import Player
@@ -234,7 +234,8 @@ class NetworkGame(Game):
 class GameSession:
     """Pilote une NetworkGame pour un salon donné, et diffuse l'état à tous les sockets connectés."""
 
-    def __init__(self, room, target_score: int, fill_bots: bool = True):
+    def __init__(self, room, target_score: int, fill_bots: bool = True,
+                 bot_ids: dict | None = None):
         self.room = room
         self.ctx = GameContext()
         self.finished = False
@@ -248,19 +249,39 @@ class GameSession:
         self._recap_closed = threading.Event()
         self._recap_pending_seats = set()
 
+        # Choix de bots figé au démarrage : priorité à l'argument explicite,
+        # sinon le sélecteur du lobby (room.bot_choices), sinon le défaut.
+        with room.lock:
+            room_choices = dict(room.bot_choices)
+        if bot_ids:
+            for key, bid in bot_ids.items():
+                try:
+                    seat = int(key)
+                except (TypeError, ValueError):
+                    continue
+                if seat in PLAYER_SEATS and isinstance(bid, str):
+                    room_choices[seat] = bid
+
         players = {}
-        bot_names = {
-            0: "Théo Bot",
-            1: "Anna Bot",
-            2: "Jade Bot",
-            3: "Gabin Bot",
+        # Prénoms d'affichage des bots par siège (le label du bot est ajouté).
+        bot_first_names = {
+            0: "Théo",
+            1: "Anna",
+            2: "Jade",
+            3: "Gabin",
         }
         for p in PLAYER_SEATS:
             seat = room.seats[p]
             if seat.occupied:
                 players[p] = NetworkPlayer(p, self, seat.name)
             elif fill_bots:
-                players[p] = HeuristicBot(p, name=bot_names[p])
+                bot_id = room_choices.get(p, DEFAULT_BOT_ID)
+                try:
+                    bot_label = get_bot_info(bot_id)["label"]
+                except KeyError:
+                    bot_id = DEFAULT_BOT_ID
+                    bot_label = get_bot_info(bot_id)["label"]
+                players[p] = create_bot(bot_id, p, name=f"{bot_first_names[p]} · {bot_label}")
             else:
                 raise ValueError("Sièges incomplets et remplissage par bots désactivé.")
         self.players = players

@@ -185,6 +185,22 @@ input::placeholder { color: rgba(247,241,227,.4); }
   padding: 8px 14px;
   border-radius: 8px;
 }
+.seat-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.bot-select {
+  max-width: 150px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(217,164,65,.5);
+  background: rgba(0,0,0,.35);
+  color: var(--gold-light);
+}
 .seat-empty-label { font-size: 13px; opacity: .5; font-style: italic; }
 
 .lobby-settings { margin: 18px 0; }

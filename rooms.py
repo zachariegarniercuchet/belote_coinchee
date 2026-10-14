@@ -14,6 +14,8 @@ import string
 import threading
 import time
 
+from belote.bots import DEFAULT_BOT_ID, is_valid_bot, list_bots
+
 SEATS = (0, 1, 2, 3, "board")
 PLAYER_SEATS = (0, 1, 2, 3)
 
@@ -41,6 +43,21 @@ class Room:
         self.seats: dict = {s: Seat() for s in SEATS}
         self.game_session = None  # web.game_session.GameSession, une fois la partie lancée
         self.target_score = 1000
+        # Bot choisi par siège (siège vide au démarrage -> rempli par ce bot).
+        # Modifiable depuis le lobby par n'importe quel membre du salon.
+        self.bot_choices: dict[int, str] = {p: DEFAULT_BOT_ID for p in PLAYER_SEATS}
+
+    def set_bot_choice(self, seat_key, bot_id: str) -> bool:
+        """Mémorise le bot qui occupera `seat_key` si un humain ne le prend pas."""
+        with self.lock:
+            if seat_key not in PLAYER_SEATS:
+                return False
+            if self.seats[seat_key].occupied:
+                return False
+            if not is_valid_bot(bot_id):
+                return False
+            self.bot_choices[seat_key] = bot_id
+            return True
 
     def lobby_state(self) -> dict:
         with self.lock:
@@ -51,6 +68,8 @@ class Room:
                     for s, seat in self.seats.items()
                 },
                 "target_score": self.target_score,
+                "bot_choices": {str(p): self.bot_choices[p] for p in PLAYER_SEATS},
+                "available_bots": list_bots(),
                 "game_in_progress": self.game_session is not None and not self.game_session.finished,
                 "game_over": self.game_session is not None and self.game_session.finished,
             }

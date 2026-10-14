@@ -86,10 +86,18 @@
 
   const SEAT_KEYS = [0, 1, 2, 3, "board"];
 
+  function botLabel(botId) {
+    const bot = (lastLobbyState && lastLobbyState.available_bots || []).find(b => b.id === botId);
+    if (!bot) return botId;
+    return bot.label + " " + "★".repeat(bot.level) + "☆".repeat(5 - bot.level);
+  }
+
   function renderSeats(state) {
     lastLobbyState = state;
     const wrap = document.getElementById("seats");
     wrap.innerHTML = "";
+    const bots = state.available_bots || [];
+    const choices = state.bot_choices || {};
     SEAT_KEYS.forEach(key => {
       const info = state.seats[String(key)];
       const row = document.createElement("div");
@@ -110,8 +118,33 @@
         '<div class="seat-label ' + teamClass + '">' + labelText + (teamClass ? (key % 2 === 0 ? " · Équipe A" : " · Équipe B") : "") + "</div>" +
         (info.name
           ? '<div class="seat-name">' + escapeHtml(info.name) + (isMine ? " (toi)" : "") + (info.connected ? "" : " · hors ligne") + "</div>"
-          : '<div class="seat-empty-label">Libre</div>');
+          : key === "board"
+            ? '<div class="seat-empty-label">Libre</div>'
+            : '<div class="seat-empty-label">🤖 Bot : ' + escapeHtml(botLabel(choices[String(key)])) + "</div>");
       row.appendChild(label);
+
+      const controls = document.createElement("div");
+      controls.className = "seat-controls";
+
+      // Sélecteur de bot sous chaque siège vide : le choix est partagé
+      // (stocké dans la room, diffusé à tout le lobby via lobby_update).
+      if (!info.name && key !== "board" && bots.length) {
+        const select = document.createElement("select");
+        select.className = "bot-select";
+        select.title = "Choisir le bot adverse pour ce siège";
+        bots.forEach(b => {
+          const opt = document.createElement("option");
+          opt.value = b.id;
+          opt.textContent = b.label + " " + "★".repeat(b.level) + "☆".repeat(5 - b.level);
+          opt.title = b.description;
+          if (b.id === choices[String(key)]) opt.selected = true;
+          select.appendChild(opt);
+        });
+        select.onchange = () => {
+          socket.emit("set_bot", { code: roomCode, seat: key, bot_id: select.value });
+        };
+        controls.appendChild(select);
+      }
 
       if (!info.name) {
         const btn = document.createElement("button");
@@ -121,7 +154,7 @@
           mySeatChosen = key;
           socket.emit("take_seat", { code: roomCode, seat: key });
         };
-        row.appendChild(btn);
+        controls.appendChild(btn);
       } else if (isMine) {
         const btn = document.createElement("button");
         btn.className = "seat-take-btn";
@@ -132,8 +165,10 @@
           mySeatChosen = null;
           socket.emit("leave_seat", { code: roomCode });
         };
-        row.appendChild(btn);
+        controls.appendChild(btn);
       }
+
+      if (controls.childNodes.length) row.appendChild(controls);
 
       wrap.appendChild(row);
     });
@@ -152,6 +187,7 @@
       code: roomCode,
       target_score: parseInt(document.getElementById("target-score").value, 10),
       fill_bots: document.getElementById("fill-bots").checked,
+      bots: (lastLobbyState && lastLobbyState.bot_choices) || {},
     });
   });
 

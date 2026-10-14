@@ -49,9 +49,9 @@ belote/
     trick.py         # Cartes jouables (legal_cards) + résolution des plis
     scoring.py       # Calcul du score d'une donne
     player.py        # Interface abstraite Player (pour brancher humains ou IA)
-    bots.py          # RandomBot et HeuristicBot (bots simples pour tester)
-    human_cli.py     # Joueur humain piloté au clavier (console)
     game.py          # Donne (une main) et Game (partie complète)
+    bots/            # TOUS les bots : classic.py, spark*.py, registry.py (+ README.md)
+    human_cli.py     # Joueur humain piloté au clavier (console)
 cli.py               # Point d'entrée pour jouer en console
 tests/
     test_rules.py    # Tests manuels sur les règles délicates et le score
@@ -105,6 +105,13 @@ game = Game(players, target_score=1000)
 winner_team = game.play_until_end()
 print(game.cumulative_scores)
 ```
+
+Tous les bots sont centralisés dans le package `belote/bots/`
+(`BOT_REGISTRY`, `list_bots()`, `create_bot(bot_id, seat, name)`) : c'est la
+seule chose à toucher pour brancher un nouveau bot — voir
+`belote/bots/README.md`. Sur le web, chaque siège vide du lobby propose un
+sélecteur de bot (catalogue exposé sur `GET /api/bots`), et la CLI propose
+aussi le choix du bot.
 
 Pour brancher un algorithme, il suffit d'implémenter la classe abstraite
 `belote.player.Player` :

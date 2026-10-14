@@ -3,7 +3,11 @@ from .bidding import ActionType, BidAction, BiddingState, Contract, CoincheState
 from .trick import TrickState, legal_cards, trick_winner
 from .scoring import DonneResult, compute_donne_score
 from .player import Player
-from .bots import RandomBot, HeuristicBot
+from .bots import (
+    BOT_REGISTRY, DEFAULT_BOT_ID, HeuristicBot, RandomBot, SparkBot,
+    SparkBotV1, SparkBotV2, SparkBotV3, create_bot, get_bot_info, is_valid_bot,
+    list_bots,
+)
 from .game import Donne, DonneLog, Game
 
 __all__ = [
@@ -11,6 +15,9 @@ __all__ = [
     "ActionType", "BidAction", "BiddingState", "Contract", "CoincheState",
     "TrickState", "legal_cards", "trick_winner",
     "DonneResult", "compute_donne_score",
-    "Player", "RandomBot", "HeuristicBot",
+    "Player", "RandomBot", "HeuristicBot", "SparkBot", "SparkBotV1", "SparkBotV2",
+    "SparkBotV3",
+    "BOT_REGISTRY", "DEFAULT_BOT_ID", "create_bot", "get_bot_info", "is_valid_bot",
+    "list_bots",
     "Donne", "DonneLog", "Game",
 ]
