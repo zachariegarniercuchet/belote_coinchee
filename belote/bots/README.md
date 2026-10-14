@@ -35,6 +35,8 @@ registre : `from belote.bots import list_bots, create_bot`.
        "label": "MonBot — Expérimental",
        "description": "Monte-Carlo maison.",
        "level": 3,  # 1 (faible) → 5 (expert), affiché en ★ dans le lobby
+       "names": ["Tom", "Nina", "Enzo", "Lisa"],  # prénoms par siège (0-3),
+           # affichés à la place du label — un même siège = même prénom
        "factory": lambda seat, name: _mon_bot(seat, name),
    },
    # ...

@@ -86,10 +86,35 @@
 
   const SEAT_KEYS = [0, 1, 2, 3, "board"];
 
-  function botLabel(botId) {
-    const bot = (lastLobbyState && lastLobbyState.available_bots || []).find(b => b.id === botId);
+  function findBot(botId) {
+    return (lastLobbyState && lastLobbyState.available_bots || []).find(b => b.id === botId);
+  }
+
+  function botStars(bot) {
+    return bot ? "★".repeat(bot.level) + "☆".repeat(5 - bot.level) : "";
+  }
+
+  // Ce que voit l'utilisateur : prénom humain + étoiles, jamais de nom
+  // technique ("Spark v3"). Le détail du moteur est derrière le bouton ⓘ.
+  function botSeatName(botId, seat) {
+    const bot = findBot(botId);
     if (!bot) return botId;
-    return bot.label + " " + "★".repeat(bot.level) + "☆".repeat(5 - bot.level);
+    const name = (bot.names && bot.names[seat]) || bot.label;
+    return name + " " + botStars(bot);
+  }
+
+  function showBotInfo(botId, seat) {
+    const bot = findBot(botId);
+    if (!bot) return;
+    const name = (bot.names && bot.names[seat]) || bot.label;
+    document.getElementById("bot-info-name").textContent = name + " " + botStars(bot);
+    document.getElementById("bot-info-engine").textContent = "Moteur : " + bot.label;
+    document.getElementById("bot-info-desc").textContent = bot.description;
+    document.getElementById("bot-info-overlay").classList.remove("hidden");
+  }
+
+  function hideBotInfo() {
+    document.getElementById("bot-info-overlay").classList.add("hidden");
   }
 
   function renderSeats(state) {
@@ -120,7 +145,7 @@
           ? '<div class="seat-name">' + escapeHtml(info.name) + (isMine ? " (toi)" : "") + (info.connected ? "" : " · hors ligne") + "</div>"
           : key === "board"
             ? '<div class="seat-empty-label">Libre</div>'
-            : '<div class="seat-empty-label">🤖 Bot : ' + escapeHtml(botLabel(choices[String(key)])) + "</div>");
+            : '<div class="seat-empty-label">🤖 ' + escapeHtml(botSeatName(choices[String(key)], key)) + "</div>");
       row.appendChild(label);
 
       const controls = document.createElement("div");
@@ -135,8 +160,7 @@
         bots.forEach(b => {
           const opt = document.createElement("option");
           opt.value = b.id;
-          opt.textContent = b.label + " " + "★".repeat(b.level) + "☆".repeat(5 - b.level);
-          opt.title = b.description;
+          opt.textContent = ((b.names && b.names[key]) || b.label) + " " + botStars(b);
           if (b.id === choices[String(key)]) opt.selected = true;
           select.appendChild(opt);
         });
@@ -144,6 +168,15 @@
           socket.emit("set_bot", { code: roomCode, seat: key, bot_id: select.value });
         };
         controls.appendChild(select);
+
+        // La « fiche » du bot (vrai moteur, description) : un clic, sinon
+        // on ne voit que le prénom et les étoiles, comme un humain.
+        const infoBtn = document.createElement("button");
+        infoBtn.className = "info-btn";
+        infoBtn.textContent = "ⓘ";
+        infoBtn.title = "Qui est-ce ?";
+        infoBtn.onclick = () => showBotInfo(select.value, key);
+        controls.appendChild(infoBtn);
       }
 
       if (!info.name) {
@@ -193,6 +226,11 @@
 
   document.getElementById("btn-leave-lobby").addEventListener("click", () => {
     location.reload();
+  });
+
+  document.getElementById("bot-info-close").addEventListener("click", hideBotInfo);
+  document.getElementById("bot-info-overlay").addEventListener("click", e => {
+    if (e.target.id === "bot-info-overlay") hideBotInfo();
   });
 
   document.getElementById("btn-new-game").addEventListener("click", () => {

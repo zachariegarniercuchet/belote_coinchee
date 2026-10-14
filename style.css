@@ -192,7 +192,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
   flex-shrink: 0;
 }
 .bot-select {
-  max-width: 150px;
+  max-width: 132px;
   font-size: 12px;
   font-weight: 600;
   padding: 8px 6px;
@@ -201,6 +201,39 @@ input::placeholder { color: rgba(247,241,227,.4); }
   background: rgba(0,0,0,.35);
   color: var(--gold-light);
 }
+.info-btn {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(247,241,227,.35);
+  color: rgba(247,241,227,.75);
+  font-size: 15px;
+  line-height: 1;
+}
+.bot-info-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+.bot-info-box {
+  background: var(--wood);
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  padding: 22px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+}
+.bot-info-box h2 { margin: 0 0 4px; color: var(--gold-light); }
+.bot-info-engine { font-size: 12px; opacity: .6; margin: 0 0 10px; }
+.bot-info-box p { font-size: 14px; }
 .seat-empty-label { font-size: 13px; opacity: .5; font-style: italic; }
 
 .lobby-settings { margin: 18px 0; }

@@ -20,7 +20,7 @@ import threading
 import time
 
 from belote.bidding import BiddingState
-from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_info
+from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_name
 from belote.cards import cut_deck, deal, new_shuffled_deck
 from belote.game import DonneLog, Game
 from belote.player import Player
@@ -263,25 +263,15 @@ class GameSession:
                     room_choices[seat] = bid
 
         players = {}
-        # Prénoms d'affichage des bots par siège (le label du bot est ajouté).
-        bot_first_names = {
-            0: "Théo",
-            1: "Anna",
-            2: "Jade",
-            3: "Gabin",
-        }
         for p in PLAYER_SEATS:
             seat = room.seats[p]
             if seat.occupied:
                 players[p] = NetworkPlayer(p, self, seat.name)
             elif fill_bots:
+                # Le bot prend son prénom humain (registre) : à table, on ne
+                # voit que des prénoms, jamais de nom technique.
                 bot_id = room_choices.get(p, DEFAULT_BOT_ID)
-                try:
-                    bot_label = get_bot_info(bot_id)["label"]
-                except KeyError:
-                    bot_id = DEFAULT_BOT_ID
-                    bot_label = get_bot_info(bot_id)["label"]
-                players[p] = create_bot(bot_id, p, name=f"{bot_first_names[p]} · {bot_label}")
+                players[p] = create_bot(bot_id, p, name=get_bot_name(bot_id, p))
             else:
                 raise ValueError("Sièges incomplets et remplissage par bots désactivé.")
         self.players = players

@@ -61,7 +61,7 @@ def main() -> None:
 
     print("\nBots disponibles :")
     for b in list_bots():
-        print(f"  {b['id']:>10} : {b['label']} ({'★' * b['level']}{'☆' * (5 - b['level'])}) — {b['description']}")
+        print(f"  {b['id']:>10} : {' / '.join(b['names'])} ({'★' * b['level']}{'☆' * (5 - b['level'])}) — {b['label']}")
     bot_id = input(f"Quel bot pour les sièges non humains ? [{DEFAULT_BOT_ID}] : ").strip() or DEFAULT_BOT_ID
     if bot_id not in {b["id"] for b in list_bots()}:
         print(f"Bot inconnu, on garde {DEFAULT_BOT_ID}.")
@@ -73,7 +73,7 @@ def main() -> None:
             name = input(f"Nom du joueur humain en position {i} : ").strip() or f"Joueur{i}"
             players[i] = HumanCLIPlayer(i, name)
         else:
-            players[i] = create_bot(bot_id, i, name=f"Bot{i}")
+            players[i] = create_bot(bot_id, i)
 
     print("\nPlaces à table (équipe 0 = joueurs 0 et 2, équipe 1 = joueurs 1 et 3) :")
     for i in range(4):

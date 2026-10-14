@@ -17,6 +17,7 @@ from .registry import (
     DEFAULT_BOT_ID,
     create_bot,
     get_bot_info,
+    get_bot_name,
     is_valid_bot,
     list_bots,
 )
@@ -29,5 +30,5 @@ __all__ = [
     "RandomBot", "HeuristicBot",
     "SparkBot", "SparkBotV1", "SparkBotV2", "SparkBotV3",
     "BOT_REGISTRY", "DEFAULT_BOT_ID", "create_bot", "get_bot_info",
-    "is_valid_bot", "list_bots",
+    "get_bot_name", "is_valid_bot", "list_bots",
 ]

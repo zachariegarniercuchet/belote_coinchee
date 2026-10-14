@@ -16,6 +16,9 @@ Chaque entrée contient :
     label       : nom affiché dans l'interface ("Spark v3 — Expert")
     description : une ligne pour l'utilisateur
     level       : 1 (faible) → 5 (expert), affiché sous forme d'étoiles
+    names       : 4 prénoms « humains » (index = siège). C'est le prénom —
+                  jamais le label technique — que voit l'utilisateur.
+                  Un même bot au même siège = toujours le même prénom.
     factory     : callable (seat, name) -> Player. Import paresseux à
                   l'intérieur de la factory pour ne pas charger torch/onnx
                   (et les futurs gros modèles) au démarrage du serveur.
@@ -36,36 +39,42 @@ BOT_REGISTRY: dict[str, dict] = {
         "label": "Aléatoire",
         "description": "Joue au hasard — utile pour déboguer, très faible.",
         "level": 1,
+        "names": ["Milo", "Lina", "Sacha", "Noa"],
         "factory": lambda seat, name: _random_bot(seat, name),
     },
     "heuristic": {
         "label": "Heuristique",
         "description": "Règles expertes simples (enchères prudentes, chasse d'atout).",
         "level": 2,
+        "names": ["Louis", "Emma", "Hugo", "Chloé"],
         "factory": lambda seat, name: _heuristic_bot(seat, name),
     },
     "spark": {
         "label": "Spark",
         "description": "Enchères calibrées + jeu contract-aware. Solide.",
         "level": 3,
+        "names": ["Gabin", "Anna", "Théo", "Jade"],
         "factory": lambda seat, name: _spark_bot(seat, name),
     },
     "spark_v1": {
         "label": "Spark v1",
         "description": "Spark + Monte-Carlo sur mondes possibles (jeu de la carte).",
         "level": 4,
+        "names": ["Léo", "Manon", "Nathan", "Camille"],
         "factory": lambda seat, name: _spark_bot_v1(seat, name),
     },
     "spark_v2": {
         "label": "Spark v2",
         "description": "v1 + échantillonnage des mondes amélioré.",
         "level": 4,
+        "names": ["Ethan", "Sarah", "Maxime", "Inès"],
         "factory": lambda seat, name: _spark_bot_v2(seat, name),
     },
     "spark_v3": {
         "label": "Spark v3 — Expert",
         "description": "v2 + finales exactes (minimax) et mondes contraints par les enchères. Le plus fort.",
         "level": 5,
+        "names": ["Raphaël", "Léa", "Arthur", "Eva"],
         "factory": lambda seat, name: _spark_bot_v3(seat, name),
     },
 }
@@ -112,7 +121,21 @@ def is_valid_bot(bot_id: str) -> bool:
 def get_bot_info(bot_id: str) -> dict:
     entry = BOT_REGISTRY[bot_id]  # lève KeyError si inconnu : volontaire
     return {"id": bot_id, "label": entry["label"],
-            "description": entry["description"], "level": entry["level"]}
+            "description": entry["description"], "level": entry["level"],
+            "names": list(entry["names"])}
+
+
+def get_bot_name(bot_id: str, seat: int) -> str:
+    """Prénom « humain » du bot `bot_id` au siège `seat`.
+
+    Déterministe : un même bot au même siège porte toujours le même prénom
+    (c'est ce prénom — jamais le nom technique — que voit l'utilisateur).
+    `bot_id` inconnu → repli sur le bot par défaut.
+    """
+    if bot_id not in BOT_REGISTRY:
+        bot_id = DEFAULT_BOT_ID
+    names = BOT_REGISTRY[bot_id]["names"]
+    return names[seat % len(names)]
 
 
 def list_bots() -> list[dict]:
@@ -125,8 +148,9 @@ def create_bot(bot_id: str, seat: int, name: str | None = None) -> Player:
 
     `bot_id` inconnu → repli silencieux sur DEFAULT_BOT_ID (une partie web ne
     doit jamais planter à cause d'un vieil id stocké en room).
+    Sans `name` explicite, le bot prend son prénom humain (`get_bot_name`).
     """
     if bot_id not in BOT_REGISTRY:
         bot_id = DEFAULT_BOT_ID
     entry = BOT_REGISTRY[bot_id]
-    return entry["factory"](seat, name or f"{entry['label']} ({seat})")
+    return entry["factory"](seat, name or get_bot_name(bot_id, seat))
