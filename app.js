@@ -317,11 +317,28 @@
     document.getElementById("target-display").textContent = state.target_score;
 
     const isBoard = state.your_seat === "board";
-
-    document.getElementById("board-panel").classList.remove("hidden");
+    // Mode manette : un siège "plateau" est pris (tablette au centre) et je
+    // suis un joueur sur téléphone -> pas de plateau, juste statut + enchère + main.
+    const controllerMode = !isBoard && !!state.board_present;
+    const boardPanel = document.getElementById("board-panel");
+    const phonePanel = document.getElementById("phone-panel");
+    const felt = boardPanel.querySelector(".table-felt");
+    const bidControls = document.getElementById("bid-controls");
+    const handCards = document.getElementById("hand-cards");
+    if (controllerMode) {
+      boardPanel.classList.add("hidden");
+      phonePanel.classList.remove("hidden");
+      document.getElementById("phone-bid-slot").appendChild(bidControls);
+      document.getElementById("phone-hand-slot").appendChild(handCards);
+    } else {
+      phonePanel.classList.add("hidden");
+      boardPanel.classList.remove("hidden");
+      felt.appendChild(bidControls);
+      felt.appendChild(handCards);
+    }
 
     renderBoardPanel(state);
-    renderHandPanel(state);
+    if (!isBoard) renderHandPanel(state);
 
     renderDonneRecap(state);
     renderGameOver(state);
@@ -507,6 +524,16 @@
   }
 
   function renderHandPanel(state) {
+    const phoneStatus = document.getElementById("phone-status");
+    if (phoneStatus) {
+      const c = state.contract;
+      const cTxt = c ? ("Contrat " + (c.is_capot ? "Capot" : c.points) + " " + c.symbol) : "Enchères…";
+      let turn = "";
+      if (state.your_turn) turn = state.waiting_kind === "bid" ? "À toi d'enchérir !" : "À toi de jouer !";
+      else if (state.waiting_seat !== null && state.waiting_seat !== undefined) turn = "Tour de " + nameOf(state, state.waiting_seat);
+      phoneStatus.textContent = cTxt + " · Plis A" + state.tricks_won_this_donne["0"] +
+        "-B" + state.tricks_won_this_donne["1"] + (turn ? " · " + turn : "");
+    }
     const bidControls = document.getElementById("bid-controls");
     if (state.your_turn && state.waiting_kind === "bid" && state.legal_bid_actions.length) {
       bidControls.classList.remove("hidden");

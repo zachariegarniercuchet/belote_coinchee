@@ -456,6 +456,37 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .last-trick-row { display: flex; gap: 6px; }
 
 .info-strip { margin-top: 8px; flex: none; }
+
+/* ---------- Mode manette (téléphone quand la tablette affiche le plateau) ---------- */
+.phone-panel {
+  width: min(100%, 520px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+}
+.phone-status {
+  background: rgba(0,0,0,.25);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+.phone-panel #bid-controls {
+  position: static;
+  transform: none;
+  width: 100%;
+  max-height: none;
+  animation: none;
+}
+.phone-panel #hand-cards {
+  position: static;
+  transform: none;
+  min-height: var(--card-h);
+  padding-top: 14px;
+}
 .tricks-info {
   background: rgba(0,0,0,.25);
   border-radius: 10px;
@@ -689,5 +720,22 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 
 @media (min-width: 700px) {
-  .game-table-wrap { width: min(680px, 100vw - 12px, calc(100dvh - 140px)); }
+  .game-table-wrap { width: min(680px, 100vw - 12px); }
+}
+
+/* ---------- Paysage téléphone : le plateau prend tout l'écran ---------- */
+@media (orientation: landscape) and (max-height: 500px) {
+  .game-table-wrap { width: 100%; padding: 6px 8px 0; }
+  #screen-game { --card-w: clamp(44px, 12vh, 58px); }
+  .table-felt { min-height: 0; border-width: 3px; border-radius: 14px; }
+  .seat-marker { font-size: 10px; padding: 4px 6px; }
+  .tricks-info { font-size: 11px; padding: 5px 8px; }
+  .info-strip { margin-top: 6px; }
+  .bid-controls {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: min(430px, 94vw);
+    max-height: calc(100dvh - 16px);
+  }
 }
