@@ -370,12 +370,19 @@
     handleBidBubbles(state);
 
     const tricksInfo = document.getElementById("tricks-info");
+    let turnTxt = "";
+    if (state.your_turn) {
+      turnTxt = state.waiting_kind === "bid" ? " · À toi d'enchérir !" : " · À toi de jouer !";
+    } else if (state.waiting_seat !== null && state.waiting_seat !== undefined) {
+      turnTxt = " · Tour de " + nameOf(state, state.waiting_seat);
+    }
     tricksInfo.textContent =
       "Donne n°" + (state.donne_number || 1) +
       " · Plis — Équipe A " + state.tricks_won_this_donne["0"] +
       " · Équipe B " + state.tricks_won_this_donne["1"] +
       ((state.belote_team !== null && state.belote_team !== undefined)
-        ? " · Belote Équipe " + (String(state.belote_team) === "0" ? "A" : "B") + " (+20)" : "");
+        ? " · Belote Équipe " + (String(state.belote_team) === "0" ? "A" : "B") + " (+20)" : "") +
+      turnTxt;
   }
 
   // ------------------------------------------------------------------
@@ -500,22 +507,6 @@
   }
 
   function renderHandPanel(state) {
-    const banner = document.getElementById("turn-banner");
-    if (state.your_turn) {
-      banner.textContent = state.waiting_kind === "bid" ? "À toi d'enchérir !" : "À toi de jouer !";
-      banner.classList.add("my-turn");
-    } else {
-      banner.classList.remove("my-turn");
-      if (state.phase === "donne_end") banner.textContent = "Fin de la donne...";
-      else if (state.phase === "donne_annulee") banner.textContent = "Donne annulée, nouvelle donne...";
-      else if (state.phase === "game_end") banner.textContent = "Partie terminée !";
-      else if (state.waiting_seat !== null && state.waiting_seat !== undefined) {
-        banner.textContent = "Tour de " + nameOf(state, state.waiting_seat) + "...";
-      } else {
-        banner.textContent = "En attente...";
-      }
-    }
-
     const bidControls = document.getElementById("bid-controls");
     if (state.your_turn && state.waiting_kind === "bid" && state.legal_bid_actions.length) {
       bidControls.classList.remove("hidden");
