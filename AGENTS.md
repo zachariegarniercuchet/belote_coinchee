@@ -111,6 +111,10 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   vérifier les chemins console et web.
 - Quatre joueurs, sièges `0` à `3` : équipe 0 = `0/2`, équipe 1 = `1/3`.
   Le siège optionnel `"board"` affiche le plateau sans main ni action de jeu.
+  Chaque joueur voit son propre siège en bas et son partenaire en face ; les
+  attributs `data-position` des marqueurs et emplacements de cartes assurent
+  cette rotation visuelle sans modifier les identifiants de sièges du jeu.
+  Le plateau partagé conserve la vue de référence du siège 0.
 - Le serveur valide les choix et fournit les actions légales. Ne pas déplacer
   la validation exclusivement dans le frontend ni envoyer les mains adverses
   dans les états communs pendant le jeu. Seul un tablage certain révèle les

@@ -329,11 +329,11 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .seat-marker .sm-cards { opacity: .7; margin-top: 2px; }
 .seat-marker.dealer::after { content: "D"; position:absolute; top:-8px; right:-8px; background:var(--gold); color:var(--ink); width:18px; height:18px; border-radius:50%; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; }
 
-#seat-marker-0 { bottom: calc(var(--card-h) + 10px); left: 50%; transform: translateX(-50%); }
-#seat-marker-0 .sm-cards { display: none; }
-#seat-marker-1 { right: 6px; top: 26%; transform: translateY(-50%); }
-#seat-marker-2 { top: 9%; left: 50%; transform: translateX(-50%); }
-#seat-marker-3 { left: 6px; top: 26%; transform: translateY(-50%); }
+.seat-marker[data-position="0"] { bottom: calc(var(--card-h) + 10px); left: 50%; transform: translateX(-50%); }
+.seat-marker[data-position="0"] .sm-cards { display: none; }
+.seat-marker[data-position="1"] { right: 6px; top: 26%; transform: translateY(-50%); }
+.seat-marker[data-position="2"] { top: 9%; left: 50%; transform: translateX(-50%); }
+.seat-marker[data-position="3"] { left: 6px; top: 26%; transform: translateY(-50%); }
 
 /* ---------- Tablage : les mains restent visibles jusqu'aux scores ---------- */
 .claim-notice {
@@ -357,10 +357,10 @@ input::placeholder { color: rgba(247,241,227,.4); }
   overflow: auto;
   min-height: 0;
 }
-.claim-visible #seat-marker-0 { grid-area: south; }
-.claim-visible #seat-marker-1 { grid-area: east; }
-.claim-visible #seat-marker-2 { grid-area: north; }
-.claim-visible #seat-marker-3 { grid-area: west; }
+.claim-visible .seat-marker[data-position="0"] { grid-area: south; }
+.claim-visible .seat-marker[data-position="1"] { grid-area: east; }
+.claim-visible .seat-marker[data-position="2"] { grid-area: north; }
+.claim-visible .seat-marker[data-position="3"] { grid-area: west; }
 #board-panel .claim-visible .seat-marker {
   position: static;
   transform: none;
@@ -406,28 +406,28 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .speech-bubble.visible { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 .speech-bubble.fade-out { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(.9); }
 
-#seat-marker-2 .speech-bubble { bottom: auto; top: 100%; margin-bottom: 0; margin-top: 8px; }
-#seat-marker-2 .speech-bubble::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--cream); }
+.seat-marker[data-position="2"] .speech-bubble { bottom: auto; top: 100%; margin-bottom: 0; margin-top: 8px; }
+.seat-marker[data-position="2"] .speech-bubble::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--cream); }
 
 /* Marqueurs latéraux : la bulle passe SOUS le marqueur pour rester dans le plateau. */
-#seat-marker-1 .speech-bubble, #seat-marker-3 .speech-bubble {
+.seat-marker[data-position="1"] .speech-bubble, .seat-marker[data-position="3"] .speech-bubble {
   bottom: auto;
   top: 100%;
   margin-bottom: 0;
   margin-top: 8px;
 }
-#seat-marker-1 .speech-bubble::after, #seat-marker-3 .speech-bubble::after {
+.seat-marker[data-position="1"] .speech-bubble::after, .seat-marker[data-position="3"] .speech-bubble::after {
   top: auto;
   bottom: 100%;
   border-top-color: transparent;
   border-bottom-color: var(--cream);
 }
-#seat-marker-1 .speech-bubble { left: auto; right: 0; transform: translateY(6px) scale(.85); }
-#seat-marker-1 .speech-bubble.visible { transform: translateY(0) scale(1); }
-#seat-marker-1 .speech-bubble::after { left: auto; right: 14px; transform: none; }
-#seat-marker-3 .speech-bubble { left: 0; transform: translateY(6px) scale(.85); }
-#seat-marker-3 .speech-bubble.visible { transform: translateY(0) scale(1); }
-#seat-marker-3 .speech-bubble::after { left: 14px; transform: none; }
+.seat-marker[data-position="1"] .speech-bubble { left: auto; right: 0; transform: translateY(6px) scale(.85); }
+.seat-marker[data-position="1"] .speech-bubble.visible { transform: translateY(0) scale(1); }
+.seat-marker[data-position="1"] .speech-bubble::after { left: auto; right: 14px; transform: none; }
+.seat-marker[data-position="3"] .speech-bubble { left: 0; transform: translateY(6px) scale(.85); }
+.seat-marker[data-position="3"] .speech-bubble.visible { transform: translateY(0) scale(1); }
+.seat-marker[data-position="3"] .speech-bubble::after { left: 14px; transform: none; }
 
 /* ---------- Cartes posées (positions en %, suivent la taille du plateau) ---------- */
 .trick-slot {
@@ -435,10 +435,10 @@ input::placeholder { color: rgba(247,241,227,.4); }
   z-index: 2;
   transition: opacity .2s ease;
 }
-#trick-slot-0 { bottom: 32%; left: 50%; transform: translateX(-50%); }
-#trick-slot-1 { right: 22%; top: 54%; transform: translateY(-50%); }
-#trick-slot-2 { top: 24%; left: 50%; transform: translateX(-50%); }
-#trick-slot-3 { left: 22%; top: 54%; transform: translateY(-50%); }
+.trick-slot[data-position="0"] { bottom: 32%; left: 50%; transform: translateX(-50%); }
+.trick-slot[data-position="1"] { right: 22%; top: 54%; transform: translateY(-50%); }
+.trick-slot[data-position="2"] { top: 24%; left: 50%; transform: translateX(-50%); }
+.trick-slot[data-position="3"] { left: 22%; top: 54%; transform: translateY(-50%); }
 
 .contract-tag {
   font-weight: 800;

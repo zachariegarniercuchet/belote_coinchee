@@ -126,6 +126,8 @@ Dame, 8, 7, avec une courte animation. Les groupes de couleurs alternent
 rouge/noir autant que possible : pique, cœur, trèfle, carreau à quatre
 couleurs, ou un sandwich de teintes à trois couleurs. Lorsqu'il ne reste plus
 que deux couleurs, elles conservent leur ordre à l'écran.
+Chaque joueur voit la table depuis sa place, avec son nom en bas et son
+partenaire en face, quel que soit le siège choisi dans le salon.
 
 ## Lancer les tests
 

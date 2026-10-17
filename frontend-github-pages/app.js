@@ -391,9 +391,15 @@
 
   function renderBoardPanel(state) {
     lastRenderedState = state;
+    // Les identifiants restent ceux du jeu ; seule la position visuelle tourne.
+    // Le plateau partagé conserve la vue de référence du siège 0.
+    const viewer = Number.isInteger(state.your_seat) ? state.your_seat : 0;
 
     for (let seat = 0; seat < 4; seat++) {
       const marker = document.getElementById("seat-marker-" + seat);
+      const position = String((seat - viewer + 4) % 4);
+      marker.dataset.position = position;
+      document.getElementById("trick-slot-" + seat).dataset.position = position;
       const name = nameOf(state, seat) + (state.your_seat === seat ? " (toi)" : "");
       const existingBubble = marker.querySelector(".speech-bubble");
 
