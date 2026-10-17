@@ -766,11 +766,6 @@
         else if (a.points != null) pointsSet.add(a.points);
       });
 
-      const suitLabel = document.createElement("div");
-      suitLabel.className = "bid-section-label";
-      suitLabel.textContent = "Couleur";
-      container.appendChild(suitLabel);
-
       const suitRow = document.createElement("div");
       suitRow.className = "bid-suit-row";
       const suitButtons = {};
@@ -789,44 +784,45 @@
       });
       container.appendChild(suitRow);
 
-      const numLabel = document.createElement("div");
-      numLabel.className = "bid-section-label";
-      numLabel.textContent = "Montant";
-      container.appendChild(numLabel);
+      const amounts = Array.from(pointsSet).sort((a, b) => a - b).map(points =>
+        ({ label: String(points), points, isCapot: false }));
+      if (hasCapot) amounts.push({ label: "Capot", points: null, isCapot: true });
+      // TODO Générale : les huit plis par le seul annonceur ; règles et score à définir.
+      // amounts.push({ label: "Générale", points: null, isCapot: false, isGenerale: true });
+      let amountIndex = amounts.findIndex(amount =>
+        amount.points === bidFormState.points && amount.isCapot === bidFormState.isCapot);
+      if (amountIndex < 0) amountIndex = 0;
 
-      const numRow = document.createElement("div");
-      numRow.className = "bid-num-row";
-      const pointButtons = [];
-      Array.from(pointsSet).sort((a, b) => a - b).forEach(pts => {
-        const chip = document.createElement("button");
-        chip.className = "bid-chip" + (bidFormState.points === pts && !bidFormState.isCapot ? " selected" : "");
-        chip.textContent = String(pts);
-        chip.onclick = () => {
-          bidFormState.points = pts;
-          bidFormState.isCapot = false;
-          pointButtons.forEach(b => b.classList.remove("selected"));
-          if (capotChip) capotChip.classList.remove("selected");
-          chip.classList.add("selected");
-          refreshConfirm();
-        };
-        pointButtons.push(chip);
-        numRow.appendChild(chip);
-      });
-      let capotChip = null;
-      if (hasCapot) {
-        capotChip = document.createElement("button");
-        capotChip.className = "bid-chip capot-chip" + (bidFormState.isCapot ? " selected" : "");
-        capotChip.textContent = "Capot";
-        capotChip.onclick = () => {
-          bidFormState.isCapot = true;
-          bidFormState.points = null;
-          pointButtons.forEach(b => b.classList.remove("selected"));
-          capotChip.classList.add("selected");
-          refreshConfirm();
-        };
-        numRow.appendChild(capotChip);
-      }
-      container.appendChild(numRow);
+      const amountRow = document.createElement("div");
+      amountRow.className = "bid-amount-row";
+      const decrease = document.createElement("button");
+      decrease.className = "bid-chip bid-step-btn";
+      decrease.textContent = "−";
+      decrease.setAttribute("aria-label", "Diminuer l’enchère");
+      const amountDisplay = document.createElement("output");
+      amountDisplay.className = "bid-amount";
+      amountDisplay.setAttribute("aria-live", "polite");
+      amountDisplay.setAttribute("aria-label", "Montant du contrat");
+      const increase = document.createElement("button");
+      increase.className = "bid-chip bid-step-btn";
+      increase.textContent = "+";
+      increase.setAttribute("aria-label", "Augmenter l’enchère");
+      const selectAmount = index => {
+        amountIndex = Math.max(0, Math.min(amounts.length - 1, index));
+        const amount = amounts[amountIndex];
+        bidFormState.points = amount.points;
+        bidFormState.isCapot = amount.isCapot;
+        amountDisplay.textContent = amount.label;
+        decrease.disabled = amountIndex === 0;
+        increase.disabled = amountIndex === amounts.length - 1;
+        refreshConfirm();
+      };
+      decrease.onclick = () => selectAmount(amountIndex - 1);
+      increase.onclick = () => selectAmount(amountIndex + 1);
+      amountRow.appendChild(decrease);
+      amountRow.appendChild(amountDisplay);
+      amountRow.appendChild(increase);
+      container.appendChild(amountRow);
 
       const confirmBtn = document.createElement("button");
       confirmBtn.className = "bid-chip bid-confirm-btn";
@@ -842,7 +838,7 @@
           (bidFormState.isCapot || a.points === bidFormState.points));
         if (match) socket.emit("bid_choice", { code: roomCode, index: match.index });
       };
-      refreshConfirm();
+      selectAmount(amountIndex);
       container.appendChild(confirmBtn);
     }
 

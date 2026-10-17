@@ -158,6 +158,13 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 
 ## Règles et configuration actuelles
 
+Le formulaire d'enchères web affiche les couleurs au-dessus d'un montant
+unique, ajusté par −/+. Les crans viennent des actions légales du serveur :
+80 à 180 par dizaines, puis Capot, en partant du minimum encore autorisé.
+Le moteur acceptait déjà 170 et 180. La sélection est conservée lors des
+diffusions identiques. L'entrée Générale reste commentée après Capot dans
+les deux interfaces ; TA/SA et Générale sont suivis dans les TODO ci-dessus.
+
 `serialize.sorted_hand` trie les mains affichées sans modifier les mains du
 moteur : force décroissante, ordre d'atout seulement après la fin des enchères,
 et alternance maximale rouge/noir entre les couleurs présentes. L'ordre de

@@ -137,6 +137,10 @@ que deux couleurs, elles conservent leur ordre à l'écran.
 Chaque joueur voit la table depuis sa place, avec son nom en bas et son
 partenaire en face, quel que soit le siège choisi dans le salon.
 
+Pour enchérir, choisir la couleur au-dessus du montant puis utiliser **− / +** :
+80, 90… 160, 170, 180, puis **Capot**, selon les enchères encore autorisées.
+Le montant reste affiché seul pour garder le panneau compact.
+
 ## Lancer les tests
 
 ```bash

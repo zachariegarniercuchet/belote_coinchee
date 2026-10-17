@@ -622,7 +622,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 /* ---------- Enchères : panneau compact centré, la main reste visible ---------- */
 .bid-controls {
   position: absolute;
-  top: 42%;
+  top: 52%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(280px, 86%);
@@ -649,16 +649,11 @@ input::placeholder { color: rgba(247,241,227,.4); }
   color: var(--gold-light);
   text-align: center;
 }
-.bid-section-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: .6;
-  margin: 6px 0 4px;
-  text-align: center;
-}
-.bid-suit-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
-.bid-num-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px; }
+.bid-suit-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
+.bid-amount-row { display: grid; grid-template-columns: 44px minmax(80px, 1fr) 44px; gap: 10px; align-items: center; }
+.bid-amount { text-align: center; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--gold-light); }
+.bid-amount-row .bid-step-btn { min-height: 44px; padding: 0; font-size: 26px; line-height: 1; }
+.bid-step-btn:disabled { opacity: .3; cursor: default; }
 .bid-suit-btn {
   background: rgba(255,255,255,.08);
   min-width: 48px;
@@ -683,7 +678,6 @@ input::placeholder { color: rgba(247,241,227,.4); }
   flex-shrink: 0;
 }
 .bid-chip:active { background: var(--gold); color: var(--ink); }
-.bid-chip.capot-chip { background: rgba(217,164,65,.25); }
 .bid-actions-row { display: flex; gap: 6px; margin-top: 4px; }
 .bid-actions-row .bid-chip { flex: 1; text-align: center; min-height: 40px; }
 .bid-chip.pass { background: rgba(255,255,255,.08); }
