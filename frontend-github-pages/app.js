@@ -260,12 +260,15 @@
     lastTrickAnimationKey = null;
     bidBubbleState.donne = null;
     bidFormState.key = null;
-    ["donne-recap", "gameover-overlay", "claim-notice", "last-trick-popup"].forEach(id =>
+    document.getElementById("donne-recap").classList.remove("recap-final");
+    ["donne-recap", "claim-notice", "last-trick-popup"].forEach(id =>
       document.getElementById(id).classList.add("hidden"));
   }
 
-  document.getElementById("btn-new-game").addEventListener("click", event => {
+  document.getElementById("donne-recap").addEventListener("click", event => {
+    if (!event.target.closest("#btn-new-game")) return;
     event.stopPropagation();
+    if (!lastRenderedState || !lastRenderedState.game_over) return;
     resetGameView();
     socket.emit("new_game", { code: roomCode });
     showScreen("screen-lobby");
@@ -400,7 +403,6 @@
 
     renderClaim(state);
     renderDonneRecap(state);
-    renderGameOver(state);
   }
 
   function renderBoardPanel(state) {
@@ -928,6 +930,10 @@
     if (actionsRow.childNodes.length) container.appendChild(actionsRow);
   }
 
+  function isFinalRecap(state) {
+    return !!(state && (state.final_donne || state.game_over));
+  }
+
   function renderDonneRecap(state) {
     const overlay = document.getElementById("donne-recap");
     if (claimVisible(state)) {
@@ -935,12 +941,18 @@
       return;
     }
     const content = document.getElementById("donne-recap-content");
-    if (state.last_donne_result && state.donne_number !== recapDonneNumber) {
+    if (state.board_present && state.your_seat !== "board" && !isFinalRecap(state)) {
+      overlay.classList.add("hidden");
+      return;
+    }
+    if (state.last_donne_result && (state.donne_number !== recapDonneNumber || isFinalRecap(state))) {
       recapState = state;
       recapDonneNumber = state.donne_number;
     }
 
-    if (recapState && dismissedDonneNumber !== recapDonneNumber) {
+    const finalRecap = isFinalRecap(recapState);
+    overlay.classList.toggle("recap-final", finalRecap);
+    if (recapState && (finalRecap || dismissedDonneNumber !== recapDonneNumber)) {
       const r = recapState.last_donne_result;
       const c = recapState.contract;
       const contractLine = c
@@ -968,8 +980,11 @@
       const f1 = r.final_scores ? r.final_scores["1"] : 0;
       const markedLine = "Points marqués : Équipe A +" + f0 + " · Équipe B +" + f1;
       content.innerHTML =
-        "<h2>Fin de la donne</h2>" +
-        '<p class="result-line">' + contractLine + "</p>" +
+        (finalRecap ? "<h2>Fin de la partie</h2>" : "<h2>Fin de la donne</h2>") +
+        (finalRecap ? '<p class="final-winner" role="status">Équipe ' +
+          (recapState.winner_team === 0 ? "A" : "B") + " remporte la partie !</p>" +
+          '<p class="score-caption">Dernière donne · n°' + recapDonneNumber + "</p>" : "") +
+        '<p class="result-line">' + escapeHtml(contractLine) + "</p>" +
         '<p class="result-line">Équipe A — <span class="pts-toggle" data-team="0" title="' + detailTextOf("0") + '"><strong>' + totalOf("0") + "</strong></span></p>" +
         '<p class="result-line">Équipe B — <span class="pts-toggle" data-team="1" title="' + detailTextOf("1") + '"><strong>' + totalOf("1") + "</strong></span></p>" +
         '<div class="pts-detail hidden" id="pts-detail"></div>' +
@@ -980,7 +995,11 @@
         '<div class="score-head"><span>Équipe A</span><span>Équipe B</span></div>' +
         '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
         '<div class="score-caption">Total</div>' +
-        '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote) — cliquez sur le plateau pour continuer</p>';
+        (finalRecap
+          ? '<p class="recap-hint">Touchez les points pour voir le détail de la dernière donne.</p>' +
+            '<button id="btn-new-game" class="btn btn-primary"' +
+            (recapState.game_over ? "" : " disabled") + ">Retour au salon</button>"
+          : '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote) — cliquez sur le plateau pour continuer</p>');
       content.querySelectorAll(".pts-toggle").forEach(el => {
         el.addEventListener("click", ev => {
           ev.stopPropagation();
@@ -1007,6 +1026,7 @@
 
   document.getElementById("board-panel").addEventListener("click", () => {
     if (recapState || (lastRenderedState && lastRenderedState.phase === "donne_annulee")) {
+      if (isFinalRecap(recapState)) return;
       if (claimVisible(lastRenderedState)) return;
       dismissedDonneNumber = recapDonneNumber;
       socket.emit("dismiss_recap", { code: roomCode });
@@ -1014,21 +1034,6 @@
     }
   });
 
-  function renderGameOver(state) {
-    const overlay = document.getElementById("gameover-overlay");
-    if (state.game_over && !claimVisible(state)) {
-      const winnerLabel = state.winner_team === 0 ? "Équipe A" : "Équipe B";
-      document.getElementById("gameover-title").textContent = winnerLabel + " remporte la partie !";
-      document.getElementById("gameover-detail").textContent =
-        "Score final — Équipe A : " + state.cumulative_scores["0"] +
-        " · Équipe B : " + state.cumulative_scores["1"];
-      document.getElementById("donne-recap").classList.add("hidden");
-      overlay.classList.remove("hidden");
-      showScreen("screen-game");
-    } else {
-      overlay.classList.add("hidden");
-    }
-  }
 
   socket.on("state_update", state => {
     if (state.code !== roomCode) return;

@@ -227,10 +227,14 @@ conserve le tableau révélé jusqu'au clic local « Voir les scores », avant l
 récapitulatif habituel. Si un plateau partagé est présent, il affiche ce
 tableau ; les téléphones restent en mode manette. Les mains révélées sont
 effacées avant la première diffusion de la donne suivante.
-La dernière donne de la partie suit le même parcours de récapitulatif que les
-autres : `GameSession.run` attend sa validation avant de diffuser `game_end`.
-Le moteur peut déjà avoir un gagnant tandis que la session attend encore la
-lecture des scores ; ne pas confondre ces deux états de fin.
+Les donnes intermédiaires attendent la validation du récapitulatif. La dernière
+donne diffuse `final_donne` et le gagnant dès le calcul des scores, puis
+`game_end` sans attendre de clic. Le même récapitulatif affiche le résultat
+final, l'historique et le bouton « Retour au salon », sans seconde fenêtre.
+Il reste ouvert sur les clics ordinaires, y compris sur les téléphones en mode
+manette ; le tablage reste consultable avant les scores sur le plateau.
+Le bouton de retour est activé une fois `game_over` reçu, lorsque la session
+est effectivement terminée et peut être libérée par `new_game`.
 
 Les salons et parties sont stockés en mémoire : un redémarrage perd leur
 état ; l'architecture actuelle suppose un seul processus serveur. Variables

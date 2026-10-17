@@ -769,9 +769,15 @@ input::placeholder { color: rgba(247,241,227,.4); }
   pointer-events: none;
 }
 .overlay-box h2 { margin-top: 0; color: var(--gold-light); }
-#gameover-overlay, #gameover-overlay .overlay-box { pointer-events: auto; }
+#donne-recap .overlay-box { max-height: calc(100dvh - 40px); overflow-y: auto; }
+.recap-final, .recap-final .overlay-box { pointer-events: auto; }
+.recap-final .overlay-box { max-width: 440px; }
+.final-winner { color: var(--gold-light); font-size: 19px; font-weight: 800; }
+.recap-final .score-history tbody tr:last-child { outline: 1px solid var(--gold); }
+.recap-final #btn-new-game { margin-top: 16px; width: 100%; }
 .overlay-box .result-line { font-size: 15px; margin: 6px 0; }
 .pts-toggle {
+  pointer-events: auto;
   cursor: pointer;
   border-bottom: 1px dotted var(--gold-light);
   padding: 0 2px;
