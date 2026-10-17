@@ -34,6 +34,7 @@ from serialize import bid_action_to_dict, card_from_id, card_id, card_to_dict, s
 TRICK_COLLECT_PAUSE_RANGE = (1.6, 2.3)   # secondes pour "voir" le pli complet avant qu'il ne soit ramassé
 BOT_BID_THINK_RANGE = (0.9, 1.9)     # secondes de "réflexion" simulée d'un bot avant d'enchérir
 BOT_CARD_THINK_RANGE = (0.8, 1.7)    # secondes de "réflexion" simulée d'un bot avant de jouer une carte
+AUTO_CARD_PLAY_DELAY = 0.6          # pause avant de jouer un singleton ou la dernière carte
 
 
 class GameContext:
@@ -62,8 +63,10 @@ class GameContext:
 
 
 class NetworkPlayer(Player):
-    """Un joueur humain : choose_bid/choose_card bloquent jusqu'à réception d'un choix
-    envoyé depuis le téléphone via Socket.IO (voir GameSession.submit_bid/submit_card)."""
+    """Joueur web : attend un choix via Socket.IO, sauf pour les cartes automatiques.
+
+    Voir GameSession.submit_bid/submit_card pour la réception des choix manuels.
+    """
 
     def __init__(self, seat: int, session: "GameSession", name: str):
         super().__init__(seat, name)
@@ -73,6 +76,17 @@ class NetworkPlayer(Player):
         return self.session._wait_for_choice(self.player_id, "bid")
 
     def choose_card(self, hand, trick_state, legal_cards):
+        if len(hand) == 1 and hand[0] in legal_cards:
+            self.session.sleep(AUTO_CARD_PLAY_DELAY)
+            return hand[0]
+        if trick_state.plays:
+            suit_led = trick_state.plays[0][1].suit
+            following = [card for card in hand if card.suit == suit_led]
+            # Un seul choix légal ne suffit pas : la coupe et la défausse
+            # restent manuelles, tout comme l'entame, s'il reste plusieurs cartes.
+            if len(following) == 1 and following[0] in legal_cards:
+                self.session.sleep(AUTO_CARD_PLAY_DELAY)
+                return following[0]
         return self.session._wait_for_choice(self.player_id, "card")
 
     def notify(self, message: str) -> None:
