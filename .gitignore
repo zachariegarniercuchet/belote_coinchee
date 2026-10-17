@@ -1,4 +1,5 @@
 what to fix.txt
+.venv/
 
 # Poids des modèles ML des bots (dossier belote/bots/weights/, créé à la
 # demande — voir belote/bots/README.md §3) : chacun les dépose en local, on
