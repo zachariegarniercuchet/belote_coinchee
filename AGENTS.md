@@ -201,9 +201,13 @@ légale.
 Le tablage est détecté entre deux plis, uniquement s'il reste au moins deux
 cartes par joueur, dans `belote/claim.py`, utilisé par la console et le web.
 Le dernier pli web est posé automatiquement en une seule diffusion des quatre
-cartes, sans attente des joueurs ou bots ni annonce de tablage. Il reste visible
-une seconde supplémentaire : synchroniser `LAST_TRICK_EXTRA_PAUSE` et le délai
-CSS de ramassage `.last-trick-card`. Deux cas de tablage seulement :
+cartes, sans attente des joueurs ou bots ni annonce de tablage. Le client conserve
+les mêmes éléments DOM pendant le pli, y compris sur les diffusions identiques.
+Il regroupe les quatre cartes puis les ramasse vers la position réelle du tas
+gagnant A/B (650 ms), après une pause de 350 ms, ou 1 350 ms au dernier pli.
+Synchroniser cette seconde supplémentaire dans `trickCollectionDelay` avec
+`LAST_TRICK_EXTRA_PAUSE` côté serveur. En mouvement réduit, conserver la pause
+mais retirer le déplacement. Deux cas de tablage seulement :
 une main ne contient que des atouts
 et aucun autre joueur n'en a (quelle que soit l'entame), ou aucun atout ne
 reste et chaque carte du joueur qui entame est supérieure à toutes les cartes

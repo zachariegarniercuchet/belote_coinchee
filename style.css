@@ -440,6 +440,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
   z-index: 2;
   transition: opacity .2s ease;
 }
+.trick-slot.collecting { z-index: 6; }
 .trick-slot[data-position="0"] { bottom: 32%; left: 50%; transform: translateX(-50%); }
 .trick-slot[data-position="1"] { right: 22%; top: 54%; transform: translateY(-50%); }
 .trick-slot[data-position="2"] { top: 24%; left: 50%; transform: translateX(-50%); }
@@ -469,7 +470,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .trick-pile.clickable { cursor: pointer; }
 .trick-pile.pile-winner { opacity: 1; border-color: var(--gold); }
 .trick-pile.pile-winner:hover { box-shadow: 0 0 12px rgba(217,164,65,.5); }
-.trick-pile.pile-arrival { animation: pile-arrival .55s ease-out; }
+.trick-pile.pile-arrival { animation: pile-arrival .55s ease-out; animation-delay: var(--pile-arrival-delay, 0ms); }
 @keyframes pile-arrival {
   0% { transform: scale(.86); opacity: .25; }
   65% { transform: scale(1.08); }
@@ -594,12 +595,19 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .playing-card.small { width: 34px; height: 48px; }
 .playing-card.small .pc-rank { font-size: 11px; }
 .playing-card.small .pc-suit { font-size: 13px; }
-.playing-card.trick-flying { animation: trick-to-pile 1.25s ease-in forwards; }
-.playing-card.trick-flying.last-trick-card { animation-delay: 1s; }
+.playing-card.trick-flying {
+  animation: trick-to-pile 650ms ease-in-out forwards;
+  animation-delay: var(--collect-delay, 350ms);
+}
 @keyframes trick-to-pile {
-  0% { opacity: 1; transform: scale(1); }
-  55% { opacity: .85; transform: scale(.72) translateY(-5px); }
-  100% { opacity: 0; transform: scale(.18) translateY(-16px); }
+  0% { transform: translate(0, 0) scale(1); }
+  35% { transform: translate(var(--gather-x), var(--gather-y)) scale(.85); }
+  100% { transform: translate(var(--collect-x), var(--collect-y)) scale(.25); visibility: hidden; }
+}
+@keyframes trick-collected { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) {
+  .playing-card.trick-flying { animation-name: trick-collected; animation-duration: 1ms; }
+  .trick-pile.pile-arrival { animation: none; }
 }
 
 .playing-card.legal { transform: rotate(var(--r, 0deg)) translateY(calc(var(--y, 0px) - 12px)); box-shadow: 0 8px 16px rgba(217,164,65,.5); border: 2px solid var(--gold); }

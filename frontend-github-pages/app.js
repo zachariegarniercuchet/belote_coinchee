@@ -430,23 +430,8 @@
       }
     }
 
-    // Cartes posées "devant" chaque joueur pendant le pli en cours (ou pendant
-    // la courte pause où le pli complet reste visible avant d'être ramassé).
-    for (let seat = 0; seat < 4; seat++) {
-      document.getElementById("trick-slot-" + seat).innerHTML = "";
-    }
-    let plays = state.current_trick && state.current_trick.length ? state.current_trick : state.completed_trick;
-    if (!claimVisible(state) && plays && plays.length) {
-      const isCollectedTrick = !(state.current_trick && state.current_trick.length);
-      const isLastTrick = state.tricks_won_this_donne["0"] + state.tricks_won_this_donne["1"] === 8;
-      plays.forEach(p => {
-        const slot = document.getElementById("trick-slot-" + p.seat);
-        slot.appendChild(cardEl(p.card, "small" + (isCollectedTrick ? " trick-flying" : "") +
-          (isCollectedTrick && isLastTrick ? " last-trick-card" : "")));
-      });
-    }
-
     renderTrickPile(state);
+    renderPlayedCards(state);
     handleBidBubbles(state);
     handleBeloteBubbles(state);
 
@@ -469,6 +454,59 @@
   // ------------------------------------------------------------------
   // Pli ramassé : pile cliquable en haut à droite (dernier pli uniquement)
   // ------------------------------------------------------------------
+  function trickCollectionDelay(state) {
+    const lastTrick = state.tricks_won_this_donne["0"] + state.tricks_won_this_donne["1"] === 8;
+    // Synchronisé avec LAST_TRICK_EXTRA_PAUSE côté serveur : une seconde de plus.
+    return 350 + (lastTrick ? 1000 : 0);
+  }
+
+  function renderPlayedCards(state) {
+    const current = state.current_trick || [];
+    const plays = claimVisible(state) ? [] : (current.length ? current : state.completed_trick || []);
+    const collecting = !current.length && plays.length === 4;
+    const winner = state.last_completed_trick_winner_seat;
+    const key = state.donne_number + ":" + plays.map(p => p.seat + ":" + p.card.id).join(",");
+    const cards = [];
+
+    for (let seat = 0; seat < 4; seat++) {
+      const slot = document.getElementById("trick-slot-" + seat);
+      const play = plays.find(p => p.seat === seat);
+      const cardKey = play ? state.donne_number + ":" + play.card.id : null;
+      let card = slot.firstElementChild;
+      // Ne pas recréer le pli ni relancer sa pause sur une diffusion identique.
+      if (!play || !card || card.dataset.playedKey !== cardKey) {
+        slot.innerHTML = "";
+        card = play ? cardEl(play.card, "small") : null;
+        if (card) {
+          card.dataset.playedKey = cardKey;
+          slot.appendChild(card);
+        }
+      }
+      slot.classList.toggle("collecting", collecting);
+      if (card) cards.push(card);
+    }
+
+    if (!collecting || !Number.isInteger(winner) || cards.every(card => card.dataset.collectionKey === key)) return;
+    const pile = document.querySelector("#trick-pile-" + (winner % 2 === 0 ? "a" : "b") + " .trick-pile-card");
+    const target = pile.getBoundingClientRect();
+    const rects = cards.map(card => card.getBoundingClientRect());
+    const centerX = rects.reduce((sum, r) => sum + r.left + r.width / 2, 0) / cards.length;
+    const centerY = rects.reduce((sum, r) => sum + r.top + r.height / 2, 0) / cards.length;
+    cards.forEach((card, index) => {
+      const rect = rects[index];
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const stackOffset = (index - 1.5) * 2;
+      card.style.setProperty("--gather-x", (centerX + stackOffset - x) + "px");
+      card.style.setProperty("--gather-y", (centerY + stackOffset - y) + "px");
+      card.style.setProperty("--collect-x", (target.left + target.width / 2 - x) + "px");
+      card.style.setProperty("--collect-y", (target.top + target.height / 2 - y) + "px");
+      card.style.setProperty("--collect-delay", trickCollectionDelay(state) + "ms");
+      card.dataset.collectionKey = key;
+      card.classList.add("trick-flying");
+    });
+  }
+
   function renderTrickPile(state) {
     const piles = [document.getElementById("trick-pile-a"), document.getElementById("trick-pile-b")];
     const popup = document.getElementById("last-trick-popup");
@@ -491,6 +529,7 @@
     if (hasLastTrick && animationKey !== lastTrickAnimationKey) {
       lastTrickAnimationKey = animationKey;
       const pile = piles[winnerTeam];
+      pile.style.setProperty("--pile-arrival-delay", trickCollectionDelay(state) + 650 + "ms");
       pile.classList.remove("pile-arrival");
       void pile.offsetWidth;
       pile.classList.add("pile-arrival");
