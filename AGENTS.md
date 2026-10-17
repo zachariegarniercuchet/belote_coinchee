@@ -43,6 +43,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_rules.py` | Script autonome de vérification des règles et scores. |
 | `tests/test_autoplay.py` | Tests du jeu automatique des singletons demandés et de la dernière carte pour les joueurs web. |
 | `tests/test_claim.py` | Tablage, exploration des ordres légaux, équivalence des scores console/web et confidentialité des mains. |
+| `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
 | `render.yaml`, `DEPLOY.md` | Configuration Render et documentation de déploiement. |
 | `README.md`, `belote/bots/README.md` | Présentation, utilisation et procédure d'ajout de bots. |
@@ -84,6 +85,7 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 ```powershell
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_autoplay.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_claim.py
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_hand_order.py
 ```
 
 ## Conventions et précautions d'implémentation
@@ -129,6 +131,13 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   les changements fonctionnels. Ne pas versionner `.venv` ni les poids ML.
 
 ## Règles et configuration actuelles
+
+`serialize.sorted_hand` trie les mains affichées sans modifier les mains du
+moteur : force décroissante, ordre d'atout seulement après la fin des enchères,
+et alternance maximale rouge/noir entre les couleurs présentes. L'ordre de
+référence est pique/cœur/trèfle/carreau ; à trois couleurs, la couleur isolée
+est placée entre les deux couleurs de même teinte. Les mains révélées au
+tablage suivent aussi l'ordre de force de l'atout.
 
 Les annonces (tierce, cinquante, cent, carré) et les variantes Sans Atout /
 Tout Atout ne sont pas implémentées. La belote/rebelote est attribuée

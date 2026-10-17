@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from belote.cards import Card, Rank, Suit
+from itertools import permutations
+
+from belote.cards import Card, Suit
 
 RED_SUITS = {"COEUR", "CARREAU"}
 
-_RANK_ORDER = {r: i for i, r in enumerate(Rank)}
-_SUIT_ORDER = {s: i for i, s in enumerate(Suit)}
+_DISPLAY_SUITS = (Suit.PIQUE, Suit.COEUR, Suit.TREFLE, Suit.CARREAU)
 
 
 def card_id(card: Card) -> str:
@@ -31,8 +32,25 @@ def card_from_id(cid: str, pool):
     return None
 
 
-def sorted_hand(hand):
-    return sorted(hand, key=lambda c: (_SUIT_ORDER[c.suit], _RANK_ORDER[c.rank]))
+def sorted_hand(hand: list[Card], atout: Suit | None = None) -> list[Card]:
+    """Trie pour l'affichage : couleurs alternées et cartes les plus fortes d'abord.
+
+    Les égalités d'alternance suivent l'ordre de référence pique/cœur/trèfle/carreau.
+    Le moteur garde sa main d'origine et ses listes d'actions légales inchangées.
+    """
+    present = [suit for suit in _DISPLAY_SUITS if any(card.suit == suit for card in hand)]
+    suit_order = max(
+        permutations(present),
+        key=lambda suits: sum(
+            (left.name in RED_SUITS) != (right.name in RED_SUITS)
+            for left, right in zip(suits, suits[1:])
+        ),
+    )
+    suit_indices = {suit: index for index, suit in enumerate(suit_order)}
+    return sorted(hand, key=lambda card: (
+        suit_indices[card.suit],
+        card.atout_strength_index() if card.suit == atout else card.nonatout_strength_index(),
+    ))
 
 
 def bid_action_to_dict(action, index: int) -> dict:

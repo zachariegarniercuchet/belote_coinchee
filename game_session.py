@@ -202,7 +202,7 @@ class NetworkGame(Game):
                     "reason": claim.reason,
                     "remaining_tricks": len(claimed),
                     "hands": {
-                        str(seat): [card_to_dict(card) for card in sorted_hand(hand)]
+                        str(seat): [card_to_dict(card) for card in sorted_hand(hand, atout)]
                         for seat, hand in hands.items()
                     },
                 }
@@ -557,9 +557,11 @@ class GameSession:
         payload = dict(common)
         ctx = self.ctx
         your_turn = ctx.waiting_seat == seat
+        bidding = ctx.bidding_state
+        atout = bidding.contract.suit if bidding and bidding.finished and bidding.contract else None
         payload.update({
             "your_seat": seat,
-            "your_hand": [card_to_dict(c) for c in sorted_hand(ctx.hands.get(seat, []))],
+            "your_hand": [card_to_dict(c) for c in sorted_hand(ctx.hands.get(seat, []), atout)],
             "your_turn": your_turn,
             "legal_bid_actions": (
                 [bid_action_to_dict(a, i) for i, a in enumerate(ctx.pending_legal_bid)]
