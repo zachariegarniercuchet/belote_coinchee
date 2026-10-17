@@ -55,7 +55,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `index.html`, `app.js`, `style.css` | Interface principale, servie par Flask ; `index.html` utilise Jinja. |
 | `frontend-github-pages/` | Copie statique de l'interface pour un backend distant. |
 | `tests/test_rules.py` | Script autonome de vérification des règles et scores. |
-| `tests/test_autoplay.py` | Tests du jeu automatique des singletons demandés et de la dernière carte pour les joueurs web. |
+| `tests/test_autoplay.py` | Dernière carte automatique et singletons joués manuellement sur le web. |
 | `tests/test_claim.py` | Tablage, exploration des ordres légaux, équivalence des scores console/web et confidentialité des mains. |
 | `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
@@ -162,13 +162,13 @@ Tout Atout ne sont pas implémentées. La belote/rebelote est attribuée
 automatiquement au détenteur du roi et de la dame d'atout en main initiale.
 Ne pas modifier ces choix sans demande correspondante.
 
-Sur le web, `NetworkPlayer.choose_card` fournit automatiquement une carte si
-elle est l'unique carte en main de la couleur demandée ou la dernière carte
-de la main, après une pause de 0,6 seconde (`AUTO_CARD_PLAY_DELAY`). La dernière
-carte se joue automatiquement aussi à l'entame, en coupe et en défausse.
-Lorsqu'il reste plusieurs cartes en main, l'entame, la coupe et la défausse
-restent manuelles, même s'il n'existe qu'une carte légale ; un atout singleton
-est alors joué automatiquement uniquement lorsque l'atout est demandé.
+Sur le web, `NetworkPlayer.choose_card` joue automatiquement la dernière carte
+de la main après une pause de 0,6 seconde (`AUTO_CARD_PLAY_DELAY`), aussi à
+l'entame, en coupe et en défausse. Le jeu automatique des singletons de la
+couleur demandée est temporairement désactivé : son code est conservé en
+commentaire à la demande de l'utilisateur. Lorsqu'il reste plusieurs cartes
+en main, le joueur doit confirmer sa carte, même s'il n'existe qu'une carte
+légale.
 
 Le tablage est détecté entre deux plis dans `belote/claim.py`, utilisé par la
 console et le web. Deux cas seulement : une main ne contient que des atouts

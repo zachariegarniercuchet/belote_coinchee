@@ -1,4 +1,4 @@
-"""Jeu automatique des singletons demandés et de la dernière carte sur le web.
+"""Dernière carte automatique et singletons joués manuellement sur le web.
 
 Lancer depuis la racine : python -B -m unittest discover -s tests -p test_autoplay.py
 Nécessite les dépendances web de requirements.txt.
@@ -41,28 +41,27 @@ class AutoplayTests(unittest.TestCase):
         session._wait_for_choice.assert_called_once_with(trick.current_player, "card")
         session.sleep.assert_not_called()
 
-    def test_singleton_of_led_suit_is_automatic(self):
+    def test_singleton_of_led_suit_is_manual(self):
         singleton = Card(Rank.SEPT, Suit.COEUR)
-        self.assert_automatic(
+        self.assert_manual(
             [singleton, Card(Rank.VALET, Suit.PIQUE)],
-            [(0, Card(Rank.AS, Suit.COEUR))], singleton,
+            [(0, Card(Rank.AS, Suit.COEUR))],
         )
 
-    def test_singleton_still_follows_when_opponent_has_cut(self):
+    def test_singleton_is_manual_when_opponent_has_cut(self):
         singleton = Card(Rank.SEPT, Suit.COEUR)
-        self.assert_automatic(
+        self.assert_manual(
             [singleton, Card(Rank.VALET, Suit.PIQUE)],
             [(0, Card(Rank.AS, Suit.COEUR)), (1, Card(Rank.NEUF, Suit.PIQUE))],
-            singleton,
         )
 
-    def test_singleton_trump_when_trump_is_led(self):
+    def test_singleton_trump_is_manual_when_trump_is_led(self):
         for rank in (Rank.VALET, Rank.SEPT):
             with self.subTest(rank=rank):
                 singleton = Card(rank, Suit.PIQUE)
-                self.assert_automatic(
+                self.assert_manual(
                     [singleton, Card(Rank.AS, Suit.COEUR)],
-                    [(0, Card(Rank.NEUF, Suit.PIQUE))], singleton,
+                    [(0, Card(Rank.NEUF, Suit.PIQUE))],
                 )
 
     def test_last_card_follows_automatically(self):
