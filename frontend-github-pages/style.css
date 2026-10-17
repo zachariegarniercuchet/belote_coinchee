@@ -405,6 +405,11 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 .speech-bubble.visible { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 .speech-bubble.fade-out { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(.9); }
+.speech-bubble.announcement-replay { animation: announcement-replay .4s ease-out; }
+@keyframes announcement-replay {
+  0%, 35% { opacity: 0; }
+  100% { opacity: 1; }
+}
 
 .seat-marker[data-position="2"] .speech-bubble { bottom: auto; top: 100%; margin-bottom: 0; margin-top: 8px; }
 .seat-marker[data-position="2"] .speech-bubble::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--cream); }

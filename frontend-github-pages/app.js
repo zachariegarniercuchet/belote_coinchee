@@ -613,6 +613,10 @@
     }
     bubble.classList.remove("fade-out");
     bubble.classList.add("visible");
+    // Une nouvelle annonce, même identique (« Passe »), doit se voir.
+    bubble.classList.remove("announcement-replay");
+    void bubble.offsetWidth;
+    bubble.classList.add("announcement-replay");
   }
 
   function animateHandReorder(previous, cards, handWrap) {
