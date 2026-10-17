@@ -170,8 +170,11 @@ commentaire à la demande de l'utilisateur. Lorsqu'il reste plusieurs cartes
 en main, le joueur doit confirmer sa carte, même s'il n'existe qu'une carte
 légale.
 
-Le tablage est détecté entre deux plis dans `belote/claim.py`, utilisé par la
-console et le web. Deux cas seulement : une main ne contient que des atouts
+Le tablage est détecté entre deux plis, uniquement s'il reste au moins deux
+cartes par joueur, dans `belote/claim.py`, utilisé par la console et le web.
+Le dernier pli web se joue automatiquement carte par carte, sans annonce de
+tablage ni révélation simultanée des mains. Deux cas de tablage seulement :
+une main ne contient que des atouts
 et aucun autre joueur n'en a (quelle que soit l'entame), ou aucun atout ne
 reste et chaque carte du joueur qui entame est supérieure à toutes les cartes
 restantes de sa couleur dans les autres mains. Les plis restants sont résolus

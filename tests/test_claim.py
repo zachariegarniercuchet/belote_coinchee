@@ -94,8 +94,12 @@ class ClaimDetectionTests(unittest.TestCase):
         hands[1][1] = Card(Rank.SEPT, Suit.PIQUE)
         self.assertIsNone(find_claim(hands, 0, Suit.PIQUE))
 
-    def test_empty_hands_and_mid_trick_do_not_claim(self):
+    def test_empty_hands_last_trick_and_mid_trick_do_not_claim(self):
         self.assertIsNone(find_claim({seat: [] for seat in range(4)}, 0, Suit.PIQUE))
+        for remaining in (TRUMPS, MASTERS):
+            last_cards = {seat: cards[:1] for seat, cards in remaining.items()}
+            for leader in range(4):
+                self.assertIsNone(find_claim(last_cards, leader, Suit.PIQUE))
         hands = copy.deepcopy(TRUMPS)
         hands[0].pop()
         self.assertIsNone(find_claim(hands, 1, Suit.PIQUE))
@@ -182,6 +186,7 @@ class ClaimGameTests(unittest.TestCase):
             if web.claim:
                 claim_count += 1
                 revealed = session._build_common()["claim"]
+                self.assertGreater(revealed["remaining_tricks"], 1)
                 self.assertEqual(revealed["seat"], web.claim.seat)
                 self.assertEqual(len(revealed["hands"]), 4)
                 self.assertEqual(

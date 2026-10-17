@@ -16,12 +16,13 @@ def find_claim(hands: dict[int, list[Card]], leader: int, atout: Suit) -> Claim 
     """Trouve un joueur assuré de gagner tous les plis, quel que soit son ordre de jeu.
 
     Les mains doivent avoir la même taille : ne jamais tabler au milieu d'un pli.
+    Le dernier pli se joue automatiquement, sans être présenté comme un tablage.
     Les cartes déjà jouées ne participent pas à la comparaison des forces.
     """
     if set(hands) != {0, 1, 2, 3} or leader not in hands:
         return None
     sizes = {len(hand) for hand in hands.values()}
-    if len(sizes) != 1 or not hands[leader]:
+    if len(sizes) != 1 or len(hands[leader]) < 2:
         return None
 
     trump_holders = {
