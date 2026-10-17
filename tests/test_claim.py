@@ -206,7 +206,7 @@ class ClaimGameTests(unittest.TestCase):
             self.assertTrue(all(not hand for hand in session.ctx.hands.values()))
         self.assertGreater(claim_count, 0)
 
-    def test_new_deal_clears_revealed_hands(self):
+    def test_session_clears_claim_and_waits_for_final_recap(self):
         room = Room("TEST")
         session = GameSession(room, target_score=5000)
         session.game.players = {seat: FirstLegalPlayer(seat, str(seat)) for seat in range(4)}
@@ -219,6 +219,26 @@ class ClaimGameTests(unittest.TestCase):
         session.broadcast = lambda: states.append(copy.deepcopy(session._build_common()))
         session.game.play_one_donne()
         self.assertIsNone(states[0]["claim"])
+
+        session.game.target_score = 100
+        wait_for_recap = session._wait_for_recap
+        final_recaps = []
+
+        def read_final_recap():
+            self.assertFalse(session.finished)
+            self.assertEqual(states[-1]["phase"], "donne_end")
+            self.assertFalse(states[-1]["game_over"])
+            self.assertIsNotNone(states[-1]["last_donne_result"])
+            if session.game.finished:
+                final_recaps.append(states[-1]["donne_number"])
+            wait_for_recap()
+
+        session._wait_for_recap = Mock(side_effect=read_final_recap)
+        session.run()
+        self.assertEqual(len(final_recaps), 1)
+        self.assertTrue(session.finished)
+        self.assertEqual(states[-1]["phase"], "game_end")
+        self.assertTrue(states[-1]["game_over"])
 
 
 if __name__ == "__main__":

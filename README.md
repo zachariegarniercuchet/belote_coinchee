@@ -119,6 +119,8 @@ c'est sur cet appareil que les mains sont révélées.
 
 Le dernier pli se joue automatiquement avec les quatre cartes d'un coup, sans annonce de
 tablage : il faut au moins deux cartes restantes par joueur pour tabler.
+Le récapitulatif de la dernière donne reste affiché jusqu'à validation,
+avant l'annonce du vainqueur de la partie.
 
 Les mains sont triées de la carte la plus forte à la plus faible. Une fois les
 enchères terminées, les atouts passent dans l'ordre Valet, 9, As, 10, Roi,

@@ -346,9 +346,11 @@ class GameSession:
         try:
             while not self.game.finished and not self._stop:
                 log = self.game.play_one_donne()
-                if self.game.finished or self._stop:
+                if self._stop:
                     break
                 if log.result is not None:
+                    # La dernière donne aussi doit être lue et validée avant
+                    # d'envoyer game_end et d'afficher le gagnant de la partie.
                     self._wait_for_recap()
                     self._recap_closed.clear()
         except Exception as exc:  # ne doit jamais planter le thread silencieusement
