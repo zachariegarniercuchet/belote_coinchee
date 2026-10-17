@@ -187,8 +187,17 @@ joueur pose réellement la première puis la seconde carte de sa paire :
 « Belote ! », puis « Rebelote ! », dans l'ordre roi/dame ou dame/roi. Le client
 affiche une bulle de 3,2 s près de son marqueur, sans répéter l'annonce lors
 des mises à jour et sans rejouer une ancienne annonce après ramassage.
+La bulle est décalée en diagonale à droite du joueur (vers l'intérieur au
+bord droit), indépendamment de sa carte. Conserver les bulles dans le DOM
+sur les états identiques ; chaque nouvelle enchère, même « Passe » répété,
+relance sa courte disparition/réapparition.
 Les cartes simulées après tablage ne déclenchent pas ces bulles.
 Ne pas modifier ces choix sans demande correspondante.
+
+Les cartes posées suivent la taille réelle du plateau via `ResizeObserver`
+(largeur et hauteur disponibles, de 24 à 62 px de large), avec un repli CSS
+adaptatif. Leurs emplacements restent proportionnels au plateau et tournés
+selon le siège ; ce dimensionnement ne touche pas les cartes en main.
 
 Sur le web, `NetworkPlayer.choose_card` joue automatiquement la dernière carte
 de la main après une pause de 0,6 seconde (`AUTO_CARD_PLAY_DELAY`), aussi à

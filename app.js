@@ -31,6 +31,18 @@
   // puis on valide avec "Confirmer". Mémorisé entre deux state_update.
   const bidFormState = { key: null, suit: null, points: null, isCapot: false };
 
+  // Tenir compte du plateau réellement disponible, y compris en paysage.
+  const tableFelt = document.querySelector(".table-felt");
+  if (typeof window.ResizeObserver === "function") {
+    new window.ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) {
+        const cardWidth = Math.max(24, Math.min(62, width * .11, height * .14));
+        tableFelt.style.setProperty("--played-card-w", cardWidth + "px");
+      }
+    }).observe(tableFelt);
+  }
+
   // ------------------------------------------------------------------
   // Navigation entre écrans
   // ------------------------------------------------------------------
@@ -403,7 +415,6 @@
       marker.dataset.position = position;
       document.getElementById("trick-slot-" + seat).dataset.position = position;
       const name = nameOf(state, seat) + (state.your_seat === seat ? " (toi)" : "");
-      const existingBubble = marker.querySelector(".speech-bubble");
 
       let nameHtml = escapeHtml(name);
       if (state.contract && state.contract.player === seat) {
@@ -415,9 +426,15 @@
         nameHtml += ' <span class="contract-tag" style="color:' + color + '">' + escapeHtml(tag) + "</span>";
       }
 
-      marker.innerHTML =
-        '<div class="sm-name">' + nameHtml + "</div>";
-      if (existingBubble) marker.appendChild(existingBubble); // on préserve une bulle en cours d'affichage
+      let nameEl = marker.querySelector(".sm-name");
+      if (!nameEl) {
+        nameEl = document.createElement("div");
+        nameEl.className = "sm-name";
+        marker.prepend(nameEl);
+      }
+      nameEl.innerHTML = nameHtml;
+      // Laisser la bulle attachée : seules les nouvelles annonces la rejouent.
+      marker.querySelectorAll(".claimed-hand").forEach(row => row.remove());
       marker.classList.toggle("active-turn", state.waiting_seat === seat);
       marker.classList.toggle("dealer", state.dealer === seat);
       marker.classList.toggle("claim-winner", claimVisible(state) && state.claim.seat === seat);
