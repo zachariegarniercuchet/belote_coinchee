@@ -119,6 +119,7 @@ c'est sur cet appareil que les mains sont révélées.
 
 Le dernier pli se joue automatiquement avec les quatre cartes d'un coup, sans annonce de
 tablage : il faut au moins deux cartes restantes par joueur pour tabler.
+Il reste visible une seconde de plus que les autres plis avant d'être ramassé.
 Le récapitulatif de la dernière donne reste affiché jusqu'à validation,
 avant l'annonce du vainqueur de la partie.
 

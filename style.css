@@ -590,6 +590,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .playing-card.small .pc-rank { font-size: 11px; }
 .playing-card.small .pc-suit { font-size: 13px; }
 .playing-card.trick-flying { animation: trick-to-pile 1.25s ease-in forwards; }
+.playing-card.trick-flying.last-trick-card { animation-delay: 1s; }
 @keyframes trick-to-pile {
   0% { opacity: 1; transform: scale(1); }
   55% { opacity: .85; transform: scale(.72) translateY(-5px); }

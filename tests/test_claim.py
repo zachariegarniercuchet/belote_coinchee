@@ -14,7 +14,7 @@ from belote.claim import find_claim, play_claim
 from belote.game import Donne
 from belote.player import Player
 from belote.trick import TrickState
-from game_session import GameSession
+from game_session import GameSession, TRICK_COLLECT_PAUSE_RANGE
 from rooms import Room
 
 
@@ -202,6 +202,8 @@ class ClaimGameTests(unittest.TestCase):
                                     and sum(state["hand_counts"].values()) == 0
                                     and state["waiting_seat"] is None
                                     for state in broadcasts))
+                self.assertGreaterEqual(session.sleep.call_args_list[-1].args[0],
+                                        TRICK_COLLECT_PAUSE_RANGE[0] + 1.0)
             self.assertEqual(sum(session.ctx.tricks_won_this_donne.values()), 8)
             self.assertTrue(all(not hand for hand in session.ctx.hands.values()))
         self.assertGreater(claim_count, 0)

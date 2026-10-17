@@ -436,9 +436,11 @@
     let plays = state.current_trick && state.current_trick.length ? state.current_trick : state.completed_trick;
     if (!claimVisible(state) && plays && plays.length) {
       const isCollectedTrick = !(state.current_trick && state.current_trick.length);
+      const isLastTrick = state.tricks_won_this_donne["0"] + state.tricks_won_this_donne["1"] === 8;
       plays.forEach(p => {
         const slot = document.getElementById("trick-slot-" + p.seat);
-        slot.appendChild(cardEl(p.card, "small" + (isCollectedTrick ? " trick-flying" : "")));
+        slot.appendChild(cardEl(p.card, "small" + (isCollectedTrick ? " trick-flying" : "") +
+          (isCollectedTrick && isLastTrick ? " last-trick-card" : "")));
       });
     }
 

@@ -33,6 +33,7 @@ from rooms import PLAYER_SEATS
 from serialize import bid_action_to_dict, card_from_id, card_id, card_to_dict, sorted_hand
 
 TRICK_COLLECT_PAUSE_RANGE = (1.6, 2.3)   # secondes pour "voir" le pli complet avant qu'il ne soit ramassé
+LAST_TRICK_EXTRA_PAUSE = 1.0             # seconde supplémentaire pour lire les quatre dernières cartes
 BOT_BID_THINK_RANGE = (0.9, 1.9)     # secondes de "réflexion" simulée d'un bot avant d'enchérir
 BOT_CARD_THINK_RANGE = (0.8, 1.7)    # secondes de "réflexion" simulée d'un bot avant de jouer une carte
 AUTO_CARD_PLAY_DELAY = 0.6          # pause avant de jouer la dernière carte
@@ -273,7 +274,8 @@ class NetworkGame(Game):
             ctx.last_completed_trick_winner_seat = winner
             ctx.current_trick = None
             self.session.broadcast()
-            self.session.sleep(random.uniform(*TRICK_COLLECT_PAUSE_RANGE))
+            self.session.sleep(random.uniform(*TRICK_COLLECT_PAUSE_RANGE) +
+                               (LAST_TRICK_EXTRA_PAUSE if last_trick else 0))
 
             leader = winner
 
