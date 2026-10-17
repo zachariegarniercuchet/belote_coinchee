@@ -117,7 +117,7 @@ attribués avec le dix de der et le capot éventuel. **Voir les scores** permet
 ensuite d'ouvrir le récapitulatif. Si un appareil occupe le siège plateau,
 c'est sur cet appareil que les mains sont révélées.
 
-Le dernier pli se joue automatiquement carte par carte, sans annonce de
+Le dernier pli se joue automatiquement avec les quatre cartes d'un coup, sans annonce de
 tablage : il faut au moins deux cartes restantes par joueur pour tabler.
 
 Les mains sont triées de la carte la plus forte à la plus faible. Une fois les

@@ -228,18 +228,24 @@ class NetworkGame(Game):
             ctx.completed_trick_cards = None
             self.session.broadcast()
 
+            last_trick = all(len(hand) == 1 for hand in hands.values())
             for _ in range(4):
                 p = trick.current_player
                 legal = trick.legal_cards_for(hands[p])
-                ctx.waiting_seat = p
-                ctx.waiting_kind = "card"
-                ctx.pending_legal_cards = legal
-                self.session.broadcast()
+                if last_trick:
+                    # Un seul choix par joueur : poser les quatre cartes ensemble,
+                    # sans attente humaine/bot ni diffusion d'un pli partiel.
+                    card = legal[0]
+                else:
+                    ctx.waiting_seat = p
+                    ctx.waiting_kind = "card"
+                    ctx.pending_legal_cards = legal
+                    self.session.broadcast()
 
-                if not isinstance(self.players[p], NetworkPlayer):
-                    self.session.sleep(random.uniform(*BOT_CARD_THINK_RANGE))
+                    if not isinstance(self.players[p], NetworkPlayer):
+                        self.session.sleep(random.uniform(*BOT_CARD_THINK_RANGE))
 
-                card = self.players[p].choose_card(hands[p], trick, legal)
+                    card = self.players[p].choose_card(hands[p], trick, legal)
                 if card not in legal:
                     raise ValueError(f"Le joueur {p} a tenté de jouer une carte illégale: {card}")
                 trick.play(p, card)
@@ -249,7 +255,8 @@ class NetworkGame(Game):
                 ctx.waiting_seat = None
                 ctx.waiting_kind = None
                 ctx.pending_legal_cards = None
-                self.session.broadcast()
+                if not last_trick:
+                    self.session.broadcast()
 
             winner = trick.winner()
             last_trick_winner = winner

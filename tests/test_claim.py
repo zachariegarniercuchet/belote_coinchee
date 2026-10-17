@@ -193,6 +193,15 @@ class ClaimGameTests(unittest.TestCase):
                     sum(map(len, revealed["hands"].values())), 4 * revealed["remaining_tricks"],
                 )
                 self.assertTrue(all(state["claim"] is None for state in broadcasts[:-1]))
+            else:
+                # Le dernier pli arrive en une seule mise à jour, sans mains
+                # partiellement vidées ni demande de choix pour la dernière carte.
+                self.assertFalse(any(0 < sum(state["hand_counts"].values()) < 4
+                                     for state in broadcasts))
+                self.assertTrue(any(len(state["completed_trick"]) == 4
+                                    and sum(state["hand_counts"].values()) == 0
+                                    and state["waiting_seat"] is None
+                                    for state in broadcasts))
             self.assertEqual(sum(session.ctx.tricks_won_this_donne.values()), 8)
             self.assertTrue(all(not hand for hand in session.ctx.hands.values()))
         self.assertGreater(claim_count, 0)
