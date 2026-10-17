@@ -89,6 +89,15 @@ un siège, puis démarrer la partie. Pour jouer à plusieurs, chaque joueur ouvr
 l'adresse du serveur et rejoint le même code de salon. Le terminal doit rester
 ouvert pendant la partie.
 
+Le jeu table automatiquement entre deux plis dans deux situations certaines :
+une main ne contient plus que des atouts et personne d'autre n'a d'atout,
+ou il n'y a plus d'atouts et toutes les cartes du joueur qui entame sont
+maîtresses dans leur couleur. Les cartes restantes des quatre joueurs sont
+alors révélées côte à côte auprès de leurs noms, et les plis restants sont
+attribués avec le dix de der et le capot éventuel. **Voir les scores** permet
+ensuite d'ouvrir le récapitulatif. Si un appareil occupe le siège plateau,
+c'est sur cet appareil que les mains sont révélées.
+
 ## Lancer les tests
 
 ```bash

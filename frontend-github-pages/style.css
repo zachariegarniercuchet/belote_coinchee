@@ -335,6 +335,45 @@ input::placeholder { color: rgba(247,241,227,.4); }
 #seat-marker-2 { top: 9%; left: 50%; transform: translateX(-50%); }
 #seat-marker-3 { left: 6px; top: 26%; transform: translateY(-50%); }
 
+/* ---------- Tablage : les mains restent visibles jusqu'aux scores ---------- */
+.claim-notice {
+  flex: none;
+  text-align: center;
+  padding: 10px;
+  background: var(--wood);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.claim-notice strong { color: var(--gold-light); font-size: 19px; }
+.claim-notice p { margin: 6px 0 10px; font-size: 12px; }
+.table-felt.claim-visible {
+  display: grid;
+  grid-template-areas: "north north" "west east" "south south";
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-content: safe center;
+  padding: 16px 10px;
+  overflow: auto;
+  min-height: 0;
+}
+.claim-visible #seat-marker-0 { grid-area: south; }
+.claim-visible #seat-marker-1 { grid-area: east; }
+.claim-visible #seat-marker-2 { grid-area: north; }
+.claim-visible #seat-marker-3 { grid-area: west; }
+#board-panel .claim-visible .seat-marker {
+  position: static;
+  transform: none;
+  width: auto;
+  min-width: 0;
+  padding: 10px 4px;
+}
+.claim-visible .seat-marker.claim-winner { border-color: var(--gold-light); }
+.claim-visible .seat-marker.dealer::after { display: none; }
+.claimed-hand { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 8px; }
+.claim-visible .trick-slot, .claim-visible .trick-pile,
+.claim-visible .hand-cards, .claim-visible .bid-controls { display: none; }
+
 /* ---------- Bulles d'annonce (enchères / coinche) ---------- */
 .speech-bubble {
   position: absolute;

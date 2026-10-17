@@ -19,6 +19,7 @@
   let recapState = null;
   let recapDonneNumber = null;
   let lastTrickAnimationKey = null;
+  let dismissedClaimDonneNumber = null;
 
   // Bulles d'annonce (enchères / coinche) : elles restent affichées tant que
   // dure la phase d'enchères (la nouvelle annonce d'un joueur remplace la
@@ -264,6 +265,7 @@
   });
 
   socket.on("game_started", () => {
+    dismissedClaimDonneNumber = null;
     showScreen("screen-game");
   });
 
@@ -303,6 +305,35 @@
     return div;
   }
 
+  function claimVisible(state) {
+    return !!(state && state.claim && dismissedClaimDonneNumber !== state.donne_number &&
+      (!state.board_present || state.your_seat === "board"));
+  }
+
+  function renderClaim(state) {
+    const visible = claimVisible(state);
+    document.querySelector(".table-felt").classList.toggle("claim-visible", visible);
+    document.getElementById("claim-notice").classList.toggle("hidden", !visible);
+    if (!visible) return;
+    const claim = state.claim;
+    document.getElementById("claim-title").textContent = nameOf(state, claim.seat) + " table !";
+    const count = claim.remaining_tricks;
+    const reason = claim.reason === "trumps"
+      ? "Il ne lui reste que des atouts, et personne d’autre n’en a."
+      : "Il n’y a plus d’atouts et toutes ses cartes sont maîtresses.";
+    document.getElementById("claim-detail").textContent =
+      reason + (count === 1 ? " Le dernier pli est" : " Les " + count + " derniers plis sont") +
+      " pour l’équipe " + (claim.seat % 2 === 0 ? "A" : "B") + ".";
+    document.getElementById("last-trick-popup").classList.add("hidden");
+  }
+
+  document.getElementById("btn-claim-scores").addEventListener("click", event => {
+    event.stopPropagation();
+    if (!lastRenderedState) return;
+    dismissedClaimDonneNumber = lastRenderedState.donne_number;
+    renderGame(lastRenderedState);
+  });
+
   function renderGame(state) {
     lastRenderedState = state;
     if (state.your_seat !== undefined && state.your_seat !== "board") {
@@ -340,6 +371,7 @@
     renderBoardPanel(state);
     if (!isBoard) renderHandPanel(state);
 
+    renderClaim(state);
     renderDonneRecap(state);
     renderGameOver(state);
   }
@@ -367,6 +399,14 @@
       if (existingBubble) marker.appendChild(existingBubble); // on préserve une bulle en cours d'affichage
       marker.classList.toggle("active-turn", state.waiting_seat === seat);
       marker.classList.toggle("dealer", state.dealer === seat);
+      marker.classList.toggle("claim-winner", claimVisible(state) && state.claim.seat === seat);
+      if (claimVisible(state)) {
+        const row = document.createElement("div");
+        row.className = "claimed-hand";
+        row.setAttribute("aria-label", "Cartes restantes de " + nameOf(state, seat));
+        (state.claim.hands[String(seat)] || []).forEach(card => row.appendChild(cardEl(card, "small")));
+        marker.appendChild(row);
+      }
     }
 
     // Cartes posées "devant" chaque joueur pendant le pli en cours (ou pendant
@@ -375,7 +415,7 @@
       document.getElementById("trick-slot-" + seat).innerHTML = "";
     }
     let plays = state.current_trick && state.current_trick.length ? state.current_trick : state.completed_trick;
-    if (plays && plays.length) {
+    if (!claimVisible(state) && plays && plays.length) {
       const isCollectedTrick = !(state.current_trick && state.current_trick.length);
       plays.forEach(p => {
         const slot = document.getElementById("trick-slot-" + p.seat);
@@ -743,6 +783,10 @@
 
   function renderDonneRecap(state) {
     const overlay = document.getElementById("donne-recap");
+    if (claimVisible(state)) {
+      overlay.classList.add("hidden");
+      return;
+    }
     const content = document.getElementById("donne-recap-content");
     const canViewRecap = !state.board_present || state.your_seat === "board";
     if (!canViewRecap) {
@@ -823,6 +867,7 @@
     const canDismiss = lastRenderedState &&
       (!lastRenderedState.board_present || lastRenderedState.your_seat === "board");
     if (canDismiss && (recapState || (lastRenderedState.phase === "donne_annulee"))) {
+      if (claimVisible(lastRenderedState)) return;
       dismissedDonneNumber = recapDonneNumber;
       socket.emit("dismiss_recap", { code: roomCode });
       document.getElementById("donne-recap").classList.add("hidden");
@@ -831,7 +876,7 @@
 
   function renderGameOver(state) {
     const overlay = document.getElementById("gameover-overlay");
-    if (state.game_over) {
+    if (state.game_over && !claimVisible(state)) {
       const winnerLabel = state.winner_team === 0 ? "Équipe A" : "Équipe B";
       document.getElementById("gameover-title").textContent = winnerLabel + " remporte la partie !";
       document.getElementById("gameover-detail").textContent =
