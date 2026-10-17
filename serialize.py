@@ -32,20 +32,26 @@ def card_from_id(cid: str, pool):
     return None
 
 
-def sorted_hand(hand: list[Card], atout: Suit | None = None) -> list[Card]:
+def sorted_hand(hand: list[Card], atout: Suit | None = None,
+                previous_suits: list[Suit] | None = None) -> list[Card]:
     """Trie pour l'affichage : couleurs alternées et cartes les plus fortes d'abord.
 
     Les égalités d'alternance suivent l'ordre de référence pique/cœur/trèfle/carreau.
+    À deux couleurs ou moins, conserver leur ordre d'affichage précédent.
     Le moteur garde sa main d'origine et ses listes d'actions légales inchangées.
     """
     present = [suit for suit in _DISPLAY_SUITS if any(card.suit == suit for card in hand)]
-    suit_order = max(
-        permutations(present),
-        key=lambda suits: sum(
-            (left.name in RED_SUITS) != (right.name in RED_SUITS)
-            for left, right in zip(suits, suits[1:])
-        ),
-    )
+    if len(present) <= 2 and previous_suits:
+        suit_order = [suit for suit in previous_suits if suit in present]
+        suit_order += [suit for suit in present if suit not in suit_order]
+    else:
+        suit_order = max(
+            permutations(present),
+            key=lambda suits: sum(
+                (left.name in RED_SUITS) != (right.name in RED_SUITS)
+                for left, right in zip(suits, suits[1:])
+            ),
+        )
     suit_indices = {suit: index for index, suit in enumerate(suit_order)}
     return sorted(hand, key=lambda card: (
         suit_indices[card.suit],

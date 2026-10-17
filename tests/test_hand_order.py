@@ -50,6 +50,14 @@ class HandOrderTests(unittest.TestCase):
                         self.assertEqual(different_neighbors, expected)
                         self.assertCountEqual(ordered, hand)
                         self.assertEqual(ordered, sorted_hand(list(reversed(hand)), atout))
+                        if size == 3:
+                            for removed in suits:
+                                remaining = [card for card in hand if card.suit != removed]
+                                two_suits = sorted_hand(remaining, atout, previous_suits=groups)
+                                self.assertEqual(
+                                    [suit for suit, _ in itertools.groupby(c.suit for c in two_suits)],
+                                    [suit for suit in groups if suit != removed],
+                                )
 
     def test_empty_hand(self):
         self.assertEqual(sorted_hand([]), [])
@@ -69,6 +77,18 @@ class HandOrderTests(unittest.TestCase):
         self.assertEqual([card["rank"] for card in after["your_hand"]],
                          [rank.value for rank in ATOUT_ORDER])
         self.assertEqual(session.ctx.hands[0], original)
+
+        # Parcours d'affichage : trois couleurs en sandwich, puis deux couleurs
+        # qui doivent garder leur ordre, même lors d'une nouvelle diffusion.
+        session.ctx.hands[0] = [Card(Rank.AS, suit)
+                                for suit in (Suit.PIQUE, Suit.COEUR, Suit.CARREAU)]
+        three = session._build_for_player(session._build_common(), 0)
+        self.assertEqual([card["suit"] for card in three["your_hand"]],
+                         ["COEUR", "PIQUE", "CARREAU"])
+        session.ctx.hands[0] = [card for card in session.ctx.hands[0] if card.suit != Suit.CARREAU]
+        for _ in range(2):
+            two = session._build_for_player(session._build_common(), 0)
+            self.assertEqual([card["suit"] for card in two["your_hand"]], ["COEUR", "PIQUE"])
 
 
 if __name__ == "__main__":

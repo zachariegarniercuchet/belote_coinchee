@@ -124,7 +124,8 @@ Les mains sont triées de la carte la plus forte à la plus faible. Une fois les
 enchères terminées, les atouts passent dans l'ordre Valet, 9, As, 10, Roi,
 Dame, 8, 7, avec une courte animation. Les groupes de couleurs alternent
 rouge/noir autant que possible : pique, cœur, trèfle, carreau à quatre
-couleurs, ou un sandwich de teintes à trois couleurs.
+couleurs, ou un sandwich de teintes à trois couleurs. Lorsqu'il ne reste plus
+que deux couleurs, elles conservent leur ordre à l'écran.
 
 ## Lancer les tests
 

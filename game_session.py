@@ -46,6 +46,7 @@ class GameContext:
         self.dealer = None
         self.donne_number = 0
         self.hands = {p: [] for p in PLAYER_SEATS}
+        self.hand_suit_orders = {p: [] for p in PLAYER_SEATS}
         self.bidding_state: BiddingState | None = None
         self.current_trick: TrickState | None = None
         self.completed_trick_cards = None   # liste (seat, card) du dernier pli, affichée brièvement
@@ -130,6 +131,7 @@ class NetworkGame(Game):
         ctx.dealer = dealer
         ctx.donne_number = len(self.donne_logs) + 1
         ctx.hands = {p: list(h) for p, h in hands.items()}
+        ctx.hand_suit_orders = {p: [] for p in PLAYER_SEATS}
         ctx.phase = "bidding"
         ctx.current_trick = None
         ctx.completed_trick_cards = None
@@ -203,7 +205,8 @@ class NetworkGame(Game):
                     "reason": claim.reason,
                     "remaining_tricks": len(claimed),
                     "hands": {
-                        str(seat): [card_to_dict(card) for card in sorted_hand(hand, atout)]
+                        str(seat): [card_to_dict(card) for card in
+                                    self.session._sorted_display_hand(seat, hand, atout)]
                         for seat, hand in hands.items()
                     },
                 }
@@ -554,6 +557,12 @@ class GameSession:
             "winner_team": self.winner_team,
         }
 
+    def _sorted_display_hand(self, seat, hand, atout):
+        with self._lock:
+            ordered = sorted_hand(hand, atout, self.ctx.hand_suit_orders[seat])
+            self.ctx.hand_suit_orders[seat] = list(dict.fromkeys(card.suit for card in ordered))
+        return ordered
+
     def _build_for_player(self, common: dict, seat: int) -> dict:
         payload = dict(common)
         ctx = self.ctx
@@ -562,7 +571,8 @@ class GameSession:
         atout = bidding.contract.suit if bidding and bidding.finished and bidding.contract else None
         payload.update({
             "your_seat": seat,
-            "your_hand": [card_to_dict(c) for c in sorted_hand(ctx.hands.get(seat, []), atout)],
+            "your_hand": [card_to_dict(c) for c in
+                          self._sorted_display_hand(seat, ctx.hands.get(seat, []), atout)],
             "your_turn": your_turn,
             "legal_bid_actions": (
                 [bid_action_to_dict(a, i) for i, a in enumerate(ctx.pending_legal_bid)]

@@ -150,7 +150,10 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 moteur : force décroissante, ordre d'atout seulement après la fin des enchères,
 et alternance maximale rouge/noir entre les couleurs présentes. L'ordre de
 référence est pique/cœur/trèfle/carreau ; à trois couleurs, la couleur isolée
-est placée entre les deux couleurs de même teinte. Les mains révélées au
+est placée entre les deux couleurs de même teinte. À deux couleurs ou moins,
+conserver leur ordre précédent : la session mémorise l'ordre par siège et par
+donne, y compris pour les reconnexions et le tablage. Le tri de force au sein
+d'une couleur reste actif. Les mains révélées au
 tablage suivent aussi l'ordre de force de l'atout.
 Les deux interfaces conservent les éléments DOM des cartes par identifiant et
 animent les changements d'ordre sur 420 ms. Respecter la préférence de mouvement
