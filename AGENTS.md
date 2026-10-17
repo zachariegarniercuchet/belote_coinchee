@@ -31,6 +31,14 @@
   cases only where their risk warrants it. Do this audit later; do not expand
   or reorganize the suite preemptively.
 
+## TODO — bidding variants (deferred)
+
+- Add Tout Atout (TA) and Sans Atout (SA): define contract modes, card strength
+  and values, legal play, scoring, bot behavior and UI together.
+- Générale means all eight tricks won by the bidder alone, rather than by
+  their team. Keep its selector entry commented out after Capot until the
+  contract rules, validation and scoring are specified and implemented.
+
 ## Architecture et points d'entrée
 
 Application Python avec interface web en HTML/CSS/JavaScript natifs. Pas de
