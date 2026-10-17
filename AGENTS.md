@@ -16,6 +16,20 @@
   Keep each commit focused on one change, include its relevant tests and docs,
   use a clear commit message, and never include unrelated local changes.
   Commit locally as work progresses; do not push unless the user requests it.
+- Keep the test suite small and intentional. Prefer nominal, representative
+  user journeys that catch several regressions over one atomic test per branch
+  or implementation detail. Reuse or extend existing coverage before adding
+  tests; justify additions by a meaningful behavior or regression risk.
+
+## TODO — test-suite audit (deferred)
+
+- Review whether each existing test protects a useful behavior and identify
+  overlapping assertions, implementation-coupled tests, and maintenance cost.
+- Assess coverage of nominal flows (a complete game, return to lobby and
+  restart, bots, bidding, card play, scoring and claims), rather than test count.
+- Propose consolidation into a few representative scenarios and retain focused
+  cases only where their risk warrants it. Do this audit later; do not expand
+  or reorganize the suite preemptively.
 
 ## Architecture et points d'entrée
 
