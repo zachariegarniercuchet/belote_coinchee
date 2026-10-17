@@ -22,6 +22,7 @@ import time
 from belote.bidding import BiddingState
 from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_name
 from belote.cards import cut_deck, deal, new_shuffled_deck
+from belote.claim import find_claim, play_claim
 from belote.game import DonneLog, Game
 from belote.player import Player
 from belote.scoring import compute_donne_score, find_belote_holder
@@ -53,6 +54,7 @@ class GameContext:
         self.last_completed_trick_winner_seat = None
         self.tricks_won_this_donne = {0: 0, 1: 0}
         self.last_donne_result = None
+        self.claim = None              # mains révélées uniquement lorsqu'un tablage est certain
         self.belote_team = None          # équipe détenant la belote (connue dès la fin des enchères)
         self.belote_holder_seat = None   # siège du détenteur Roi+Dame d'atout
         self.waiting_seat = None
@@ -133,6 +135,7 @@ class NetworkGame(Game):
         ctx.last_completed_trick = None
         ctx.last_completed_trick_winner_seat = None
         ctx.last_donne_result = None
+        ctx.claim = None
         ctx.tricks_won_this_donne = {0: 0, 1: 0}
 
         bidding_state = BiddingState(dealer=dealer)
@@ -190,6 +193,32 @@ class NetworkGame(Game):
         ctx.phase = "trick"
 
         for _ in range(8):
+            claim = find_claim(hands, leader, atout)
+            if claim is not None:
+                claimed = play_claim(hands, leader, atout, claim)
+                log.claim = claim
+                ctx.claim = {
+                    "seat": claim.seat,
+                    "reason": claim.reason,
+                    "remaining_tricks": len(claimed),
+                    "hands": {
+                        str(seat): [card_to_dict(card) for card in sorted_hand(hand)]
+                        for seat, hand in hands.items()
+                    },
+                }
+                for trick in claimed:
+                    trick_points[team_of(claim.seat)] += trick.points()
+                    tricks_won_by_team[team_of(claim.seat)] += 1
+                    log.tricks.append(list(trick.plays))
+                    log.trick_winners.append(claim.seat)
+                last_trick_winner = claim.seat
+                ctx.tricks_won_this_donne = dict(tricks_won_by_team)
+                ctx.current_trick = None
+                ctx.completed_trick_cards = None
+                ctx.last_trick_winner_seat = claim.seat
+                ctx.last_completed_trick = list(claimed[-1].plays)
+                ctx.last_completed_trick_winner_seat = claim.seat
+                break
             trick = TrickState(leader=leader, atout=atout)
             ctx.current_trick = trick
             ctx.completed_trick_cards = None
@@ -511,6 +540,7 @@ class GameSession:
             "belote_team": ctx.belote_team,
             "belote_holder_seat": ctx.belote_holder_seat,
             "last_donne_result": self._result_dict(),
+            "claim": ctx.claim,
             "score_history": [
                 {
                     "0": log.result.final_scores.get(0, 0),
