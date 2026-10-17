@@ -89,6 +89,25 @@ un siège, puis démarrer la partie. Pour jouer à plusieurs, chaque joueur ouvr
 l'adresse du serveur et rejoint le même code de salon. Le terminal doit rester
 ouvert pendant la partie.
 
+Pour **observer quatre bots**, créer un salon, s'asseoir uniquement à la place
+**Plateau (écran partagé)**, laisser les quatre sièges joueurs libres, garder
+**Compléter les sièges vides avec des bots** coché, puis démarrer. Choisir les
+bots dans les sélecteurs du salon. Le plateau affiche le jeu et attend un clic
+sur le récapitulatif entre les donnes ; en cas de tablage, cliquer d'abord sur
+**Voir les scores**.
+
+Si l'environnement `.venv` a déjà été préparé, le lancement local tient en une
+commande PowerShell depuis la racine :
+
+```powershell
+.\.venv\Scripts\python.exe -B server.py
+```
+
+Ouvrir `http://localhost:5000` sur ce PC, ou l'adresse Wi-Fi affichée dans le
+terminal depuis l'iPhone connecté au même réseau. Arrêter le serveur avec
+`Ctrl+C`. Cette version locale utilise directement les fichiers de la racine,
+sans déploiement Render ni copie GitHub Pages.
+
 Le jeu table automatiquement entre deux plis dans deux situations certaines :
 une main ne contient plus que des atouts et personne d'autre n'a d'atout,
 ou il n'y a plus d'atouts et toutes les cartes du joueur qui entame sont
