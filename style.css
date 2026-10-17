@@ -553,6 +553,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 
 .hand-cards .playing-card {
+  transition: opacity .12s;
   margin-left: calc(var(--card-w) * -0.30);
   touch-action: none;
   cursor: pointer;

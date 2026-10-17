@@ -138,6 +138,10 @@ et alternance maximale rouge/noir entre les couleurs présentes. L'ordre de
 référence est pique/cœur/trèfle/carreau ; à trois couleurs, la couleur isolée
 est placée entre les deux couleurs de même teinte. Les mains révélées au
 tablage suivent aussi l'ordre de force de l'atout.
+Les deux interfaces conservent les éléments DOM des cartes par identifiant et
+animent les changements d'ordre sur 420 ms. Respecter la préférence de mouvement
+réduit et vérifier les actions sur l'état courant, sans accumuler de gestionnaires
+de clic/glissement lors des mises à jour Socket.IO.
 
 Les annonces (tierce, cinquante, cent, carré) et les variantes Sans Atout /
 Tout Atout ne sont pas implémentées. La belote/rebelote est attribuée

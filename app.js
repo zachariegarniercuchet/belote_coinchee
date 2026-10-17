@@ -563,6 +563,32 @@
     bubble.classList.add("visible");
   }
 
+  function animateHandReorder(previous, cards, handWrap) {
+    const ids = new Set(cards.map(card => card.id));
+    const oldOrder = Array.from(previous.keys()).filter(id => ids.has(id));
+    const newOrder = cards.map(card => card.id).filter(id => previous.has(id));
+    if (oldOrder.join(",") === newOrder.join(",") ||
+        (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+
+    // Les mêmes éléments DOM passent de leur ancienne position à la nouvelle.
+    // Capturer la position visuelle permet aussi de repartir d'une animation en cours.
+    Array.from(handWrap.children).forEach(el => {
+      const old = previous.get(el.dataset.cardId);
+      if (!old || !old.rect.width || typeof el.animate !== "function") return;
+      el.getAnimations().forEach(animation => animation.cancel());
+      const rect = el.getBoundingClientRect();
+      const dx = old.rect.left - rect.left;
+      const dy = old.rect.top - rect.top;
+      if (Math.abs(dx) + Math.abs(dy) < 0.5) return;
+      const computed = getComputedStyle(el).transform;
+      const base = computed === "none" ? "" : computed;
+      el.animate([
+        { transform: "translate(" + dx + "px," + dy + "px) " + base },
+        { transform: base || "none" },
+      ], { duration: 420, easing: "cubic-bezier(.22,.61,.36,1)" });
+    });
+  }
+
   function renderHandPanel(state) {
     const phoneStatus = document.getElementById("phone-status");
     if (phoneStatus) {
@@ -584,21 +610,31 @@
     }
 
     const handWrap = document.getElementById("hand-cards");
-    handWrap.innerHTML = "";
+    const previous = new Map(Array.from(handWrap.children).map(el => [
+      el.dataset.cardId, { el, rect: el.getBoundingClientRect() },
+    ]));
+    const ids = new Set(state.your_hand.map(card => card.id));
+    previous.forEach((old, id) => { if (!ids.has(id)) old.el.remove(); });
     const cardMode = state.your_turn && state.waiting_kind === "card";
     const n = state.your_hand.length;
     const center = (n - 1) / 2;
     state.your_hand.forEach((card, i) => {
       const legal = cardMode && state.legal_card_ids.includes(card.id);
       const cls = cardMode ? (legal ? "legal" : "disabled") : "";
-      const el = cardEl(card, cls);
+      const old = previous.get(card.id);
+      const el = old ? old.el : cardEl(card, cls);
+      el.dataset.cardId = card.id;
+      el.className = "playing-card " + card.color + (cls ? " " + cls : "");
       const off = i - center;
       el.style.setProperty("--r", (off * 7).toFixed(1) + "deg");
       el.style.setProperty("--y", (Math.abs(off) * Math.abs(off) * 2.2).toFixed(1) + "px");
       el.style.zIndex = String(i);
-      if (legal) {
+      if (!old) {
+        const isPlayable = () => lastRenderedState && lastRenderedState.your_turn &&
+          lastRenderedState.waiting_kind === "card" && lastRenderedState.legal_card_ids.includes(card.id);
         let downX = 0, downY = 0, dx = 0, dy = 0, isDown = false, isDrag = false;
         el.addEventListener("pointerdown", e => {
+          if (!isPlayable()) return;
           isDown = true; isDrag = false; dx = 0; dy = 0;
           downX = e.clientX; downY = e.clientY;
           try { el.setPointerCapture(e.pointerId); } catch (_) {}
@@ -618,9 +654,11 @@
           el.style.transform = "";
         };
         el.addEventListener("pointerup", e => {
+          if (!isDown) return;
           const wasDrag = isDrag;
           const upDy = e.clientY - downY;
           resetDrag();
+          if (!isPlayable()) return;
           if (wasDrag) {
             // Glissé vers le plateau (vers le haut) = jouer la carte.
             if (upDy < -60) socket.emit("play_card", { code: roomCode, card_id: card.id });
@@ -631,8 +669,9 @@
         });
         el.addEventListener("pointercancel", resetDrag);
       }
-      handWrap.appendChild(el);
+      if (handWrap.children[i] !== el) handWrap.insertBefore(el, handWrap.children[i] || null);
     });
+    animateHandReorder(previous, state.your_hand, handWrap);
   }
 
   function renderBidControls(actions) {
