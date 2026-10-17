@@ -358,9 +358,9 @@ class GameSession:
                 log = self.game.play_one_donne()
                 if self._stop:
                     break
-                if log.result is not None:
-                    # La dernière donne aussi doit être lue et validée avant
-                    # d'envoyer game_end et d'afficher le gagnant de la partie.
+                if log.result is not None and not self.game.finished:
+                    # Seules les donnes intermédiaires attendent « continuer ».
+                    # Le récapitulatif final reste affiché jusqu'au retour au salon.
                     self._wait_for_recap()
                     self._recap_closed.clear()
         except Exception as exc:  # ne doit jamais planter le thread silencieusement
@@ -574,7 +574,8 @@ class GameSession:
                 if log.result is not None
             ],
             "game_over": self.finished,
-            "winner_team": self.winner_team,
+            "final_donne": self.game.finished,
+            "winner_team": self.game.winner_team,
         }
 
     def _sorted_display_hand(self, seat, hand, atout):

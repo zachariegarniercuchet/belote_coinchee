@@ -222,7 +222,7 @@ class ClaimGameTests(unittest.TestCase):
         self.assertGreater(claim_count, 0)
         self.assertGreater(belote_count, 0)
 
-    def test_session_clears_claim_and_waits_for_final_recap(self):
+    def test_session_clears_claim_and_keeps_final_recap(self):
         room = Room("TEST")
         session = GameSession(room, target_score=5000)
         session.game.players = {seat: FirstLegalPlayer(seat, str(seat)) for seat in range(4)}
@@ -240,20 +240,29 @@ class ClaimGameTests(unittest.TestCase):
 
         session.game.target_score = 100
         wait_for_recap = session._wait_for_recap
-        final_recaps = []
-
-        def read_final_recap():
+        def read_recap():
             self.assertFalse(session.finished)
             self.assertEqual(states[-1]["phase"], "donne_end")
             self.assertFalse(states[-1]["game_over"])
             self.assertIsNotNone(states[-1]["last_donne_result"])
-            if session.game.finished:
-                final_recaps.append(states[-1]["donne_number"])
+            self.assertFalse(session.game.finished)
+            self.assertFalse(states[-1]["final_donne"])
             wait_for_recap()
 
-        session._wait_for_recap = Mock(side_effect=read_final_recap)
+        session._wait_for_recap = Mock(side_effect=read_recap)
+        states.clear()
         session.run()
-        self.assertEqual(len(final_recaps), 1)
+        final_recap = states[-2]
+        self.assertEqual(final_recap["phase"], "donne_end")
+        self.assertTrue(final_recap["final_donne"])
+        self.assertFalse(final_recap["game_over"])
+        self.assertEqual(final_recap["winner_team"], session.game.winner_team)
+        self.assertEqual(final_recap["last_donne_result"], states[-1]["last_donne_result"])
+        self.assertEqual(final_recap["score_history"], states[-1]["score_history"])
+        intermediate_recaps = [state for state in states
+                               if state["phase"] == "donne_end" and not state["final_donne"]]
+        self.assertGreater(len(intermediate_recaps), 0)
+        self.assertEqual(session._wait_for_recap.call_count, len(intermediate_recaps))
         self.assertTrue(session.finished)
         self.assertEqual(states[-1]["phase"], "game_end")
         self.assertTrue(states[-1]["game_over"])
