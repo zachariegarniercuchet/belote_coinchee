@@ -163,6 +163,7 @@ class ClaimGameTests(unittest.TestCase):
 
     def test_console_and_web_keep_scores_and_history(self):
         claim_count = 0
+        belote_count = 0
         for seed in range(12):
             players = {seat: FirstLegalPlayer(seat, f"Joueur {seat}") for seat in range(4)}
             with patch("belote.game.find_claim", return_value=None):
@@ -183,6 +184,18 @@ class ClaimGameTests(unittest.TestCase):
                     self.assertEqual(log.tricks, reference.tricks)
                     self.assertEqual(log.trick_winners, reference.trick_winners)
                     self.assertEqual(len(log.tricks), 8)
+            live_tricks = web.tricks[:8 - session.ctx.claim["remaining_tricks"]] if web.claim else web.tricks
+            holder = session.ctx.belote_holder_seat
+            played_pair = [card for trick in live_tricks for seat, card in trick
+                           if seat == holder and card.suit == web.contract.suit
+                           and card.rank in (Rank.ROI, Rank.DAME)]
+            announcements = session._build_common()["belote_announcements"]
+            self.assertEqual([entry["label"] for entry in announcements],
+                             ["Belote !", "Rebelote !"][:len(played_pair)])
+            self.assertEqual([entry["card_id"] for entry in announcements],
+                             [f"{card.rank.name}_{card.suit.name}" for card in played_pair])
+            self.assertTrue(all(entry["seat"] == holder for entry in announcements))
+            belote_count += len(announcements)
             if web.claim:
                 claim_count += 1
                 revealed = session._build_common()["claim"]
@@ -207,6 +220,7 @@ class ClaimGameTests(unittest.TestCase):
             self.assertEqual(sum(session.ctx.tricks_won_this_donne.values()), 8)
             self.assertTrue(all(not hand for hand in session.ctx.hands.values()))
         self.assertGreater(claim_count, 0)
+        self.assertGreater(belote_count, 0)
 
     def test_session_clears_claim_and_waits_for_final_recap(self):
         room = Room("TEST")
@@ -217,10 +231,12 @@ class ClaimGameTests(unittest.TestCase):
         session.broadcast = Mock()
         session.game.play_one_donne()
         session.ctx.claim = {"seat": 0, "hands": {"0": ["ancienne main"]}}
+        session.ctx.belote_announcements = [{"seat": 0, "label": "Rebelote !"}]
         states = []
         session.broadcast = lambda: states.append(copy.deepcopy(session._build_common()))
         session.game.play_one_donne()
         self.assertIsNone(states[0]["claim"])
+        self.assertEqual(states[0]["belote_announcements"], [])
 
         session.game.target_score = 100
         wait_for_recap = session._wait_for_recap

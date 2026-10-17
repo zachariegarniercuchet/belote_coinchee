@@ -21,7 +21,7 @@ import time
 
 from belote.bidding import BiddingState
 from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_name
-from belote.cards import cut_deck, deal, new_shuffled_deck
+from belote.cards import Rank, cut_deck, deal, new_shuffled_deck
 from belote.claim import find_claim, play_claim
 from belote.game import DonneLog, Game
 from belote.player import Player
@@ -59,6 +59,7 @@ class GameContext:
         self.claim = None              # mains révélées uniquement lorsqu'un tablage est certain
         self.belote_team = None          # équipe détenant la belote (connue dès la fin des enchères)
         self.belote_holder_seat = None   # siège du détenteur Roi+Dame d'atout
+        self.belote_announcements = []  # annonces émises à la pose réelle du roi/de la dame
         self.waiting_seat = None
         self.waiting_kind = None       # "bid" | "card" | None
         self.pending_legal_bid = None
@@ -146,6 +147,7 @@ class NetworkGame(Game):
         ctx.bidding_state = bidding_state
         ctx.belote_team = None
         ctx.belote_holder_seat = None
+        ctx.belote_announcements = []
         self.session.broadcast()
 
         while not bidding_state.finished:
@@ -252,6 +254,12 @@ class NetworkGame(Game):
                 trick.play(p, card)
                 hands[p].remove(card)
                 ctx.hands[p] = list(hands[p])
+                if p == belote_holder and card.suit == atout and card.rank in (Rank.ROI, Rank.DAME):
+                    ctx.belote_announcements.append({
+                        "seat": p,
+                        "label": "Rebelote !" if ctx.belote_announcements else "Belote !",
+                        "card_id": card_id(card),
+                    })
 
                 ctx.waiting_seat = None
                 ctx.waiting_kind = None
@@ -554,6 +562,7 @@ class GameSession:
             },
             "belote_team": ctx.belote_team,
             "belote_holder_seat": ctx.belote_holder_seat,
+            "belote_announcements": list(ctx.belote_announcements),
             "last_donne_result": self._result_dict(),
             "claim": ctx.claim,
             "score_history": [
