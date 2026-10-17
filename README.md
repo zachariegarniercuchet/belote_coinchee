@@ -40,6 +40,11 @@ première version, le bonus est ici attribué **automatiquement** à l'équipe
 qui détient les deux cartes en main de départ, sans exiger d'annonce
 explicite. Facile à changer plus tard si vous voulez la règle stricte.
 
+L'interface web affiche néanmoins automatiquement **« Belote ! »** puis
+**« Rebelote ! »** dans une bulle près du joueur lorsqu'il pose les deux cartes
+de sa paire roi–dame d'atout, dans un ordre ou dans l'autre. Ces bulles
+accompagnent le jeu ; elles ne changent pas le calcul du bonus de 20 points.
+
 ## Structure du code
 
 ```

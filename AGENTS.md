@@ -167,6 +167,12 @@ de clic/glissement lors des mises à jour Socket.IO.
 Les annonces (tierce, cinquante, cent, carré) et les variantes Sans Atout /
 Tout Atout ne sont pas implémentées. La belote/rebelote est attribuée
 automatiquement au détenteur du roi et de la dame d'atout en main initiale.
+Sur le web, le serveur ajoute une entrée à `belote_announcements` quand ce
+joueur pose réellement la première puis la seconde carte de sa paire :
+« Belote ! », puis « Rebelote ! », dans l'ordre roi/dame ou dame/roi. Le client
+affiche une bulle de 3,2 s près de son marqueur, sans répéter l'annonce lors
+des mises à jour et sans rejouer une ancienne annonce après ramassage.
+Les cartes simulées après tablage ne déclenchent pas ces bulles.
 Ne pas modifier ces choix sans demande correspondante.
 
 Sur le web, `NetworkPlayer.choose_card` joue automatiquement la dernière carte

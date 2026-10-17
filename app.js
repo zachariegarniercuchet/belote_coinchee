@@ -25,6 +25,7 @@
   // dure la phase d'enchères (la nouvelle annonce d'un joueur remplace la
   // précédente), puis disparaissent une fois la phase terminée.
   const bidBubbleState = { donne: null, count: 0, clearedForPhase: false };
+  const beloteBubbleState = { donne: null, count: 0, timer: null };
 
   // Formulaire d'enchère (popup centrale) : on choisit couleur + montant,
   // puis on valide avec "Confirmer". Mémorisé entre deux state_update.
@@ -239,6 +240,7 @@
   });
 
   function resetGameView() {
+    resetBeloteBubbles();
     recapState = null;
     recapDonneNumber = null;
     dismissedDonneNumber = null;
@@ -446,6 +448,7 @@
 
     renderTrickPile(state);
     handleBidBubbles(state);
+    handleBeloteBubbles(state);
 
     const tricksInfo = document.getElementById("tricks-info");
     let turnTxt = "";
@@ -561,6 +564,34 @@
       hist.slice(bidBubbleState.count).forEach(h => showBidBubble(h.seat, h));
       bidBubbleState.count = hist.length;
     }
+  }
+
+  function resetBeloteBubbles(donne = null) {
+    clearTimeout(beloteBubbleState.timer);
+    beloteBubbleState.donne = donne;
+    beloteBubbleState.count = 0;
+    beloteBubbleState.timer = null;
+    document.querySelectorAll(".belote-bubble").forEach(bubble => bubble.remove());
+  }
+
+  function handleBeloteBubbles(state) {
+    if (beloteBubbleState.donne !== state.donne_number) resetBeloteBubbles(state.donne_number);
+    const announcements = state.belote_announcements || [];
+    if (announcements.length <= beloteBubbleState.count) return;
+    beloteBubbleState.count = announcements.length;
+    if (state.phase !== "trick") return;
+
+    const entry = announcements[announcements.length - 1];
+    const plays = (state.current_trick && state.current_trick.length
+      ? state.current_trick : state.completed_trick) || [];
+    // À la reconnexion, ne pas rejouer une annonce dont la carte a déjà été ramassée.
+    if (!plays.some(play => play.seat === entry.seat && play.card.id === entry.card_id)) return;
+    clearTimeout(beloteBubbleState.timer);
+    showBidBubble(entry.seat, { type: "BELOTE", label: entry.label });
+    const bubble = document.querySelector("#seat-marker-" + entry.seat + " .speech-bubble");
+    bubble.classList.add("belote-bubble");
+    bubble.setAttribute("role", "status");
+    beloteBubbleState.timer = setTimeout(() => bubble.remove(), 3200);
   }
 
   function showBidBubble(seat, entry) {
