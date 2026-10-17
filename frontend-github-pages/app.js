@@ -238,9 +238,22 @@
     if (e.target.id === "bot-info-overlay") hideBotInfo();
   });
 
-  document.getElementById("btn-new-game").addEventListener("click", () => {
+  function resetGameView() {
+    recapState = null;
+    recapDonneNumber = null;
+    dismissedDonneNumber = null;
+    dismissedClaimDonneNumber = null;
+    lastTrickAnimationKey = null;
+    bidBubbleState.donne = null;
+    bidFormState.key = null;
+    ["donne-recap", "gameover-overlay", "claim-notice", "last-trick-popup"].forEach(id =>
+      document.getElementById(id).classList.add("hidden"));
+  }
+
+  document.getElementById("btn-new-game").addEventListener("click", event => {
+    event.stopPropagation();
+    resetGameView();
     socket.emit("new_game", { code: roomCode });
-    document.getElementById("gameover-overlay").classList.add("hidden");
     showScreen("screen-lobby");
   });
 
@@ -265,7 +278,7 @@
   });
 
   socket.on("game_started", () => {
-    dismissedClaimDonneNumber = null;
+    resetGameView();
     showScreen("screen-game");
   });
 

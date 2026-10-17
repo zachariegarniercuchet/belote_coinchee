@@ -724,6 +724,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
   pointer-events: none;
 }
 .overlay-box h2 { margin-top: 0; color: var(--gold-light); }
+#gameover-overlay, #gameover-overlay .overlay-box { pointer-events: auto; }
 .overlay-box .result-line { font-size: 15px; margin: 6px 0; }
 .pts-toggle {
   cursor: pointer;
