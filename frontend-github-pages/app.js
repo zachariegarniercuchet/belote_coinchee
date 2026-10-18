@@ -796,7 +796,12 @@
       bidFormState.key = key;
       bidFormState.points = null;
       bidFormState.isCapot = false;
-      const firstEnchere = actions.find(a => a.type === "ENCHERE");
+      const partnerSeat = Number.isInteger(state.your_seat) ? (state.your_seat + 2) % 4 : null;
+      const partnerBid = (state.bidding_history || []).slice().reverse().find(entry =>
+        entry.seat === partnerSeat && entry.type === "ENCHERE" && entry.suit);
+      const firstEnchere = (partnerBid && actions.find(a =>
+        a.type === "ENCHERE" && a.suit === partnerBid.suit)) ||
+        actions.find(a => a.type === "ENCHERE");
       bidFormState.suit = firstEnchere ? firstEnchere.suit : null;
     }
     container.innerHTML = "";
