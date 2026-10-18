@@ -717,7 +717,7 @@
     const bidControls = document.getElementById("bid-controls");
     if (state.your_turn && state.waiting_kind === "bid" && state.legal_bid_actions.length) {
       bidControls.classList.remove("hidden");
-      renderBidControls(state.legal_bid_actions);
+      renderBidControls(state);
     } else {
       bidControls.classList.add("hidden");
       bidControls.innerHTML = "";
@@ -788,9 +788,11 @@
     animateHandReorder(previous, state.your_hand, handWrap);
   }
 
-  function renderBidControls(actions) {
+  function renderBidControls(state) {
+    const actions = state.legal_bid_actions;
     const container = document.getElementById("bid-controls");
-    const key = actions.map(a => a.index + ":" + a.type + ":" + (a.suit || "") + ":" + (a.points == null ? "" : a.points) + ":" + (a.is_capot ? "C" : "")).join("|");
+    const turnKey = state.donne_number + ":" + state.your_seat + ":" + (state.bidding_history || []).length;
+    const key = turnKey + "|" + actions.map(a => a.index + ":" + a.type + ":" + (a.suit || "") + ":" + (a.points == null ? "" : a.points) + ":" + (a.is_capot ? "C" : "")).join("|");
     if (bidFormState.key !== key) {
       bidFormState.key = key;
       bidFormState.points = null;
