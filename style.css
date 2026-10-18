@@ -633,7 +633,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .trick-slot .playing-card.small .pc-rank { font-size: calc(var(--played-card-w) * .32); }
 .trick-slot .playing-card.small .pc-suit { font-size: calc(var(--played-card-w) * .38); }
 .playing-card.trick-flying {
-  animation: trick-to-pile 900ms ease-in-out forwards;
+  animation: trick-to-pile 1000ms ease-in-out forwards;
   animation-delay: var(--collect-delay, 350ms);
 }
 @keyframes trick-to-pile {
