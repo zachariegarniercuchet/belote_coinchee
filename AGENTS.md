@@ -213,7 +213,7 @@ Le dernier pli web est posé automatiquement en une seule diffusion des quatre
 cartes, sans attente des joueurs ou bots ni annonce de tablage. Le client conserve
 les mêmes éléments DOM pendant le pli, y compris sur les diffusions identiques.
 Il regroupe les quatre cartes puis les ramasse vers la position réelle du tas
-gagnant A/B (650 ms), après une pause de 350 ms, ou 1 350 ms au dernier pli.
+gagnant A/B (900 ms), après une pause de 350 ms, ou 1 350 ms au dernier pli.
 Synchroniser cette seconde supplémentaire dans `trickCollectionDelay` avec
 `LAST_TRICK_EXTRA_PAUSE` côté serveur. En mouvement réduit, conserver la pause
 mais retirer le déplacement. Deux cas de tablage seulement :

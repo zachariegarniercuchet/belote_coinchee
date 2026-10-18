@@ -548,7 +548,7 @@
     if (hasLastTrick && animationKey !== lastTrickAnimationKey) {
       lastTrickAnimationKey = animationKey;
       const pile = piles[winnerTeam];
-      pile.style.setProperty("--pile-arrival-delay", trickCollectionDelay(state) + 650 + "ms");
+      pile.style.setProperty("--pile-arrival-delay", trickCollectionDelay(state) + 900 + "ms");
       pile.classList.remove("pile-arrival");
       void pile.offsetWidth;
       pile.classList.add("pile-arrival");
