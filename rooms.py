@@ -59,10 +59,11 @@ class Room:
             self.bot_choices[seat_key] = bot_id
             return True
 
-    def lobby_state(self) -> dict:
+    def lobby_state(self, viewer_sid: str | None = None) -> dict:
         with self.lock:
             return {
                 "code": self.code,
+                "your_seat": self.seat_of_sid(viewer_sid) if viewer_sid is not None else None,
                 "seats": {
                     str(s): {"name": seat.name, "connected": seat.sid is not None}
                     for s, seat in self.seats.items()
@@ -79,12 +80,19 @@ class Room:
             seat = self.seats.get(seat_key)
             if seat is None:
                 return False
-            if seat.occupied and seat.name != name:
+            # Un homonyme connecté n'est pas le propriétaire du siège.
+            # Un siège déconnecté reste réservé à son nom pour la reconnexion.
+            if seat.occupied and seat.sid != sid and (seat.sid is not None or seat.name != name):
                 return False
-            # Libère un éventuel autre siège que ce sid occupait déjà.
+            if (self.game_session and not self.game_session.finished
+                    and (not seat.occupied or seat.name != name)):
+                return False
+            # Vérifier la destination AVANT de libérer l'ancien siège. Le verrou
+            # couvre tout le déplacement, y compris deux demandes simultanées.
             for s in self.seats.values():
                 if s.sid == sid:
                     s.sid = None
+                    s.name = None
             seat.sid = sid
             seat.name = name
             return True

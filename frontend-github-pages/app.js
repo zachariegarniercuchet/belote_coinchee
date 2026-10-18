@@ -137,6 +137,7 @@
 
   function renderSeats(state) {
     lastLobbyState = state;
+    mySeatChosen = state.your_seat ?? null;
     const wrap = document.getElementById("seats");
     wrap.innerHTML = "";
     const bots = state.available_bots || [];
@@ -154,7 +155,7 @@
         labelText = "Joueur " + (key + 1);
         teamClass = key % 2 === 0 ? "team-a" : "team-b";
       }
-      const isMine = info.name && info.name === myName;
+      const isMine = key === mySeatChosen;
       if (isMine) row.classList.add("mine");
 
       label.innerHTML =
@@ -202,7 +203,6 @@
         btn.className = "seat-take-btn";
         btn.textContent = "S'asseoir";
         btn.onclick = () => {
-          mySeatChosen = key;
           socket.emit("take_seat", { code: roomCode, seat: key });
         };
         controls.appendChild(btn);
@@ -213,7 +213,6 @@
         btn.style.color = "rgba(247,241,227,.6)";
         btn.textContent = "Se lever";
         btn.onclick = () => {
-          mySeatChosen = null;
           socket.emit("leave_seat", { code: roomCode });
         };
         controls.appendChild(btn);

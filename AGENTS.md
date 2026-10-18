@@ -66,6 +66,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_autoplay.py` | Dernière carte automatique et singletons joués manuellement sur le web. |
 | `tests/test_claim.py` | Tablage, exploration des ordres légaux, équivalence des scores console/web et confidentialité des mains. |
 | `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
+| `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
 | `render.yaml`, `DEPLOY.md` | Configuration Render et documentation de déploiement. |
 | `README.md`, `belote/bots/README.md` | Présentation, utilisation et procédure d'ajout de bots. |
@@ -108,6 +109,7 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_autoplay.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_claim.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_hand_order.py
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_lobby.py
 ```
 
 ## Conventions et précautions d'implémentation
@@ -157,6 +159,15 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   les changements fonctionnels. Ne pas versionner `.venv` ni les poids ML.
 
 ## Règles et configuration actuelles
+
+Dans le salon, une connexion n'occupe qu'un siège, plateau compris. Le serveur
+vérifie puis déplace sous le même verrou : si la destination est prise, garder
+la place précédente et signaler le refus. Libérer aussi le prénom de l'ancienne
+place ; son bot configuré reste mémorisé. Deux demandes concurrentes ne peuvent
+pas prendre la même place, même avec des prénoms identiques. Chaque état de
+salon est personnalisé avec `your_seat` ; le client attend cette confirmation
+et ne déduit pas son siège du prénom. Pendant la partie, interdire changements
+et départs, mais permettre la reconnexion à son siège réservé.
 
 Le formulaire d'enchères web affiche les couleurs au-dessus d'un montant
 unique, ajusté par −/+. Les crans viennent des actions légales du serveur :
