@@ -200,6 +200,10 @@ de clic/glissement lors des mises à jour Socket.IO.
 Les annonces (tierce, cinquante, cent, carré) et les variantes Sans Atout /
 Tout Atout ne sont pas implémentées. La belote/rebelote est attribuée
 automatiquement au détenteur du roi et de la dame d'atout en main initiale.
+Cette détection reste privée : envoyer `belote_team` et `belote_holder_seat`
+à `null` tant qu'aucune carte de la paire n'a été annoncée et que le bilan
+de la donne n'est pas disponible. Masquer à la source, pas seulement en CSS,
+pour ne pas révéler les cartes adverses dans les états Socket.IO.
 Sur le web, le serveur ajoute une entrée à `belote_announcements` quand ce
 joueur pose réellement la première puis la seconde carte de sa paire :
 « Belote ! », puis « Rebelote ! », dans l'ordre roi/dame ou dame/roi. Le client

@@ -185,9 +185,8 @@ class NetworkGame(Game):
         contract = bidding_state.contract
         atout = contract.suit
         leader = (dealer - 1) % 4
-        # Belote connue dès la fin des enchères (mains de départ + atout) :
-        # on l'annonce tout de suite pour que ce soit visible pendant le jeu,
-        # et on la réutilise en fin de donne pour le score.
+        # Connue du moteur dès la fin des enchères pour calculer le score,
+        # mais privée jusqu'à la première annonce réelle (ou au bilan final).
         belote_holder = find_belote_holder(initial_hands, atout)
         belote_team = team_of(belote_holder) if belote_holder is not None else None
         ctx.belote_holder_seat = belote_holder
@@ -525,6 +524,7 @@ class GameSession:
     def _build_common(self):
         ctx = self.ctx
         board_seat = self.room.seats.get("board")
+        belote_visible = bool(ctx.belote_announcements) or ctx.last_donne_result is not None
         return {
             "code": self.room.code,
             "phase": ctx.phase,
@@ -560,8 +560,8 @@ class GameSession:
                 "0": ctx.tricks_won_this_donne.get(0, 0),
                 "1": ctx.tricks_won_this_donne.get(1, 0),
             },
-            "belote_team": ctx.belote_team,
-            "belote_holder_seat": ctx.belote_holder_seat,
+            "belote_team": ctx.belote_team if belote_visible else None,
+            "belote_holder_seat": ctx.belote_holder_seat if belote_visible else None,
             "belote_announcements": list(ctx.belote_announcements),
             "last_donne_result": self._result_dict(),
             "claim": ctx.claim,

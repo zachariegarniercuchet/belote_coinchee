@@ -164,6 +164,7 @@ class ClaimGameTests(unittest.TestCase):
     def test_console_and_web_keep_scores_and_history(self):
         claim_count = 0
         belote_count = 0
+        hidden_belote_count = 0
         for seed in range(12):
             players = {seat: FirstLegalPlayer(seat, f"Joueur {seat}") for seat in range(4)}
             with patch("belote.game.find_claim", return_value=None):
@@ -195,6 +196,18 @@ class ClaimGameTests(unittest.TestCase):
             self.assertEqual([entry["card_id"] for entry in announcements],
                              [f"{card.rank.name}_{card.suit.name}" for card in played_pair])
             self.assertTrue(all(entry["seat"] == holder for entry in announcements))
+            # Ni le plateau ni les joueurs ne doivent connaître la paire avant
+            # sa première carte annoncée. Le score final reste inchangé.
+            for state in broadcasts:
+                visible = bool(state["belote_announcements"]) or state["last_donne_result"] is not None
+                self.assertEqual(state["belote_holder_seat"], holder if visible else None)
+                self.assertEqual(state["belote_team"], session.ctx.belote_team if visible else None)
+                if holder is not None and state["phase"] == "trick" and not visible:
+                    hidden_belote_count += 1
+                    for seat in range(4):
+                        private = session._build_for_player(state, seat)
+                        self.assertIsNone(private["belote_team"])
+                        self.assertIsNone(private["belote_holder_seat"])
             belote_count += len(announcements)
             if web.claim:
                 claim_count += 1
@@ -221,6 +234,7 @@ class ClaimGameTests(unittest.TestCase):
             self.assertTrue(all(not hand for hand in session.ctx.hands.values()))
         self.assertGreater(claim_count, 0)
         self.assertGreater(belote_count, 0)
+        self.assertGreater(hidden_belote_count, 0)
 
     def test_session_clears_claim_and_keeps_final_recap(self):
         room = Room("TEST")
