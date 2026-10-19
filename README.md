@@ -119,6 +119,19 @@ terminal depuis l'iPhone connecté au même réseau. Arrêter le serveur avec
 `Ctrl+C`. Cette version locale utilise directement les fichiers de la racine,
 sans déploiement Render ni copie GitHub Pages.
 
+### Comptes optionnels
+
+On peut jouer **en invité, sans compte**, comme avant : c'est le comportement
+par défaut et il ne dépend de rien. Si les variables `SUPABASE_URL` et
+`SUPABASE_ANON_KEY` sont renseignées (Render ou PowerShell local), un bandeau
+**Invité · aucun compte requis** et un bouton **Connexion** apparaissent sous
+le logo : inscription email + mot de passe, mot de passe oublié, prénom
+mémorisé, et bouton **Mes parties** qui conserve l'historique des parties
+terminées par compte, consultable depuis n'importe quel appareil. Voir
+[SUPABASE.md](SUPABASE.md) pour la mise en route (une requête SQL et deux
+variables d'environnement) et le détail de ce qui est enregistré. Ajouter une
+connexion Google plus tard est également décrit dans ce document.
+
 Le jeu table automatiquement entre deux plis dans deux situations certaines :
 une main ne contient plus que des atouts et personne d'autre n'a d'atout,
 ou il n'y a plus d'atouts et toutes les cartes du joueur qui entame sont

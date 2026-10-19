@@ -61,13 +61,16 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `game_session.py` | `NetworkGame`, `NetworkPlayer`, `GameSession` : déroulement web, attente des joueurs et diffusion des états. |
 | `serialize.py` | Conversion cartes/enchères en données JSON et identifiants de cartes. |
 | `index.html`, `app.js`, `style.css` | Interface principale, servie par Flask ; `index.html` utilise Jinja. |
+| `auth.js` | Comptes optionnels Supabase : connexion/inscription email, mode invité, historique. Fichier identique dans les deux frontends, chargé après `app.js`. |
 | `logo/` | Emblème source du 10 de trèfle (originaux) et icônes dérivées : favicons 16/32 px et icône Apple 180 px, recolorées aux couleurs du site. |
 | `frontend-github-pages/` | Copie statique de l'interface pour un backend distant. |
+| `supabase/setup.sql`, `SUPABASE.md` | Table `game_history` avec RLS et guide de mise en route des comptes (Render, GitHub Pages, Google plus tard). |
 | `tests/test_rules.py` | Script autonome de vérification des règles et scores. |
 | `tests/test_autoplay.py` | Dernière carte automatique et singletons joués manuellement sur le web. |
 | `tests/test_claim.py` | Tablage, exploration des ordres légaux, équivalence des scores console/web et confidentialité des mains. |
 | `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
+| `tests/test_supabase_config.py` | Injection des clés Supabase dans la page, repli invité sans configuration et service de `auth.js`. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
 | `render.yaml`, `DEPLOY.md` | Configuration Render et documentation de déploiement. |
 | `README.md`, `belote/bots/README.md` | Présentation, utilisation et procédure d'ajout de bots. |
@@ -95,7 +98,9 @@ Vérifications disponibles sans installer les dépendances web :
 ```powershell
 python -B tests/test_rules.py
 node --check app.js
+node --check auth.js
 node --check frontend-github-pages/app.js
+node --check frontend-github-pages/auth.js
 ```
 
 Avec un environnement virtuel, remplacer `python` par son exécutable. Le test
@@ -111,6 +116,7 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_claim.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_hand_order.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_lobby.py
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_supabase_config.py
 ```
 
 ## Conventions et précautions d'implémentation
@@ -148,7 +154,17 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 - Pour une modification d'interface, examiner les deux versions du frontend
   et appliquer les changements partagés aux deux. Préserver les différences
   nécessaires entre Jinja et hébergement statique ; ne pas écraser une copie
-  par l'autre sans examiner le diff.
+  par l'autre sans examiner le diff. `auth.js` et `style.css` sont tenus
+  identiques entre la racine et `frontend-github-pages/` ; `app.js` ne l'est
+  pas (voir « État initial » plus bas).
+- Les comptes sont **optionnels** : sans `SUPABASE_URL` ni `SUPABASE_ANON_KEY`,
+  la page ne montre aucune trace de compte et `auth.js` ne charge aucune
+  bibliothèque. Ne jamais rendre une connexion obligatoire pour jouer, ne
+  jamais placer de clé `service_role` dans le navigateur ou dans le dépôt : la
+  clé anon est publique et la protection vient des politiques RLS de
+  `supabase/setup.sql`. `app.js` ne touche à l'authentification que par
+  `window.BeloteAuth?.recordGameEnd(state)` en fin de partie — un no-op en
+  mode invité.
 - Préserver les textes français et leurs accents en UTF-8, ainsi que
   l'utilisation sur téléphone et le mode plateau partagé.
 - Ajouter ou adapter des vérifications ciblées pour les changements de règles.
@@ -262,9 +278,25 @@ est effectivement terminée et peut être libérée par `new_game`.
 Les salons et parties sont stockés en mémoire : un redémarrage perd leur
 état ; l'architecture actuelle suppose un seul processus serveur. Variables
 de configuration : `PORT`, `BELOTE_SECRET`, `CORS_ALLOWED_ORIGIN`,
-`PUBLIC_BASE_URL`. Le frontend peut lire `window.BELOTE_BACKEND_URL` pour
-Socket.IO. Consulter `DEPLOY.md` pour les deux modes d'hébergement, et
-vérifier le code pour le comportement effectif.
+`PUBLIC_BASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`. Le frontend peut lire
+`window.BELOTE_BACKEND_URL` pour Socket.IO et `window.BELOTE_SUPABASE` pour
+les comptes. Consulter `DEPLOY.md` pour les deux modes d'hébergement et
+`SUPABASE.md` pour les comptes, et vérifier le code pour le comportement
+effectif.
+
+Les comptes sont facultatifs. Sans les deux variables Supabase, `auth.js`
+retire le bandeau de compte dès le chargement et ne charge aucune
+bibliothèque : l'écran d'accueil est strictement celui d'avant. Avec la
+configuration, l'accueil affiche « Invité · aucun compte requis » et un bouton
+**Connexion** qui ouvre une modale à deux onglets (Connexion / Créer un
+compte, avec prénom facultatif), plus **Mot de passe oublié** (lien email,
+puis écran « Nouveau mot de passe »). Une session reste ouverte d'une visite à
+l'autre, le prénom du compte pré-remplit les champs de jeu, et le compte
+connecté propose **Mes parties** et **Déconnexion**. Chaque partie terminée
+insère une ligne dans `game_history` (clé anti-doublon `game_id` diffusée par
+`GameSession`) : aucune écriture n'a lieu en mode invité. L'inscription est
+ouverte ; la connexion Google n'est pas encore câblée, la procédure est dans
+`SUPABASE.md`.
 
 ## État initial constaté le 17 octobre 2026
 
@@ -288,3 +320,23 @@ vérifier le code pour le comportement effectif.
 - Certaines sections du README décrivent encore comme futures des fonctions
   web déjà présentes. Ce guide décrit le code observé, sans certifier la
   conformité à un règlement externe.
+
+## Mise à jour du 19 octobre 2026 — comptes optionnels
+
+- Environnement : Python 3.12.10 du `.venv` (Flask 3.1.3, Flask-SocketIO
+  5.6.1, qrcode, Playwright 1.64 avec Chromium) et Node 24.15.0.
+- `python -B tests/test_rules.py` : **16 réussites, 2 échecs** — les mêmes
+  deux échecs connus que le 17 octobre, inchangés par cette livraison.
+- Tous les `unittest` passent, `test_supabase_config.py` en tête (3 tests) ;
+  `node --check` passe sur les quatre fichiers JS (`app.js`, `auth.js`, et
+  leurs copies statiques).
+- Vérification navigateur **faite** avec Playwright/Chromium sur
+  `http://localhost:5000` (clés Supabase factices) et sur la copie statique
+  servie sans configuration : bandeau invité, ouverture de la modale, onglet
+  inscription, message d'erreur propre sur un appel réseau échoué, fermeture,
+  création de salon invité inchangée, aucune exception JS, et aucune trace de
+  compte visible sans configuration (18 vérifications, 0 échec).
+- Vérification **non faite** : inscription/connexion réelles, réception des
+  e-mails et écriture/lire de `game_history` — elles demandent les vraies
+  clés du projet Supabase et le SQL exécuté. À refaire avec les clés réelles
+  avant mise en ligne.

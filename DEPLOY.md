@@ -93,6 +93,23 @@ You said it's already on GitHub — make sure the changes in this delivery
    to your GitHub Pages page (with `?code=XXXX`), which pre-fills the join
    code — nice for scanning from a phone.
 
+## Optional: accounts and game history (Supabase)
+
+The app is fully playable **without any account** — that stays the default.
+Accounts are an opt-in layer on top: email + password sign-in, a remembered
+first name, and a *Mes parties* history saved per user. Setup takes ~10
+minutes and lives in **[SUPABASE.md](SUPABASE.md)** (project keys, one SQL
+script, two Render environment variables, and the GitHub Pages copy).
+
+Two env vars to set on Render (already declared empty in `render.yaml`):
+
+- `SUPABASE_URL` — the project URL, e.g. `https://xxxx.supabase.co`
+- `SUPABASE_ANON_KEY` — the public anon/publishable key
+
+Leave both empty and nothing changes: no sign-in button, no Supabase request,
+same behaviour as before. Note that GitHub Pages' copy also needs
+`window.BELOTE_SUPABASE` filled in `frontend-github-pages/index.html`.
+
 ## What changed in the code (and why)
 
 - **`extensions.py`** — `SocketIO(...)` now takes `cors_allowed_origins`
