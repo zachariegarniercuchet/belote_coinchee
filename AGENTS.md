@@ -349,7 +349,8 @@ ouverte ; la connexion Google n'est pas encore câblée, la procédure est dans
   champs de jeu, historique vide, `recordGameEnd` qui insère une ligne
   réellement lue ensuite (1 victoire sur 1, 1000 – 745, salon E2E0), puis
   déconnexion, reconnexion avec retrouvaille de l'historique, création de
-  salon, aucune exception JS (**16 vérifications, 0 échec**).
+  salon, aucune exception JS (**16 vérifications, 0 échec**). « Confirm email »
+  est resté désactivé par choix produit (voir `SUPABASE.md`, étape 1).
 - Reste à vérifier avant mise en ligne : le déploiement Render (push des
   commits puis variables `SUPABASE_URL` / `SUPABASE_ANON_KEY` — la page servie
   par `https://belote-coinchee-g77g.onrender.com` le 19/10 ne contient ni

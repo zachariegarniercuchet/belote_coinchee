@@ -34,7 +34,9 @@ Puis dans **Authentication → Sign In / Providers** :
   - *activé* (recommandé en production) : après l'inscription, un lien de
     confirmation arrive par email. L'interface affiche alors
     « Presque ! Ouvre le lien de confirmation… » puis bascule sur Connexion.
-  - *désactivé* : pratique pour tester, le compte est connecté directement.
+  - *désactivé* (choix actuel du projet, le 19 octobre 2026) : l'inscription
+    connecte directement, sans lien email — plus fluide, mais n'importe qui
+    peut déclarer une adresse qu'il ne possède pas.
 
 > **Limite d'emails du service intégré** : le SMTP fourni par Supabase
 > (plan gratuit) n'envoie que quelques messages par heure ; au-delà,
