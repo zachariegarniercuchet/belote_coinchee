@@ -380,6 +380,13 @@
     }[c]));
   }
 
+  function teamText(team, text) {
+    const span = document.createElement("span");
+    span.className = team === 0 ? "team-a" : "team-b";
+    span.textContent = text;
+    return span;
+  }
+
   function cardEl(card, extraClasses) {
     const div = document.createElement("div");
     div.className = "playing-card " + card.color + (extraClasses ? " " + extraClasses : "");
@@ -469,6 +476,7 @@
       const marker = document.getElementById("seat-marker-" + seat);
       const position = String((seat - viewer + 4) % 4);
       marker.dataset.position = position;
+      marker.dataset.team = String(seat % 2);
       document.getElementById("trick-slot-" + seat).dataset.position = position;
       const name = nameOf(state, seat) + (state.your_seat === seat ? " (toi)" : "");
 
@@ -526,13 +534,13 @@
     } else if (state.waiting_seat !== null && state.waiting_seat !== undefined) {
       turnTxt = " · Tour de " + nameOf(state, state.waiting_seat);
     }
-    tricksInfo.textContent =
-      "Donne n°" + (state.donne_number || 1) +
-      " · Plis — Équipe A " + state.tricks_won_this_donne["0"] +
-      " · Équipe B " + state.tricks_won_this_donne["1"] +
+    tricksInfo.replaceChildren(
+      "Donne n°" + (state.donne_number || 1) + " · Plis — ",
+      teamText(0, "Équipe A " + state.tricks_won_this_donne["0"]),
+      " · ", teamText(1, "Équipe B " + state.tricks_won_this_donne["1"]),
       ((state.belote_team !== null && state.belote_team !== undefined)
         ? " · Belote Équipe " + (String(state.belote_team) === "0" ? "A" : "B") + " (+20)" : "") +
-      turnTxt;
+      turnTxt);
   }
 
   // ------------------------------------------------------------------
@@ -776,8 +784,9 @@
       let turn = "";
       if (state.your_turn) turn = state.waiting_kind === "bid" ? "À toi d'enchérir !" : "À toi de jouer !";
       else if (state.waiting_seat !== null && state.waiting_seat !== undefined) turn = "Tour de " + nameOf(state, state.waiting_seat);
-      phoneStatus.textContent = cTxt + " · Plis A" + state.tricks_won_this_donne["0"] +
-        "-B" + state.tricks_won_this_donne["1"] + (turn ? " · " + turn : "");
+      phoneStatus.replaceChildren(cTxt + " · Plis ",
+        teamText(0, "A " + state.tricks_won_this_donne["0"]), " · ",
+        teamText(1, "B " + state.tricks_won_this_donne["1"]), (turn ? " · " + turn : ""));
     }
     const bidControls = document.getElementById("bid-controls");
     if (state.your_turn && state.waiting_kind === "bid" && state.legal_bid_actions.length) {

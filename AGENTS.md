@@ -207,6 +207,11 @@ bots dans le salon, à table et dans la fiche ⓘ, sans galerie de sélection.
 Portraits au-dessus du nom : 48 px dans le salon, 22–30 px à table, 18 px en
 paysage compact ; coins très légèrement arrondis (4 px), jamais en cercle.
 Pas de photos de profil pour les joueurs humains à ce stade.
+À table, les encadrés nom/portrait gardent la couleur de leur équipe réelle
+(A verte, B bleue), indépendamment de la rotation. Les mêmes variables CSS
+colorent les compteurs de plis, le bandeau et le statut du mode manette.
+Le tour actif et le joueur qui table ont un liseré doré supplémentaire,
+sans remplacer leur bordure d'équipe.
 
 Dans le salon, une connexion n'occupe qu'un siège, plateau compris. Le serveur
 vérifie puis déplace sous le même verrou : si la destination est prise, garder
