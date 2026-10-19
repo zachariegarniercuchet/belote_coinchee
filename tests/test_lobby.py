@@ -28,7 +28,9 @@ class LobbyTests(unittest.TestCase):
 
             try:
                 # Le même catalogue documente les versions et nomme les joueurs.
-                catalog = server.app.test_client().get("/api/bots").get_json()
+                http = server.app.test_client()
+                catalog = http.get("/api/bots").get_json()
+                portraits = set()
                 for bot_info in catalog:
                     for field in ("family", "version", "author", "description"):
                         self.assertTrue(bot_info[field])
@@ -37,6 +39,14 @@ class LobbyTests(unittest.TestCase):
                     self.assertEqual(len(set(bot_info["names"])), 4)
                     self.assertEqual(bot_info["names"],
                                      [get_bot_name(bot_info["id"], seat) for seat in range(4)])
+                    self.assertTrue(bot_info["theme"])
+                    self.assertEqual(len(set(bot_info["avatars"])), 4)
+                    portraits.update(bot_info["avatars"])
+                for portrait in portraits:
+                    with http.head("/assets/bots/" + portrait) as response:
+                        self.assertEqual(response.status_code, 200)
+                        self.assertEqual(response.mimetype, "image/png")
+                self.assertEqual(http.get("/assets/bots/prompts.json").status_code, 404)
                 alice = connect("Alice")
                 code = latest(alice, "room_created")["code"]
                 room = server.rooms.get(code)
@@ -87,6 +97,12 @@ class LobbyTests(unittest.TestCase):
                 alice.emit("take_seat", {"code": code, "seat": 0})
 
                 # En partie, seul le siège existant peut être repris après déconnexion.
+                preview = server.GameSession(room, target_score=1000)._build_common()
+                self.assertEqual(set(preview["bot_profiles"]),
+                                 {str(seat) for seat in range(4) if not room.seats[seat].occupied})
+                for seat, profile in preview["bot_profiles"].items():
+                    bot_info = next(bot for bot in catalog if bot["id"] == profile["id"])
+                    self.assertEqual(profile["avatar"], bot_info["avatars"][int(seat)])
                 room.game_session = SimpleNamespace(finished=False, broadcast=lambda: None)
                 alice.emit("take_seat", {"code": code, "seat": 3})
                 self.assertEqual(latest(alice)["your_seat"], 0)

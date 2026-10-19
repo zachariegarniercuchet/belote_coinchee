@@ -13,14 +13,16 @@ Philosophie :
 
 Chaque entrée contient :
     id          : identifiant stable (clé API, stocké en room, envoyé au front)
-    label       : nom de la version dans le sélecteur ("Spark v3")
-    family      : nom de famille choisi par le créateur ("Spark")
+    label       : nom de la version dans le sélecteur ("de Belote v3")
+    family      : nom de famille choisi par le créateur ("de Belote")
+    theme       : identité visuelle de la famille ("Aristos")
+    avatars     : 4 fichiers de portraits, associés aux mêmes sièges que names
     version     : version publique ("v3")
     author      : auteur du bot
     description : une ligne pour l'utilisateur
     level       : 1 (faible) → 5 (expert), affiché sous forme d'étoiles
     names       : 4 prénoms distincts (index = siège). Le nom à table combine
-                  prénom, famille et version : "Raphaël Spark v3".
+                  prénom, famille et version : "Charles de Belote v3".
     factory     : callable (seat, name) -> Player. Import paresseux à
                   l'intérieur de la factory pour ne pas charger torch/onnx
                   (et les futurs gros modèles) au démarrage du serveur.
@@ -36,65 +38,81 @@ Factory = Callable[[int, str], Player]
 
 DEFAULT_BOT_ID = "spark_v3"
 
+_WEST_PORTRAITS = ["west-buck.png", "west-daisy.png", "west-hank.png", "west-bonnie.png"]
+_BOHEME_PORTRAITS = ["boheme-basile.png", "boheme-alma.png", "boheme-marceau.png", "boheme-suzon.png"]
+_BELOTE_PORTRAITS = ["belote-charles.png", "belote-alienor.png", "belote-octave.png", "belote-apolline.png"]
+
 BOT_REGISTRY: dict[str, dict] = {
     "random": {
-        "label": "Hasard v1",
-        "family": "Hasard",
+        "label": "West v1",
+        "family": "West",
+        "theme": "Cowboys",
+        "avatars": _WEST_PORTRAITS,
         "version": "v1",
         "author": "Zach",
         "description": "Choisit ses cartes au hasard parmi les coups légaux et passe le plus souvent aux enchères.",
         "level": 1,
-        "names": ["Milo", "Lina", "Sacha", "Noa"],
+        "names": ["Buck", "Daisy", "Hank", "Bonnie"],
         "factory": lambda seat, name: _random_bot(seat, name),
     },
     "heuristic": {
-        "label": "Classique v1",
-        "family": "Classique",
+        "label": "Bohème v1",
+        "family": "Bohème",
+        "theme": "Bobos",
+        "avatars": _BOHEME_PORTRAITS,
         "version": "v1",
         "author": "Zach",
         "description": "Suit des règles écrites à la main : enchères prudentes et suivi des cartes déjà jouées.",
         "level": 2,
-        "names": ["Louis", "Emma", "Hugo", "Chloé"],
+        "names": ["Basile", "Alma", "Marceau", "Suzon"],
         "factory": lambda seat, name: _heuristic_bot(seat, name),
     },
     "spark": {
-        "label": "Spark v0",
-        "family": "Spark",
+        "label": "de Belote v0",
+        "family": "de Belote",
+        "theme": "Aristos",
+        "avatars": _BELOTE_PORTRAITS,
         "version": "v0",
         "author": "Zach",
         "description": "Version originale : enchères calibrées et règles de jeu adaptées au contrat et au partenaire.",
         "level": 3,
-        "names": ["Gabin", "Anna", "Théo", "Jade"],
+        "names": ["Charles", "Aliénor", "Octave", "Apolline"],
         "factory": lambda seat, name: _spark_bot(seat, name),
     },
     "spark_v1": {
-        "label": "Spark v1",
-        "family": "Spark",
+        "label": "de Belote v1",
+        "family": "de Belote",
+        "theme": "Aristos",
+        "avatars": _BELOTE_PORTRAITS,
         "version": "v1",
         "author": "Zach",
         "description": "Version figée à règles : évalue sa main aux enchères et adapte ses cartes à l'attaque ou à la défense.",
         "level": 4,
-        "names": ["Léo", "Manon", "Nathan", "Camille"],
+        "names": ["Charles", "Aliénor", "Octave", "Apolline"],
         "factory": lambda seat, name: _spark_bot_v1(seat, name),
     },
     "spark_v2": {
-        "label": "Spark v2",
-        "family": "Spark",
+        "label": "de Belote v2",
+        "family": "de Belote",
+        "theme": "Aristos",
+        "avatars": _BELOTE_PORTRAITS,
         "version": "v2",
         "author": "Zach",
         "description": "Simule plusieurs répartitions possibles des cartes cachées et choisit le coup au meilleur score moyen.",
         "level": 4,
-        "names": ["Ethan", "Sarah", "Maxime", "Inès"],
+        "names": ["Charles", "Aliénor", "Octave", "Apolline"],
         "factory": lambda seat, name: _spark_bot_v2(seat, name),
     },
     "spark_v3": {
-        "label": "Spark v3",
-        "family": "Spark",
+        "label": "de Belote v3",
+        "family": "de Belote",
+        "theme": "Aristos",
+        "avatars": _BELOTE_PORTRAITS,
         "version": "v3",
         "author": "Zach",
         "description": "Affine les simulations avec les enchères et calcule exactement les trois derniers plis dans chaque répartition simulée.",
         "level": 5,
-        "names": ["Raphaël", "Léa", "Arthur", "Eva"],
+        "names": ["Charles", "Aliénor", "Octave", "Apolline"],
         "factory": lambda seat, name: _spark_bot_v3(seat, name),
     },
 }
@@ -142,6 +160,7 @@ def get_bot_info(bot_id: str) -> dict:
     entry = BOT_REGISTRY[bot_id]  # lève KeyError si inconnu : volontaire
     return {"id": bot_id, "label": entry["label"],
             "family": entry["family"], "version": entry["version"], "author": entry["author"],
+            "theme": entry["theme"], "avatars": list(entry["avatars"]),
             "description": entry["description"], "level": entry["level"],
             "names": [get_bot_name(bot_id, seat) for seat in range(4)]}
 

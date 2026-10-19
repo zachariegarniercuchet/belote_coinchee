@@ -121,6 +121,15 @@ def static_assets(filename):
     return send_from_directory(PROJECT_ROOT, filename)
 
 
+@app.route("/assets/bots/<filename>")
+def bot_avatar(filename):
+    allowed = {avatar for bot in list_bots() for avatar in bot["avatars"]}
+    if filename not in allowed:
+        abort(404)
+    return send_from_directory(os.path.join(PROJECT_ROOT, "frontend-github-pages", "assets", "bots"),
+                               filename, max_age=86400)
+
+
 @app.route("/join/<code>")
 def join_page(code):
     return render_template("index.html", prefill_code=code.upper(), supabase=supabase_config())

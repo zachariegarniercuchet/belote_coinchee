@@ -1,0 +1,78 @@
+{
+  "generator": "Built-in image_gen tool",
+  "reference": "Original character portraits; a playful, expressive cartoon-avatar direction, not copies of Chess.com characters.",
+  "avatars": [
+    {
+      "key": "charles",
+      "name": "belote-charles",
+      "prompt": "Use case: stylized-concept. Asset type: square profile avatar for a playful French belote card-game bot. Create one original cartoon character, head and upper shoulders, centered and facing the viewer, with an expressive oversized face, bold clean dark contour lines, crisp warm cel shading and polished 2D digital illustration. Friendly witty caricature, recognisable as a tiny 32px portrait, not photorealistic and not 3D. Subject: Charles de Belote, a charming middle-aged aristocrat with a curled brown moustache, dark navy top hat, gold cravat and cream waistcoat, raised eyebrow and knowing smile. His entire hat must fit within the square with breathing room; eyes around the middle of the frame. Simple solid muted burgundy background. No hands, no cards, no scenery, no text, no lettering, no logos, no watermark. Original design, not an existing game character.",
+      "file": "belote-charles.png"
+    },
+    {
+      "key": "alienor",
+      "name": "belote-alienor",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted burgundy backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Aliénor de Belote, a witty older aristocratic woman with a silver coiffed updo, a small elegant burgundy hat with one feather, pearl earrings and a pearl necklace over a cream and burgundy outfit. Warm sly smile, distinguished elegant features.",
+      "file": "belote-alienor.png"
+    },
+    {
+      "key": "octave",
+      "name": "belote-octave",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted burgundy backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Octave de Belote, a young aristocratic man with neatly waved dark hair, a dark blue top hat, emerald bow tie and dark tailored coat. Clean shaven, narrow angular face, lifted eyebrow and cheeky self-assured grin. Distinct from the older moustached man in reference.",
+      "file": "belote-octave.png"
+    },
+    {
+      "key": "apolline",
+      "name": "belote-apolline",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted burgundy backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Apolline de Belote, an elegant young aristocratic woman with a chestnut bob haircut, wide emerald dress hat, gold earrings and a pearl brooch on a dark teal dress. Confident playful smile, bright expressive eyes.",
+      "file": "belote-apolline.png"
+    },
+    {
+      "key": "buck",
+      "name": "west-buck",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted warm ochre backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Buck West, a jovial adult cowboy with a broad square face, thick brown moustache, tan western cowboy hat with curved brim, red bandana and denim vest. Confident friendly grin. An American western costume, no weapons.",
+      "file": "west-buck.png"
+    },
+    {
+      "key": "daisy",
+      "name": "west-daisy",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted warm ochre backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Daisy West, a cheerful adult cowgirl with auburn wavy hair, freckles, cream western cowboy hat with a curved brim, blue bandana and light denim shirt. Playful wide smile. No weapons.",
+      "file": "west-daisy.png"
+    },
+    {
+      "key": "hank",
+      "name": "west-hank",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted warm ochre backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Hank West, a weathered older cowboy with a thick grey beard, bushy eyebrows, brown western hat with curved brim and an orange bandana over a leather vest. Warm amused squint and crooked smile. No weapons.",
+      "file": "west-hank.png"
+    },
+    {
+      "key": "bonnie",
+      "name": "west-bonnie",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted warm ochre backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Bonnie West, a bold adult cowgirl with a long dark braid, expressive brown eyes, dark plum western hat with a curved brim, mustard yellow bandana and a brown western jacket. Mischievous smile. No weapons.",
+      "file": "west-bonnie.png"
+    },
+    {
+      "key": "basile",
+      "name": "boheme-basile",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted sage-teal backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Basile Bohème, an adult Parisian hipster man with a slender face, a full short brown beard, round dark-framed glasses, a mustard yellow rolled knit beanie and a green checked overshirt. Amused thoughtful smile. Clearly a modern casual outfit, not aristocratic or western.",
+      "file": "boheme-basile.png"
+    },
+    {
+      "key": "alma",
+      "name": "boheme-alma",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted sage-teal backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Alma Bohème, a cheerful adult creative woman with short black curls peeking out of a teal knit beanie, large round glasses, olive complexion, a rust corduroy jacket and a patterned warm scarf. Bright friendly grin. Modern casual hipster outfit.",
+      "file": "boheme-alma.png"
+    },
+    {
+      "key": "marceau",
+      "name": "boheme-marceau",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted sage-teal backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Marceau Bohème, an older creative man with a broad rounded face, grey beard and moustache, square dark glasses, red rolled knit beanie and tan corduroy overshirt. A gentle amused expression and laugh lines. Modern casual hipster outfit, no aristocratic clothing.",
+      "file": "boheme-marceau.png"
+    },
+    {
+      "key": "suzon",
+      "name": "boheme-suzon",
+      "prompt": "Use case: stylized-concept. Asset: one square profile portrait for a humorous French belote bot. Image 1 is a STYLE REFERENCE ONLY: keep the same bold clean outlines, expressive oversized face, crisp warm 2D cel shading and polished cartoon finish, but create the different new character below, not the same person. Head and shoulders, centered, looking toward viewer, face readable at 32px. Entire hat/head must fit with 10% margin. Plain muted sage-teal backdrop. No hands, cards, scenery, text, letters, logos or watermark. Original character, not a copy of an existing game's character. Subject: Suzon Bohème, a witty adult hipster woman with wavy blonde hair, oversized round amber glasses, a lavender knit beanie, burgundy scarf and a forest-green jacket. One eyebrow lifted and a cheeky smile. Clearly a modern casual outfit.",
+      "file": "boheme-suzon.png"
+    }
+  ]
+}

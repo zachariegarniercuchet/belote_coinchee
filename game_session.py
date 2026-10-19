@@ -21,7 +21,7 @@ import time
 import uuid
 
 from belote.bidding import BiddingState
-from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_name
+from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_info, get_bot_name, is_valid_bot
 from belote.cards import Rank, cut_deck, deal, new_shuffled_deck
 from belote.claim import find_claim, play_claim
 from belote.game import DonneLog, Game
@@ -339,6 +339,7 @@ class GameSession:
                     room_choices[seat] = bid
 
         players = {}
+        self.bot_profiles = {}
         for p in PLAYER_SEATS:
             seat = room.seats[p]
             if seat.occupied:
@@ -347,6 +348,8 @@ class GameSession:
                 # Même identité dans le salon et à table : prénom, famille, version.
                 bot_id = room_choices.get(p, DEFAULT_BOT_ID)
                 players[p] = create_bot(bot_id, p, name=get_bot_name(bot_id, p))
+                info = get_bot_info(bot_id if is_valid_bot(bot_id) else DEFAULT_BOT_ID)
+                self.bot_profiles[p] = {"id": info["id"], "avatar": info["avatars"][p]}
             else:
                 raise ValueError("Sièges incomplets et remplissage par bots désactivé.")
         self.players = players
@@ -547,6 +550,7 @@ class GameSession:
                 ) for k in (0, 1, 2, 3)
             },
             "board_present": bool(board_seat and board_seat.occupied),
+            "bot_profiles": {str(seat): dict(profile) for seat, profile in self.bot_profiles.items()},
             "waiting_seat": ctx.waiting_seat,
             "waiting_kind": ctx.waiting_kind,
             "waiting_seat_name": (
