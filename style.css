@@ -292,16 +292,6 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 .lobby-avatar { --avatar-size: 48px; margin-top: 6px; }
 #bot-info-avatar { --avatar-size: 96px; margin-bottom: 12px; }
-.bot-gallery { margin-top: 8px; font-size: 12px; }
-.bot-gallery summary { cursor: pointer; color: var(--gold-light); padding: 5px 0; }
-.bot-gallery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
-.bot-card { padding: 8px 4px; border: 1px solid var(--wood-light); border-radius: 8px; color: var(--cream); background: var(--wood); }
-.bot-card[aria-pressed="true"] { border-color: var(--gold); background: rgba(217,164,65,.15); }
-.bot-card:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
-.bot-card strong, .bot-card span { display: block; overflow-wrap: anywhere; }
-.bot-card strong { font-size: 12px; }
-.bot-card span { margin-top: 4px; font-size: 10px; opacity: .75; }
-.gallery-avatar { --avatar-size: 48px; }
 .bot-info-box p { font-size: 14px; }
 .seat-empty-label { font-size: 13px; opacity: .5; font-style: italic; }
 

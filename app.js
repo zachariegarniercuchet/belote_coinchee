@@ -130,36 +130,6 @@
     return img;
   }
 
-  function botGallery(bots, seat, selectedId) {
-    const gallery = document.createElement("details");
-    gallery.className = "bot-gallery";
-    const summary = document.createElement("summary");
-    summary.textContent = "Choisir en images";
-    gallery.appendChild(summary);
-    const grid = document.createElement("div");
-    grid.className = "bot-gallery-grid";
-    bots.forEach(bot => {
-      const button = document.createElement("button");
-      button.className = "bot-card";
-      button.type = "button";
-      button.dataset.botId = bot.id;
-      button.setAttribute("aria-pressed", String(bot.id === selectedId));
-      button.title = "Par " + bot.author + " — " + bot.description;
-      const avatar = botAvatar(bot.avatars && bot.avatars[seat], bot.names[seat], "gallery-avatar");
-      if (avatar) button.appendChild(avatar);
-      const label = document.createElement("strong");
-      label.textContent = bot.label;
-      button.appendChild(label);
-      const theme = document.createElement("span");
-      theme.textContent = (bot.theme || bot.family) + " · " + botStars(bot);
-      button.appendChild(theme);
-      button.onclick = () => socket.emit("set_bot", { code: roomCode, seat, bot_id: bot.id });
-      grid.appendChild(button);
-    });
-    gallery.appendChild(grid);
-    return gallery;
-  }
-
   // Identité stable à table : prénom distinct + famille/version du catalogue.
   function botSeatName(botId, seat) {
     const bot = findBot(botId);
@@ -280,7 +250,6 @@
         summary.textContent = selectedBot
           ? "Par " + selectedBot.author + " — " + selectedBot.description : "";
         picker.appendChild(summary);
-        picker.appendChild(botGallery(bots, key, choices[String(key)]));
         controls.appendChild(picker);
       }
 

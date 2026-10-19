@@ -200,7 +200,8 @@ uniquement les fichiers référencés par le catalogue via `/assets/bots/<fichie
 les portraits sur son backend configuré. `GameSession.bot_profiles` fournit
 un profil par siège bot uniquement ; ne pas inférer les avatars des prénoms.
 Conserver les éléments images entre mises à jour identiques comme les bulles.
-Le salon propose « Choisir en images » en complément du sélecteur natif.
+Le salon utilise uniquement le sélecteur natif ; conserver les portraits des
+bots dans le salon, à table et dans la fiche ⓘ, sans galerie de sélection.
 Portraits au-dessus du nom : 48 px dans le salon, 22–30 px à table, 18 px en
 paysage compact ; coins très légèrement arrondis (4 px), jamais en cercle.
 Pas de photos de profil pour les joueurs humains à ce stade.
