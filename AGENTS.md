@@ -180,9 +180,11 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 Le catalogue des bots définit `family`, `version`, `author`, `description`,
 `theme`, `avatars`, `level` (indicatif) et quatre prénoms par version dans
 `belote/bots/registry.py`.
-Le créateur choisit ces métadonnées. Les noms publics combinent prénom,
-famille et version (« Charles de Belote v3 »), identiques dans le catalogue,
-le salon et la partie. Garder les identifiants API inchangés : l'ancien
+Le créateur choisit ces métadonnées. Les noms publics combinent prénom et
+famille (« Charles de Belote »), sans suffixe de version pour de Belote ; les
+autres familles gardent leur suffixe. Ils sont identiques dans le catalogue,
+le salon et la partie. Les versions restent dans les métadonnées et le
+sélecteur pour distinguer les moteurs. Garder les identifiants API inchangés : l'ancien
 `random` devient West v1 (cowboys), `heuristic` Bohème v1 (bobos à bonnet),
 et `spark`/`spark_v1` à `spark_v3` de Belote v0 à v3 (aristos).
 Tous les bots actuels ont Zach pour auteur.

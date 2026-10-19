@@ -62,6 +62,9 @@ un niveau estimé, pas un classement mesuré. Tous les bots actuels sont de Zach
 l'ancienne entrée `spark` est présentée comme de Belote v0, sans modifier son code.
 Les familles actuelles sont West (cowboys, `random`), Bohème (bonnets,
 `heuristic`) et de Belote (aristos, `spark` et `spark_v1` à `spark_v3`).
+Les noms des personnages de Belote n'affichent pas de suffixe de version
+(« Charles de Belote ») ; le sélecteur et les métadonnées distinguent toujours
+les moteurs. Les noms des autres familles restent inchangés.
 Déposer les portraits dans `frontend-github-pages/assets/bots/` : ce dossier
 est partagé par le frontend statique et la route Flask `/assets/bots/<fichier>`.
 Le catalogue expose les quatre noms de fichiers dans `avatars`. La session

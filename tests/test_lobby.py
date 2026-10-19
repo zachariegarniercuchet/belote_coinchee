@@ -39,6 +39,9 @@ class LobbyTests(unittest.TestCase):
                     self.assertEqual(len(set(bot_info["names"])), 4)
                     self.assertEqual(bot_info["names"],
                                      [get_bot_name(bot_info["id"], seat) for seat in range(4)])
+                    if bot_info["family"] == "de Belote":
+                        self.assertEqual(bot_info["names"], ["Charles de Belote", "Aliénor de Belote",
+                                                            "Octave de Belote", "Apolline de Belote"])
                     self.assertTrue(bot_info["theme"])
                     self.assertEqual(len(set(bot_info["avatars"])), 4)
                     portraits.update(bot_info["avatars"])

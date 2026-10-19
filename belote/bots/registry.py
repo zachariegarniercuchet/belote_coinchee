@@ -22,7 +22,7 @@ Chaque entrée contient :
     description : une ligne pour l'utilisateur
     level       : 1 (faible) → 5 (expert), affiché sous forme d'étoiles
     names       : 4 prénoms distincts (index = siège). Le nom à table combine
-                  prénom, famille et version : "Charles de Belote v3".
+                  prénom et famille, sans suffixe de version pour de Belote.
     factory     : callable (seat, name) -> Player. Import paresseux à
                   l'intérieur de la factory pour ne pas charger torch/onnx
                   (et les futurs gros modèles) au démarrage du serveur.
@@ -166,7 +166,7 @@ def get_bot_info(bot_id: str) -> dict:
 
 
 def get_bot_name(bot_id: str, seat: int) -> str:
-    """Nom public du bot `bot_id` au siège `seat` (prénom, famille, version).
+    """Nom public du bot `bot_id` au siège `seat`.
 
     Déterministe : un même bot au même siège porte toujours le même nom.
     `bot_id` inconnu → repli sur le bot par défaut.
@@ -175,6 +175,8 @@ def get_bot_name(bot_id: str, seat: int) -> str:
         bot_id = DEFAULT_BOT_ID
     entry = BOT_REGISTRY[bot_id]
     first_name = entry["names"][seat % len(entry["names"])]
+    if entry["family"] == "de Belote":
+        return f"{first_name} {entry['family']}"
     return f"{first_name} {entry['family']} {entry['version']}"
 
 
