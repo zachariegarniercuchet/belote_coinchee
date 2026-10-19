@@ -280,6 +280,28 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .bot-info-box h2 { margin: 0 0 4px; color: var(--gold-light); }
 .bot-info-engine { font-size: 12px; opacity: .6; margin: 0 0 10px; }
 .bot-info-author { color: var(--gold-light); margin: 8px 0; }
+.bot-avatar {
+  display: block;
+  width: var(--avatar-size, 32px);
+  height: var(--avatar-size, 32px);
+  margin: 0 auto 4px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid rgba(247,241,227,.25);
+  background: var(--wood-light);
+}
+.lobby-avatar { --avatar-size: 48px; margin-top: 6px; }
+#bot-info-avatar { --avatar-size: 96px; margin-bottom: 12px; }
+.bot-gallery { margin-top: 8px; font-size: 12px; }
+.bot-gallery summary { cursor: pointer; color: var(--gold-light); padding: 5px 0; }
+.bot-gallery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+.bot-card { padding: 8px 4px; border: 1px solid var(--wood-light); border-radius: 8px; color: var(--cream); background: var(--wood); }
+.bot-card[aria-pressed="true"] { border-color: var(--gold); background: rgba(217,164,65,.15); }
+.bot-card:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+.bot-card strong, .bot-card span { display: block; overflow-wrap: anywhere; }
+.bot-card strong { font-size: 12px; }
+.bot-card span { margin-top: 4px; font-size: 10px; opacity: .75; }
+.gallery-avatar { --avatar-size: 48px; }
 .bot-info-box p { font-size: 14px; }
 .seat-empty-label { font-size: 13px; opacity: .5; font-style: italic; }
 
@@ -367,6 +389,10 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 .seat-marker.active-turn { border-color: var(--gold-light); box-shadow: 0 0 12px rgba(217,164,65,.6); }
 .seat-marker .sm-name { font-weight: 700; font-size: 12px; }
+.seat-marker .seat-avatar { --avatar-size: clamp(22px, 5cqw, 30px); margin-bottom: 3px; }
+.seat-marker.has-bot-avatar .sm-name { font-size: 11px; line-height: 1.15; }
+.seat-marker.has-bot-avatar[data-position="2"] { top: 6px; }
+.seat-marker.has-bot-avatar[data-position="0"] { bottom: 10px; }
 .seat-marker .sm-cards { opacity: .7; margin-top: 2px; }
 .seat-marker.dealer::after { content: "D"; position:absolute; top:-8px; right:-8px; background:var(--gold); color:var(--ink); width:18px; height:18px; border-radius:50%; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; }
 
@@ -915,6 +941,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
   #screen-game { --card-w: clamp(44px, 12vh, 58px); }
   .table-felt { min-height: 0; border-width: 3px; border-radius: 14px; }
   .seat-marker { font-size: 10px; padding: 4px 6px; }
+  .seat-marker .seat-avatar { --avatar-size: 18px; }
   .tricks-info { font-size: 11px; padding: 5px 8px; }
   .info-strip { margin-top: 6px; }
   .bid-controls {

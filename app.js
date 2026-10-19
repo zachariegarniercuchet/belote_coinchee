@@ -112,6 +112,54 @@
     return bot ? "★".repeat(bot.level) + "☆".repeat(5 - bot.level) : "";
   }
 
+  function botAvatarUrl(file) {
+    return BACKEND_URL.replace(/\/+$/, "") + "/assets/bots/" + encodeURIComponent(file);
+  }
+
+  function botAvatar(file, name, extraClass = "") {
+    if (!file) return null;
+    const img = document.createElement("img");
+    img.className = "bot-avatar " + extraClass;
+    img.src = botAvatarUrl(file);
+    img.dataset.avatar = file;
+    img.alt = "Portrait de " + name;
+    img.width = 48;
+    img.height = 48;
+    img.loading = "lazy";
+    img.decoding = "async";
+    return img;
+  }
+
+  function botGallery(bots, seat, selectedId) {
+    const gallery = document.createElement("details");
+    gallery.className = "bot-gallery";
+    const summary = document.createElement("summary");
+    summary.textContent = "Choisir en images";
+    gallery.appendChild(summary);
+    const grid = document.createElement("div");
+    grid.className = "bot-gallery-grid";
+    bots.forEach(bot => {
+      const button = document.createElement("button");
+      button.className = "bot-card";
+      button.type = "button";
+      button.dataset.botId = bot.id;
+      button.setAttribute("aria-pressed", String(bot.id === selectedId));
+      button.title = "Par " + bot.author + " — " + bot.description;
+      const avatar = botAvatar(bot.avatars && bot.avatars[seat], bot.names[seat], "gallery-avatar");
+      if (avatar) button.appendChild(avatar);
+      const label = document.createElement("strong");
+      label.textContent = bot.label;
+      button.appendChild(label);
+      const theme = document.createElement("span");
+      theme.textContent = (bot.theme || bot.family) + " · " + botStars(bot);
+      button.appendChild(theme);
+      button.onclick = () => socket.emit("set_bot", { code: roomCode, seat, bot_id: bot.id });
+      grid.appendChild(button);
+    });
+    gallery.appendChild(grid);
+    return gallery;
+  }
+
   // Identité stable à table : prénom distinct + famille/version du catalogue.
   function botSeatName(botId, seat) {
     const bot = findBot(botId);
@@ -124,6 +172,13 @@
     const bot = findBot(botId);
     if (!bot) return;
     const name = (bot.names && bot.names[seat]) || bot.label;
+    const avatar = document.getElementById("bot-info-avatar");
+    const portrait = bot.avatars && bot.avatars[seat];
+    avatar.classList.toggle("hidden", !portrait);
+    if (portrait) {
+      avatar.src = botAvatarUrl(portrait);
+      avatar.alt = "Portrait de " + name;
+    }
     document.getElementById("bot-info-name").textContent = name;
     document.getElementById("bot-info-engine").textContent = "Version : " + bot.label +
       " · Niveau indicatif : " + botStars(bot);
@@ -167,6 +222,11 @@
             ? '<div class="seat-empty-label">Libre</div>'
             : '<div class="seat-empty-label">🤖 ' + escapeHtml(botSeatName(choices[String(key)], key)) + "</div>");
       row.appendChild(label);
+      if (!info.name && key !== "board") {
+        const bot = findBot(choices[String(key)]);
+        const avatar = bot && botAvatar(bot.avatars && bot.avatars[key], bot.names[key], "lobby-avatar");
+        if (avatar) label.insertBefore(avatar, label.querySelector(".seat-empty-label"));
+      }
 
       const controls = document.createElement("div");
       controls.className = "seat-controls";
@@ -189,7 +249,7 @@
           const family = b.family || b.label;
           if (!families.has(family)) {
             const group = document.createElement("optgroup");
-            group.label = family;
+            group.label = family + (b.theme ? " · " + b.theme : "");
             families.set(family, group);
             select.appendChild(group);
           }
@@ -220,6 +280,7 @@
         summary.textContent = selectedBot
           ? "Par " + selectedBot.author + " — " + selectedBot.description : "";
         picker.appendChild(summary);
+        picker.appendChild(botGallery(bots, key, choices[String(key)]));
         controls.appendChild(picker);
       }
 
@@ -459,6 +520,17 @@
         marker.prepend(nameEl);
       }
       nameEl.innerHTML = nameHtml;
+      // Les profils explicites du serveur concernent les bots, jamais les humains.
+      const profile = state.bot_profiles && state.bot_profiles[String(seat)];
+      let avatar = marker.querySelector(".seat-avatar");
+      if (!profile || !profile.avatar) {
+        if (avatar) avatar.remove();
+      } else if (!avatar || avatar.dataset.avatar !== profile.avatar) {
+        if (avatar) avatar.remove();
+        avatar = botAvatar(profile.avatar, nameOf(state, seat), "seat-avatar");
+        marker.insertBefore(avatar, nameEl);
+      }
+      marker.classList.toggle("has-bot-avatar", !!(profile && profile.avatar));
       // Laisser la bulle attachée : seules les nouvelles annonces la rejouent.
       marker.querySelectorAll(".claimed-hand").forEach(row => row.remove());
       marker.classList.toggle("active-turn", state.waiting_seat === seat);

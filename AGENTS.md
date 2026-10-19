@@ -178,16 +178,32 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 ## Règles et configuration actuelles
 
 Le catalogue des bots définit `family`, `version`, `author`, `description`,
-`level` (indicatif) et quatre prénoms par version dans `belote/bots/registry.py`.
+`theme`, `avatars`, `level` (indicatif) et quatre prénoms par version dans
+`belote/bots/registry.py`.
 Le créateur choisit ces métadonnées. Les noms publics combinent prénom,
-famille et version (« Raphaël Spark v3 »), identiques dans le catalogue,
+famille et version (« Charles de Belote v3 »), identiques dans le catalogue,
 le salon et la partie. Garder les identifiants API inchangés : l'ancien
-`spark` est présenté comme Spark v0. Tous les bots actuels ont Zach pour auteur.
+`random` devient West v1 (cowboys), `heuristic` Bohème v1 (bobos à bonnet),
+et `spark`/`spark_v1` à `spark_v3` de Belote v0 à v3 (aristos).
+Tous les bots actuels ont Zach pour auteur.
 Le sélecteur natif est regroupé par famille et affiche les versions, pas
 des prénoms différents par siège ; l'auteur et la méthode sont visibles sous
 le sélecteur et dans la fiche ⓘ. Les descriptions suivent le code réel :
 Spark/v1 à règles, v2 à simulations, v3 avec contraintes d'enchères et
 résolution exacte de chaque répartition simulée en fin de donne.
+
+Les 12 portraits originaux sont dans `frontend-github-pages/assets/bots/`,
+avec leurs prompts de génération. Une famille partage ses quatre portraits
+entre versions ; les identifiants de moteurs ne changent pas. Flask sert
+uniquement les fichiers référencés par le catalogue via `/assets/bots/<fichier>`
+(cache 24 h). La copie statique dispose des mêmes fichiers et peut charger
+les portraits sur son backend configuré. `GameSession.bot_profiles` fournit
+un profil par siège bot uniquement ; ne pas inférer les avatars des prénoms.
+Conserver les éléments images entre mises à jour identiques comme les bulles.
+Le salon propose « Choisir en images » en complément du sélecteur natif.
+Portraits au-dessus du nom : 48 px dans le salon, 22–30 px à table, 18 px en
+paysage compact ; coins très légèrement arrondis (4 px), jamais en cercle.
+Pas de photos de profil pour les joueurs humains à ce stade.
 
 Dans le salon, une connexion n'occupe qu'un siège, plateau compris. Le serveur
 vérifie puis déplace sous le même verrou : si la destination est prise, garder
