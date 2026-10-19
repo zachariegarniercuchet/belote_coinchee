@@ -52,14 +52,20 @@ belote/
     cards.py        # Cartes, couleurs, valeurs, distribution
     bidding.py       # Enchères (BiddingState, Contract, BidAction)
     trick.py         # Cartes jouables (legal_cards) + résolution des plis
+    claim.py         # Détection du tablage et résolution des plis restants
     scoring.py       # Calcul du score d'une donne
     player.py        # Interface abstraite Player (pour brancher humains ou IA)
     game.py          # Donne (une main) et Game (partie complète)
     bots/            # TOUS les bots : classic.py, spark*.py, registry.py (+ README.md)
     human_cli.py     # Joueur humain piloté au clavier (console)
 cli.py               # Point d'entrée pour jouer en console
+logo/                # Emblème du 10 de trèfle : originaux + icônes dérivées
 tests/
-    test_rules.py    # Tests manuels sur les règles délicates et le score
+    test_rules.py       # Tests manuels sur les règles délicates et le score
+    test_autoplay.py    # Dernière carte jouée automatiquement sur le web
+    test_claim.py       # Tablage : ordres légaux, scores, mains non révélées
+    test_hand_order.py  # Tri des mains et passage à l'ordre d'atout
+    test_lobby.py       # Parcours Socket.IO : sièges, bots, reconnexion
 ```
 
 ## Jouer une partie en console
@@ -141,6 +147,29 @@ Pour enchérir, choisir la couleur au-dessus du montant puis utiliser **− / +*
 80, 90… 160, 170, 180, puis **Capot**, selon les enchères encore autorisées.
 Le montant reste affiché seul pour garder le panneau compact.
 
+## Identité visuelle
+
+Le logo de la plateforme est l'emblème monolinéaire du 10 de trèfle, rangé
+dans `logo/` avec les autres variantes proposées. Il apparaît dans l'onglet du
+navigateur et, sur iPhone/iPad, comme icône **« Sur l'écran d'accueil »**.
+
+Les icônes utilisées par le navigateur sont générées à partir de l'emblème
+officiel, recolorées aux couleurs du site (fond `#0a1420`, tracé `#d9a441`) :
+
+| Fichier | Usage |
+| --- | --- |
+| `logo/favicon-32x32.png`, `logo/favicon-16x16.png` | Onglet du navigateur |
+| `logo/apple-touch-icon.png` (180 × 180) | Écran d'accueil iOS |
+| `logo/monoline-10-club.png` | Source d'origine (1254 × 1254), logo officiel |
+
+Ces trois icônes dérivées sont dupliquées dans `frontend-github-pages/logo/`
+pour la copie statique, et publiques côté Flask via la liste blanche
+`ALLOWED_STATIC_FILES` dans `server.py`. Les originales ne sont pas servies.
+
+Note : `apple-touch-icon` alimente l'icône du raccourci « Sur l'écran
+d'accueil ». Un widget iOS véritablement natif demande une application, il
+n'est pas accessible depuis un site web.
+
 ## Lancer les tests
 
 ```bash
@@ -190,5 +219,8 @@ si vous voulez générer des données d'entraînement.
 ## Prochaines étapes envisagées (hors périmètre de cette livraison)
 
 - Algorithmes de jeu plus avancés (règles expertes, recherche, apprentissage).
-- Interface conviviale multi-joueurs avec système de « room » rejoignable
-  par QR code.
+
+Ce qui figure autrefois dans cette section est en place : les salons
+rejoignables par code ou QR code, l'interface web multi-joueurs, les bots
+choisis dans le lobby et le mode plateau partagé. Voir
+[DEPLOY.md](DEPLOY.md) pour le déploiement (Render + GitHub Pages).

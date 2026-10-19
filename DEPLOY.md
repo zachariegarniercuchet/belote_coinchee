@@ -77,9 +77,10 @@ You said it's already on GitHub — make sure the changes in this delivery
 
 ## 3. (Option B only) Point GitHub Pages at the Render backend
 
-1. Copy the three files from `frontend-github-pages/` in this repo
-   (`index.html`, `app.js`, `style.css`) into your GitHub Pages repo,
-   replacing what's there.
+1. Copy the contents of `frontend-github-pages/` in this repo (`index.html`,
+   `app.js`, `style.css` and the `logo/` folder) into your GitHub Pages repo,
+   replacing what's there. The `logo/` folder holds the favicon and the
+   iOS home-screen icon — without it those requests 404.
 2. In `index.html`, set the backend URL to your real Render URL:
    ```html
    <script>
