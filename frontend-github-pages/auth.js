@@ -118,6 +118,15 @@
     };
 
     const ERRORS_FR = [
+      // Codes GoTrue (error_code) — traités avec les messages via humanError().
+      ["invalid_credentials", "Email ou mot de passe incorrect."],
+      ["user_already_exists", "Un compte existe déjà avec cette adresse email."],
+      ["user_not_found", "Aucun compte n'est enregistré avec cette adresse email."],
+      ["email_not_confirmed", "Email non confirmé : clique d'abord sur le lien reçu par email."],
+      ["weak_password", "Le mot de passe doit contenir au moins 6 caractères."],
+      ["email_rate_limit_exceeded", "Trop d'emails envoyés récemment : réessaie dans quelques minutes."],
+      ["validation_failed", "Vérifie l'adresse email et le mot de passe."],
+      // Messages repris tels quels lorsqu'aucun code n'accompagne l'erreur.
       ["Invalid login credentials", "Email ou mot de passe incorrect."],
       ["User already registered", "Un compte existe déjà avec cette adresse email."],
       ["User not found", "Aucun compte n'est enregistré avec cette adresse email."],
@@ -125,18 +134,23 @@
       ["Password should be at least 6 characters", "Le mot de passe doit contenir au moins 6 caractères."],
       ["Signup requires a valid password", "Choisis un mot de passe d'au moins 6 caractères."],
       ["Unable to validate email address", "Cette adresse email n'est pas valide."],
+      ["is invalid", "Cette adresse email n'est pas valide."],
+      ["email rate limit exceeded", "Trop d'emails envoyés récemment : réessaie dans quelques minutes."],
       ["Invalid Refresh Token", "Session expirée : reconnecte-toi."],
       ["same password", "Choisis un mot de passe différent de l'ancien."],
-      ["does not exist", "Historique non installé : lance supabase/setup.sql (voir SUPABASE.md)."],
+      // Table absente : PostgREST renvoie PGRST205 « Could not find the table… ».
+      ["game_history", "Historique non installé : lance supabase/setup.sql (voir SUPABASE.md)."],
     ];
 
     function humanError(error) {
       const message = (error && error.message) || String(error || "");
+      const code = (error && error.code) || "";
       if (/Failed to fetch|NetworkError|fetch failed|Load failed/i.test(message)) {
         return "Impossible de joindre le service de comptes (connexion internet ?).";
       }
+      const haystack = message + " " + code;
       for (const [needle, answer] of ERRORS_FR) {
-        if (message.indexOf(needle) !== -1) return answer;
+        if (haystack.indexOf(needle) !== -1) return answer;
       }
       return message || "Une erreur est survenue.";
     }

@@ -336,7 +336,13 @@ ouverte ; la connexion Google n'est pas encore câblée, la procédure est dans
   inscription, message d'erreur propre sur un appel réseau échoué, fermeture,
   création de salon invité inchangée, aucune exception JS, et aucune trace de
   compte visible sans configuration (18 vérifications, 0 échec).
-- Vérification **non faite** : inscription/connexion réelles, réception des
-  e-mails et écriture/lire de `game_history` — elles demandent les vraies
-  clés du projet Supabase et le SQL exécuté. À refaire avec les clés réelles
-  avant mise en ligne.
+- Vérification navigateur **faite** avec les vraies clés du projet
+  (`https://rluiqgmrchewlyipioze.supabase.co`) : bandeau invité, échec de
+  connexion réel traduit (« Email ou mot de passe incorrect. »), inscription
+  traitée (le SMTP intégré a répondu « email rate limit exceeded », message
+  traduit), demande de mot de passe oublié, création de salon invité, aucune
+  exception JS (10 vérifications, 0 échec).
+- Vérification **non faite** : session connectée, écriture/lecture de
+  `game_history` (table non encore créée à cette date) et clic sur le lien de
+  confirmation. Deux comptes de test `e2e.…@gmail.com` peuvent exister dans
+  Authentication → Users et être supprimés.

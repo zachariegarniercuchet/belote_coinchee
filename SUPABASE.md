@@ -36,6 +36,14 @@ Puis dans **Authentication → Sign In / Providers** :
     « Presque ! Ouvre le lien de confirmation… » puis bascule sur Connexion.
   - *désactivé* : pratique pour tester, le compte est connecté directement.
 
+> **Limite d'emails du service intégré** : le SMTP fourni par Supabase
+> (plan gratuit) n'envoie que quelques messages par heure ; au-delà,
+> l'inscription affiche « Trop d'emails envoyés récemment : réessaie dans
+> quelques minutes ». Pour une vraie utilisation à plusieurs, brancher un SMTP
+> gratuit (**Authentication → SMTP Settings** : Resend, Brevo, Mailgun, SendGrid
+> — 30 secondes de réglage) : confirmations, mots de passe oubliés et
+> invitations n'auront plus cette limite basse.
+
 Dans **Authentication → URL configuration** :
 
 - **Site URL** : l'adresse principale de l'app (ex.
@@ -163,6 +171,8 @@ Rien à prévoir dans la base : seule l'UI manque. Étapes :
 | --- | --- |
 | Aucun bouton **Connexion** | Variables non renseignées (mode invité voulu), ou `auth.js` absent de la page. |
 | « Impossible de joindre le service de comptes » | Mauvaise `SUPABASE_URL`, clé invalide, ou connexion réseau. |
+| « Trop d'emails envoyés récemment » | Limite horaire du SMTP intégré à Supabase : brancher un SMTP (voir étape 1) ou réessayer plus tard. |
+| « Cette adresse email n'est pas valide » | Format incorrect, ou domaine sans enregistrement MX (un `.test` ou une adresse fictive est refusée à l'envoi). |
 | « Historique non installé : lance supabase/setup.sql » | Le SQL n'a pas été exécuté, ou dans un autre projet. |
 | « Email non confirmé » | Confirmation activée : cliquer sur le lien reçu. Voir **Authentication → Logs** si le mail n'arrive pas. |
 | Lien de confirmation / réinitialisation refusé | Origine absente des **Redirect URLs** (étape 1). |
