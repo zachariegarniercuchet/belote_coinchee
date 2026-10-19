@@ -796,11 +796,12 @@
       bidFormState.key = key;
       bidFormState.points = null;
       bidFormState.isCapot = false;
-      const partnerSeat = Number.isInteger(state.your_seat) ? (state.your_seat + 2) % 4 : null;
-      const partnerBid = (state.bidding_history || []).slice().reverse().find(entry =>
-        entry.seat === partnerSeat && entry.type === "ENCHERE" && entry.suit);
-      const firstEnchere = (partnerBid && actions.find(a =>
-        a.type === "ENCHERE" && a.suit === partnerBid.suit)) ||
+      const teamSeats = Number.isInteger(state.your_seat)
+        ? [state.your_seat, (state.your_seat + 2) % 4] : [];
+      const teamBid = (state.bidding_history || []).slice().reverse().find(entry =>
+        teamSeats.includes(entry.seat) && entry.type === "ENCHERE" && entry.suit);
+      const firstEnchere = (teamBid && actions.find(a =>
+        a.type === "ENCHERE" && a.suit === teamBid.suit)) ||
         actions.find(a => a.type === "ENCHERE");
       bidFormState.suit = firstEnchere ? firstEnchere.suit : null;
     }

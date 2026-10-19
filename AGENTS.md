@@ -192,9 +192,9 @@ unique, ajusté par −/+. Les crans viennent des actions légales du serveur :
 Le moteur acceptait déjà 170 et 180. Chaque nouveau tour d'enchère et chaque
 nouvelle donne repartent du minimum légal, même si les actions sont identiques.
 La sélection est conservée lors des diffusions identiques d'un même tour.
-La couleur présélectionnée est celle de la dernière enchère du partenaire
-(siège opposé), en ignorant ses passes/coinches et les enchères des autres.
-Sans couleur annoncée par le partenaire, ou si elle n'est plus légale, garder
+La couleur présélectionnée est celle de la dernière enchère de l'équipe
+(le joueur lui-même ou son partenaire), en ignorant les passes/coinches et
+les enchères adverses. Sans couleur annoncée par l'équipe, ou si elle n'est plus légale, garder
 la première couleur autorisée (pique normalement). Le joueur reste libre de
 changer ce choix ; le montant initial reste le minimum légal.
 L'entrée Générale reste commentée après Capot dans
