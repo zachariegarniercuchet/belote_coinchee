@@ -61,6 +61,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `game_session.py` | `NetworkGame`, `NetworkPlayer`, `GameSession` : déroulement web, attente des joueurs et diffusion des états. |
 | `serialize.py` | Conversion cartes/enchères en données JSON et identifiants de cartes. |
 | `index.html`, `app.js`, `style.css` | Interface principale, servie par Flask ; `index.html` utilise Jinja. |
+| `logo/` | Emblème source du 10 de trèfle (originaux) et icônes dérivées : favicons 16/32 px et icône Apple 180 px, recolorées aux couleurs du site. |
 | `frontend-github-pages/` | Copie statique de l'interface pour un backend distant. |
 | `tests/test_rules.py` | Script autonome de vérification des règles et scores. |
 | `tests/test_autoplay.py` | Dernière carte automatique et singletons joués manuellement sur le web. |

@@ -85,9 +85,19 @@ def index():
     return render_template("index.html", prefill_code=request.args.get("code", "").upper())
 
 
+# Liste blanche des fichiers statiques servis : JS, CSS et icônes de la plateforme.
+ALLOWED_STATIC_FILES = {
+    "app.js",
+    "style.css",
+    "logo/apple-touch-icon.png",
+    "logo/favicon-16x16.png",
+    "logo/favicon-32x32.png",
+}
+
+
 @app.route("/static/<path:filename>", endpoint="static")
 def static_assets(filename):
-    if filename not in {"app.js", "style.css"}:
+    if filename not in ALLOWED_STATIC_FILES:
         abort(404)
     return send_from_directory(PROJECT_ROOT, filename)
 
