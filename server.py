@@ -82,12 +82,31 @@ def get_base_url(req) -> str:
 
 @app.route("/")
 def index():
-    return render_template("index.html", prefill_code=request.args.get("code", "").upper())
+    return render_template(
+        "index.html",
+        prefill_code=request.args.get("code", "").upper(),
+        supabase=supabase_config(),
+    )
+
+
+def supabase_config() -> dict:
+    """Clés **publiques** Supabase injectées dans la page (comptes optionnels).
+
+    Sans ces variables, le frontend reste exactement en mode invité et aucune
+    interface de connexion n'est affichée. La clé anon est faite pour être
+    publique : la protection des données vient des politiques RLS côté base,
+    jamais d'une clé secrète dans le navigateur.
+    """
+    return {
+        "url": os.environ.get("SUPABASE_URL", "").strip(),
+        "anonKey": os.environ.get("SUPABASE_ANON_KEY", "").strip(),
+    }
 
 
 # Liste blanche des fichiers statiques servis : JS, CSS et icônes de la plateforme.
 ALLOWED_STATIC_FILES = {
     "app.js",
+    "auth.js",
     "style.css",
     "logo/apple-touch-icon.png",
     "logo/favicon-16x16.png",
@@ -104,7 +123,7 @@ def static_assets(filename):
 
 @app.route("/join/<code>")
 def join_page(code):
-    return render_template("index.html", prefill_code=code.upper())
+    return render_template("index.html", prefill_code=code.upper(), supabase=supabase_config())
 
 
 @app.route("/room/<code>/info")

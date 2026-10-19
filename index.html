@@ -26,6 +26,9 @@
   <div class="home-card">
     <h1 class="logo">♠ Belote <span>Coinchée</span> ♦</h1>
 
+    <!-- Zone de compte (auth.js) : invisible tant que Supabase n'est pas configuré. -->
+    <div id="auth-area" class="auth-area hidden"></div>
+
     <div class="tabs">
       <button class="tab-btn active" data-tab="join">Rejoindre</button>
       <button class="tab-btn" data-tab="create">Créer un salon</button>
@@ -93,6 +96,53 @@
   </div>
 </section>
 
+<!-- ============ MODALE COMPTE (connexion / inscription) ============ -->
+<div id="auth-overlay" class="overlay interactive hidden">
+  <div class="overlay-box auth-box">
+    <h2 id="auth-title">Connexion</h2>
+
+    <div id="auth-tabs" class="auth-tabs">
+      <button type="button" class="auth-tab active" data-mode="login">Connexion</button>
+      <button type="button" class="auth-tab" data-mode="signup">Créer un compte</button>
+    </div>
+
+    <form id="auth-form" novalidate>
+      <div id="auth-name-row" class="auth-row hidden">
+        <label for="auth-name">Ton prénom</label>
+        <input id="auth-name" type="text" maxlength="20" autocomplete="nickname" placeholder="Ton prénom">
+      </div>
+      <div id="auth-email-row" class="auth-row">
+        <label for="auth-email" id="auth-email-label">Email</label>
+        <input id="auth-email" type="email" autocomplete="username" autocapitalize="none"
+               spellcheck="false" placeholder="toi@exemple.fr">
+      </div>
+      <div id="auth-password-row" class="auth-row">
+        <label for="auth-password" id="auth-password-label">Mot de passe</label>
+        <input id="auth-password" type="password" autocomplete="current-password"
+               autocapitalize="none" spellcheck="false" placeholder="••••••••">
+      </div>
+
+      <p id="auth-error" class="auth-message error hidden"></p>
+      <p id="auth-info" class="auth-message info hidden"></p>
+
+      <button id="btn-auth-submit" class="btn btn-primary" type="submit">Se connecter</button>
+    </form>
+
+    <button id="btn-auth-forgot" class="btn btn-ghost" type="button">Mot de passe oublié ?</button>
+    <button id="btn-auth-close" class="btn btn-ghost" type="button">Continuer en invité</button>
+  </div>
+</div>
+
+<!-- ============ MODALE HISTORIQUE ============ -->
+<div id="history-overlay" class="overlay interactive hidden">
+  <div class="overlay-box history-box">
+    <h2>Mes parties</h2>
+    <div id="history-stats" class="history-stats"></div>
+    <div id="history-list" class="history-list"></div>
+    <button id="btn-history-close" class="btn btn-primary">Fermer</button>
+  </div>
+</div>
+
 <!-- ============ ÉCRAN JEU ============ -->
 <section id="screen-game" class="screen hidden">
 
@@ -157,7 +207,13 @@
 
 </section>
 
+<script>
+  // Clés publiques Supabase (optionnelles) : sans elles, l'app reste 100 % invité.
+  // Elles proviennent des variables d'environnement SUPABASE_URL / SUPABASE_ANON_KEY.
+  window.BELOTE_SUPABASE = {{ supabase | tojson }};
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
+<script src="{{ url_for('static', filename='auth.js') }}"></script>
 </body>
 </html>

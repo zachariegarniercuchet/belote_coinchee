@@ -1048,5 +1048,7 @@
     if (state.code !== roomCode) return;
     showScreen("screen-game");
     renderGame(state);
+    // Compte connecté : enregistre la fin de partie (no-op en mode invité).
+    if (state.game_over) window.BeloteAuth?.recordGameEnd(state);
   });
 })();

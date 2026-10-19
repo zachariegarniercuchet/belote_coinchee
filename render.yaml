@@ -14,3 +14,9 @@ services:
         value: "*"
       - key: PUBLIC_BASE_URL
         value: ""
+      # Comptes optionnels (voir SUPABASE.md) : laisser vides pour le
+      # mode invité pur, puis renseigner dans le tableau de bord Render.
+      - key: SUPABASE_URL
+        value: ""
+      - key: SUPABASE_ANON_KEY
+        value: ""

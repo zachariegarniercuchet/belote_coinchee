@@ -18,6 +18,7 @@ from __future__ import annotations
 import random
 import threading
 import time
+import uuid
 
 from belote.bidding import BiddingState
 from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_name
@@ -310,6 +311,9 @@ class GameSession:
                  bot_ids: dict | None = None):
         self.room = room
         self.ctx = GameContext()
+        # Identifiant stable de la partie, diffusé avec l'état : il sert de
+        # clé anti-doublon pour l'historique enregistré par un compte connecté.
+        self.game_id = uuid.uuid4().hex
         self.finished = False
         self.winner_team = None
         self._stop = False
@@ -527,6 +531,7 @@ class GameSession:
         belote_visible = bool(ctx.belote_announcements) or ctx.last_donne_result is not None
         return {
             "code": self.room.code,
+            "game_id": self.game_id,
             "phase": ctx.phase,
             "error_message": ctx.error_message,
             "dealer": ctx.dealer,
