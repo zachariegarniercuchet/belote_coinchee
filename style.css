@@ -303,6 +303,8 @@ input::placeholder { color: rgba(247,241,227,.4); }
 
 .table-felt {
   position: relative;
+  container-type: inline-size;
+  --played-card-w: clamp(24px, min(11cqw, 7dvh), 62px);
   width: 100%;
   flex: 1 1 auto;
   min-height: 300px;
@@ -329,11 +331,50 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .seat-marker .sm-cards { opacity: .7; margin-top: 2px; }
 .seat-marker.dealer::after { content: "D"; position:absolute; top:-8px; right:-8px; background:var(--gold); color:var(--ink); width:18px; height:18px; border-radius:50%; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; }
 
-#seat-marker-0 { bottom: calc(var(--card-h) + 10px); left: 50%; transform: translateX(-50%); }
-#seat-marker-0 .sm-cards { display: none; }
-#seat-marker-1 { right: 6px; top: 26%; transform: translateY(-50%); }
-#seat-marker-2 { top: 9%; left: 50%; transform: translateX(-50%); }
-#seat-marker-3 { left: 6px; top: 26%; transform: translateY(-50%); }
+.seat-marker[data-position="0"] { bottom: calc(var(--card-h) + 10px); left: 50%; transform: translateX(-50%); }
+.seat-marker[data-position="0"] .sm-cards { display: none; }
+.seat-marker[data-position="1"] { right: 6px; top: 26%; transform: translateY(-50%); }
+.seat-marker[data-position="2"] { top: 9%; left: 50%; transform: translateX(-50%); }
+.seat-marker[data-position="3"] { left: 6px; top: 26%; transform: translateY(-50%); }
+
+/* ---------- Tablage : les mains restent visibles jusqu'aux scores ---------- */
+.claim-notice {
+  flex: none;
+  text-align: center;
+  padding: 10px;
+  background: var(--wood);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.claim-notice strong { color: var(--gold-light); font-size: 19px; }
+.claim-notice p { margin: 6px 0 10px; font-size: 12px; }
+.table-felt.claim-visible {
+  display: grid;
+  grid-template-areas: "north north" "west east" "south south";
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-content: safe center;
+  padding: 16px 10px;
+  overflow: auto;
+  min-height: 0;
+}
+.claim-visible .seat-marker[data-position="0"] { grid-area: south; }
+.claim-visible .seat-marker[data-position="1"] { grid-area: east; }
+.claim-visible .seat-marker[data-position="2"] { grid-area: north; }
+.claim-visible .seat-marker[data-position="3"] { grid-area: west; }
+#board-panel .claim-visible .seat-marker {
+  position: static;
+  transform: none;
+  width: auto;
+  min-width: 0;
+  padding: 10px 4px;
+}
+.claim-visible .seat-marker.claim-winner { border-color: var(--gold-light); }
+.claim-visible .seat-marker.dealer::after { display: none; }
+.claimed-hand { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 8px; }
+.claim-visible .trick-slot, .claim-visible .trick-pile,
+.claim-visible .hand-cards, .claim-visible .bid-controls { display: none; }
 
 /* ---------- Bulles d'annonce (enchères / coinche) ---------- */
 .speech-bubble {
@@ -366,29 +407,62 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 .speech-bubble.visible { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 .speech-bubble.fade-out { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(.9); }
+.speech-bubble.announcement-replay { animation: announcement-replay .4s ease-out; }
+@keyframes announcement-replay {
+  0%, 35% { opacity: 0; }
+  100% { opacity: 1; }
+}
 
-#seat-marker-2 .speech-bubble { bottom: auto; top: 100%; margin-bottom: 0; margin-top: 8px; }
-#seat-marker-2 .speech-bubble::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--cream); }
+.seat-marker[data-position="2"] .speech-bubble { bottom: auto; top: 100%; margin-bottom: 0; margin-top: 8px; }
+.seat-marker[data-position="2"] .speech-bubble::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--cream); }
 
 /* Marqueurs latéraux : la bulle passe SOUS le marqueur pour rester dans le plateau. */
-#seat-marker-1 .speech-bubble, #seat-marker-3 .speech-bubble {
+.seat-marker[data-position="1"] .speech-bubble, .seat-marker[data-position="3"] .speech-bubble {
   bottom: auto;
   top: 100%;
   margin-bottom: 0;
   margin-top: 8px;
 }
-#seat-marker-1 .speech-bubble::after, #seat-marker-3 .speech-bubble::after {
+.seat-marker[data-position="1"] .speech-bubble::after, .seat-marker[data-position="3"] .speech-bubble::after {
   top: auto;
   bottom: 100%;
   border-top-color: transparent;
   border-bottom-color: var(--cream);
 }
-#seat-marker-1 .speech-bubble { left: auto; right: 0; transform: translateY(6px) scale(.85); }
-#seat-marker-1 .speech-bubble.visible { transform: translateY(0) scale(1); }
-#seat-marker-1 .speech-bubble::after { left: auto; right: 14px; transform: none; }
-#seat-marker-3 .speech-bubble { left: 0; transform: translateY(6px) scale(.85); }
-#seat-marker-3 .speech-bubble.visible { transform: translateY(0) scale(1); }
-#seat-marker-3 .speech-bubble::after { left: 14px; transform: none; }
+.seat-marker[data-position="1"] .speech-bubble { left: auto; right: 0; transform: translateY(6px) scale(.85); }
+.seat-marker[data-position="1"] .speech-bubble.visible { transform: translateY(0) scale(1); }
+.seat-marker[data-position="1"] .speech-bubble::after { left: auto; right: 14px; transform: none; }
+.seat-marker[data-position="3"] .speech-bubble { left: 0; transform: translateY(6px) scale(.85); }
+.seat-marker[data-position="3"] .speech-bubble.visible { transform: translateY(0) scale(1); }
+.seat-marker[data-position="3"] .speech-bubble::after { left: 14px; transform: none; }
+
+/* Belote : en diagonale du joueur, pas sur la carte posée.
+   Au bord droit seulement, inverser le décalage pour ne pas couper la bulle. */
+.seat-marker[data-position] .speech-bubble.belote-bubble {
+  top: auto;
+  bottom: 55%;
+  left: calc(100% + 6px);
+  right: auto;
+  margin: 0;
+  transform: none;
+  font-size: clamp(10px, 3cqw, 12px);
+}
+.seat-marker[data-position] .speech-bubble.belote-bubble::after {
+  top: auto;
+  bottom: 2px;
+  left: -11px;
+  right: auto;
+  transform: none;
+  border: 6px solid transparent;
+  border-right-color: var(--cream);
+}
+.seat-marker[data-position="1"] .speech-bubble.belote-bubble { left: auto; right: calc(100% + 6px); }
+.seat-marker[data-position="1"] .speech-bubble.belote-bubble::after {
+  left: auto;
+  right: -11px;
+  border-right-color: transparent;
+  border-left-color: var(--cream);
+}
 
 /* ---------- Cartes posées (positions en %, suivent la taille du plateau) ---------- */
 .trick-slot {
@@ -396,10 +470,11 @@ input::placeholder { color: rgba(247,241,227,.4); }
   z-index: 2;
   transition: opacity .2s ease;
 }
-#trick-slot-0 { bottom: 32%; left: 50%; transform: translateX(-50%); }
-#trick-slot-1 { right: 22%; top: 54%; transform: translateY(-50%); }
-#trick-slot-2 { top: 24%; left: 50%; transform: translateX(-50%); }
-#trick-slot-3 { left: 22%; top: 54%; transform: translateY(-50%); }
+.trick-slot.collecting { z-index: 6; }
+.trick-slot[data-position="0"] { bottom: 32%; left: 50%; transform: translateX(-50%); }
+.trick-slot[data-position="1"] { right: 22%; top: 54%; transform: translateY(-50%); }
+.trick-slot[data-position="2"] { top: 24%; left: 50%; transform: translateX(-50%); }
+.trick-slot[data-position="3"] { left: 22%; top: 54%; transform: translateY(-50%); }
 
 .contract-tag {
   font-weight: 800;
@@ -425,7 +500,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .trick-pile.clickable { cursor: pointer; }
 .trick-pile.pile-winner { opacity: 1; border-color: var(--gold); }
 .trick-pile.pile-winner:hover { box-shadow: 0 0 12px rgba(217,164,65,.5); }
-.trick-pile.pile-arrival { animation: pile-arrival .55s ease-out; }
+.trick-pile.pile-arrival { animation: pile-arrival .55s ease-out; animation-delay: var(--pile-arrival-delay, 0ms); }
 @keyframes pile-arrival {
   0% { transform: scale(.86); opacity: .25; }
   65% { transform: scale(1.08); }
@@ -514,6 +589,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 
 .hand-cards .playing-card {
+  transition: opacity .12s;
   margin-left: calc(var(--card-w) * -0.30);
   touch-action: none;
   cursor: pointer;
@@ -549,11 +625,26 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .playing-card.small { width: 34px; height: 48px; }
 .playing-card.small .pc-rank { font-size: 11px; }
 .playing-card.small .pc-suit { font-size: 13px; }
-.playing-card.trick-flying { animation: trick-to-pile 1.25s ease-in forwards; }
+.trick-slot .playing-card.small {
+  width: var(--played-card-w);
+  height: calc(var(--played-card-w) * 1.44);
+  border-radius: calc(var(--played-card-w) * .15);
+}
+.trick-slot .playing-card.small .pc-rank { font-size: calc(var(--played-card-w) * .32); }
+.trick-slot .playing-card.small .pc-suit { font-size: calc(var(--played-card-w) * .38); }
+.playing-card.trick-flying {
+  animation: trick-to-pile 1000ms ease-in-out forwards;
+  animation-delay: var(--collect-delay, 350ms);
+}
 @keyframes trick-to-pile {
-  0% { opacity: 1; transform: scale(1); }
-  55% { opacity: .85; transform: scale(.72) translateY(-5px); }
-  100% { opacity: 0; transform: scale(.18) translateY(-16px); }
+  0% { transform: translate(0, 0) scale(1); }
+  35% { transform: translate(var(--gather-x), var(--gather-y)) scale(.85); }
+  100% { transform: translate(var(--collect-x), var(--collect-y)) scale(.25); visibility: hidden; }
+}
+@keyframes trick-collected { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) {
+  .playing-card.trick-flying { animation-name: trick-collected; animation-duration: 1ms; }
+  .trick-pile.pile-arrival { animation: none; }
 }
 
 .playing-card.legal { transform: rotate(var(--r, 0deg)) translateY(calc(var(--y, 0px) - 12px)); box-shadow: 0 8px 16px rgba(217,164,65,.5); border: 2px solid var(--gold); }
@@ -581,7 +672,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 /* ---------- Enchères : panneau compact centré, la main reste visible ---------- */
 .bid-controls {
   position: absolute;
-  top: 42%;
+  top: 52%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(280px, 86%);
@@ -608,16 +699,11 @@ input::placeholder { color: rgba(247,241,227,.4); }
   color: var(--gold-light);
   text-align: center;
 }
-.bid-section-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: .6;
-  margin: 6px 0 4px;
-  text-align: center;
-}
-.bid-suit-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
-.bid-num-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px; }
+.bid-suit-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
+.bid-amount-row { display: grid; grid-template-columns: 44px minmax(80px, 1fr) 44px; gap: 10px; align-items: center; }
+.bid-amount { text-align: center; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--gold-light); }
+.bid-amount-row .bid-step-btn { min-height: 44px; padding: 0; font-size: 26px; line-height: 1; }
+.bid-step-btn:disabled { opacity: .3; cursor: default; }
 .bid-suit-btn {
   background: rgba(255,255,255,.08);
   min-width: 48px;
@@ -642,7 +728,6 @@ input::placeholder { color: rgba(247,241,227,.4); }
   flex-shrink: 0;
 }
 .bid-chip:active { background: var(--gold); color: var(--ink); }
-.bid-chip.capot-chip { background: rgba(217,164,65,.25); }
 .bid-actions-row { display: flex; gap: 6px; margin-top: 4px; }
 .bid-actions-row .bid-chip { flex: 1; text-align: center; min-height: 40px; }
 .bid-chip.pass { background: rgba(255,255,255,.08); }
@@ -684,8 +769,15 @@ input::placeholder { color: rgba(247,241,227,.4); }
   pointer-events: none;
 }
 .overlay-box h2 { margin-top: 0; color: var(--gold-light); }
+#donne-recap .overlay-box { max-height: calc(100dvh - 40px); overflow-y: auto; }
+.recap-final, .recap-final .overlay-box { pointer-events: auto; }
+.recap-final .overlay-box { max-width: 440px; }
+.final-winner { color: var(--gold-light); font-size: 19px; font-weight: 800; }
+.recap-final .score-history tbody tr:last-child { outline: 1px solid var(--gold); }
+.recap-final #btn-new-game { margin-top: 16px; width: 100%; }
 .overlay-box .result-line { font-size: 15px; margin: 6px 0; }
 .pts-toggle {
+  pointer-events: auto;
   cursor: pointer;
   border-bottom: 1px dotted var(--gold-light);
   padding: 0 2px;

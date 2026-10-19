@@ -40,6 +40,11 @@ première version, le bonus est ici attribué **automatiquement** à l'équipe
 qui détient les deux cartes en main de départ, sans exiger d'annonce
 explicite. Facile à changer plus tard si vous voulez la règle stricte.
 
+L'interface web affiche néanmoins automatiquement **« Belote ! »** puis
+**« Rebelote ! »** dans une bulle près du joueur lorsqu'il pose les deux cartes
+de sa paire roi–dame d'atout, dans un ordre ou dans l'autre. Ces bulles
+accompagnent le jeu ; elles ne changent pas le calcul du bonus de 20 points.
+
 ## Structure du code
 
 ```
@@ -88,6 +93,53 @@ Pour tester seul, cocher **Compléter les sièges vides avec des bots**, prendre
 un siège, puis démarrer la partie. Pour jouer à plusieurs, chaque joueur ouvre
 l'adresse du serveur et rejoint le même code de salon. Le terminal doit rester
 ouvert pendant la partie.
+
+Pour **observer quatre bots**, créer un salon, s'asseoir uniquement à la place
+**Plateau (écran partagé)**, laisser les quatre sièges joueurs libres, garder
+**Compléter les sièges vides avec des bots** coché, puis démarrer. Choisir les
+bots dans les sélecteurs du salon. Le plateau affiche le jeu et attend un clic
+sur le récapitulatif entre les donnes ; en cas de tablage, cliquer d'abord sur
+**Voir les scores**.
+
+Si l'environnement `.venv` a déjà été préparé, le lancement local tient en une
+commande PowerShell depuis la racine :
+
+```powershell
+.\.venv\Scripts\python.exe -B server.py
+```
+
+Ouvrir `http://localhost:5000` sur ce PC, ou l'adresse Wi-Fi affichée dans le
+terminal depuis l'iPhone connecté au même réseau. Arrêter le serveur avec
+`Ctrl+C`. Cette version locale utilise directement les fichiers de la racine,
+sans déploiement Render ni copie GitHub Pages.
+
+Le jeu table automatiquement entre deux plis dans deux situations certaines :
+une main ne contient plus que des atouts et personne d'autre n'a d'atout,
+ou il n'y a plus d'atouts et toutes les cartes du joueur qui entame sont
+maîtresses dans leur couleur. Les cartes restantes des quatre joueurs sont
+alors révélées côte à côte auprès de leurs noms, et les plis restants sont
+attribués avec le dix de der et le capot éventuel. **Voir les scores** permet
+ensuite d'ouvrir le récapitulatif. Si un appareil occupe le siège plateau,
+c'est sur cet appareil que les mains sont révélées.
+
+Le dernier pli se joue automatiquement avec les quatre cartes d'un coup, sans annonce de
+tablage : il faut au moins deux cartes restantes par joueur pour tabler.
+Il reste visible une seconde de plus que les autres plis avant d'être ramassé.
+Le récapitulatif de la dernière donne reste affiché jusqu'à validation,
+avant l'annonce du vainqueur de la partie.
+
+Les mains sont triées de la carte la plus forte à la plus faible. Une fois les
+enchères terminées, les atouts passent dans l'ordre Valet, 9, As, 10, Roi,
+Dame, 8, 7, avec une courte animation. Les groupes de couleurs alternent
+rouge/noir autant que possible : pique, cœur, trèfle, carreau à quatre
+couleurs, ou un sandwich de teintes à trois couleurs. Lorsqu'il ne reste plus
+que deux couleurs, elles conservent leur ordre à l'écran.
+Chaque joueur voit la table depuis sa place, avec son nom en bas et son
+partenaire en face, quel que soit le siège choisi dans le salon.
+
+Pour enchérir, choisir la couleur au-dessus du montant puis utiliser **− / +** :
+80, 90… 160, 170, 180, puis **Capot**, selon les enchères encore autorisées.
+Le montant reste affiché seul pour garder le panneau compact.
 
 ## Lancer les tests
 

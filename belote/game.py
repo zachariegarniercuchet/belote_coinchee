@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 
 from .bidding import ActionType, BiddingState, Contract
 from .cards import Card, Suit, cut_deck, deal, new_shuffled_deck
+from .claim import Claim, find_claim, play_claim
 from .player import Player
 from .scoring import DonneResult, compute_donne_score, find_belote_holder, BELOTE_BONUS
 from .trick import TrickState, team_of
@@ -26,6 +27,7 @@ class DonneLog:
     tricks: list[list[tuple[int, Card]]] = field(default_factory=list)
     trick_winners: list[int] = field(default_factory=list)
     result: DonneResult | None = None
+    claim: Claim | None = None
 
 
 class Donne:
@@ -72,6 +74,21 @@ class Donne:
         last_trick_winner = leader
 
         for _ in range(8):
+            claim = find_claim(hands, leader, atout)
+            if claim is not None:
+                log.claim = claim
+                claimed = play_claim(hands, leader, atout, claim)
+                for trick in claimed:
+                    trick_points[team_of(claim.seat)] += trick.points()
+                    tricks_won_by_team[team_of(claim.seat)] += 1
+                    log.tricks.append(list(trick.plays))
+                    log.trick_winners.append(claim.seat)
+                    for pl in self.players.values():
+                        pl.notify_trick_result(list(trick.plays), claim.seat)
+                last_trick_winner = claim.seat
+                for pl in self.players.values():
+                    pl.notify(f"{self.players[claim.seat].name} table : {len(claimed)} pli(s) restant(s).")
+                break
             trick = TrickState(leader=leader, atout=atout)
             for _ in range(4):
                 p = trick.current_player

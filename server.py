@@ -129,7 +129,12 @@ def api_bots():
 # --------------------------------------------------------------------------
 
 def _emit_lobby_update(room):
-    socketio.emit("lobby_update", room.lobby_state(), room=room.code)
+    # Ne pas déduire le propriétaire d'un siège de son prénom (homonymes).
+    with sid_lock:
+        members = [sid for sid, info in sid_info.items() if info["code"] == room.code]
+    with room.lock:
+        for sid in members:
+            socketio.emit("lobby_update", room.lobby_state(sid), to=sid)
 
 
 def _seat_key(raw):
@@ -164,12 +169,13 @@ def on_join_lobby(data):
 
     # Reconnexion : un siège porte déjà ce nom mais est actuellement sans connexion.
     with room.lock:
-        for key, seat in room.seats.items():
-            if seat.name == name and seat.sid is None:
-                seat.sid = request.sid
-                break
+        if room.seat_of_sid(request.sid) is None:
+            for seat in room.seats.values():
+                if seat.name == name and seat.sid is None:
+                    seat.sid = request.sid
+                    break
 
-    socketio.emit("lobby_joined", room.lobby_state(), to=request.sid)
+    socketio.emit("lobby_joined", room.lobby_state(request.sid), to=request.sid)
     _emit_lobby_update(room)
     if room.game_session:
         room.game_session.broadcast()
@@ -188,7 +194,11 @@ def on_take_seat(data):
 
     ok = room.take_seat(seat_key, request.sid, name)
     if not ok:
-        socketio.emit("error_message", {"message": "Ce siège est déjà occupé."}, to=request.sid)
+        message = ("Les sièges sont verrouillés pendant la partie."
+                   if room.game_session and not room.game_session.finished
+                   else "Ce siège est déjà occupé. Ta place précédente est conservée.")
+        socketio.emit("error_message", {"message": message}, to=request.sid)
+        socketio.emit("lobby_update", room.lobby_state(request.sid), to=request.sid)
         return
     _emit_lobby_update(room)
     if room.game_session:
@@ -201,9 +211,13 @@ def on_leave_seat(data):
     room = rooms.get(code)
     if not room:
         return
-    seat = room.seat_of_sid(request.sid)
-    if seat is not None:
-        room.free_seat(seat)
+    with room.lock:
+        if room.game_session and not room.game_session.finished:
+            socketio.emit("error_message", {"message": "Les sièges sont verrouillés pendant la partie."}, to=request.sid)
+            return
+        seat = room.seat_of_sid(request.sid)
+        if seat is not None:
+            room.free_seat(seat)
     _emit_lobby_update(room)
 
 
@@ -313,7 +327,7 @@ def on_request_state(data):
     if room.game_session:
         room.game_session.broadcast()
     else:
-        socketio.emit("lobby_update", room.lobby_state(), to=request.sid)
+        socketio.emit("lobby_update", room.lobby_state(request.sid), to=request.sid)
 
 
 @socketio.on("dismiss_recap")

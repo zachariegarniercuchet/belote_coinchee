@@ -19,15 +19,29 @@
   let recapState = null;
   let recapDonneNumber = null;
   let lastTrickAnimationKey = null;
+  let dismissedClaimDonneNumber = null;
 
   // Bulles d'annonce (enchères / coinche) : elles restent affichées tant que
   // dure la phase d'enchères (la nouvelle annonce d'un joueur remplace la
   // précédente), puis disparaissent une fois la phase terminée.
   const bidBubbleState = { donne: null, count: 0, clearedForPhase: false };
+  const beloteBubbleState = { donne: null, count: 0, timer: null };
 
   // Formulaire d'enchère (popup centrale) : on choisit couleur + montant,
   // puis on valide avec "Confirmer". Mémorisé entre deux state_update.
   const bidFormState = { key: null, suit: null, points: null, isCapot: false };
+
+  // Tenir compte du plateau réellement disponible, y compris en paysage.
+  const tableFelt = document.querySelector(".table-felt");
+  if (typeof window.ResizeObserver === "function") {
+    new window.ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) {
+        const cardWidth = Math.max(24, Math.min(62, width * .11, height * .14));
+        tableFelt.style.setProperty("--played-card-w", cardWidth + "px");
+      }
+    }).observe(tableFelt);
+  }
 
   // ------------------------------------------------------------------
   // Navigation entre écrans
@@ -123,6 +137,7 @@
 
   function renderSeats(state) {
     lastLobbyState = state;
+    mySeatChosen = state.your_seat ?? null;
     const wrap = document.getElementById("seats");
     wrap.innerHTML = "";
     const bots = state.available_bots || [];
@@ -140,7 +155,7 @@
         labelText = "Joueur " + (key + 1);
         teamClass = key % 2 === 0 ? "team-a" : "team-b";
       }
-      const isMine = info.name && info.name === myName;
+      const isMine = key === mySeatChosen;
       if (isMine) row.classList.add("mine");
 
       label.innerHTML =
@@ -188,7 +203,6 @@
         btn.className = "seat-take-btn";
         btn.textContent = "S'asseoir";
         btn.onclick = () => {
-          mySeatChosen = key;
           socket.emit("take_seat", { code: roomCode, seat: key });
         };
         controls.appendChild(btn);
@@ -199,7 +213,6 @@
         btn.style.color = "rgba(247,241,227,.6)";
         btn.textContent = "Se lever";
         btn.onclick = () => {
-          mySeatChosen = null;
           socket.emit("leave_seat", { code: roomCode });
         };
         controls.appendChild(btn);
@@ -237,9 +250,26 @@
     if (e.target.id === "bot-info-overlay") hideBotInfo();
   });
 
-  document.getElementById("btn-new-game").addEventListener("click", () => {
+  function resetGameView() {
+    resetBeloteBubbles();
+    recapState = null;
+    recapDonneNumber = null;
+    dismissedDonneNumber = null;
+    dismissedClaimDonneNumber = null;
+    lastTrickAnimationKey = null;
+    bidBubbleState.donne = null;
+    bidFormState.key = null;
+    document.getElementById("donne-recap").classList.remove("recap-final");
+    ["donne-recap", "claim-notice", "last-trick-popup"].forEach(id =>
+      document.getElementById(id).classList.add("hidden"));
+  }
+
+  document.getElementById("donne-recap").addEventListener("click", event => {
+    if (!event.target.closest("#btn-new-game")) return;
+    event.stopPropagation();
+    if (!lastRenderedState || !lastRenderedState.game_over) return;
+    resetGameView();
     socket.emit("new_game", { code: roomCode });
-    document.getElementById("gameover-overlay").classList.add("hidden");
     showScreen("screen-lobby");
   });
 
@@ -264,6 +294,7 @@
   });
 
   socket.on("game_started", () => {
+    resetGameView();
     showScreen("screen-game");
   });
 
@@ -303,6 +334,35 @@
     return div;
   }
 
+  function claimVisible(state) {
+    return !!(state && state.claim && dismissedClaimDonneNumber !== state.donne_number &&
+      (!state.board_present || state.your_seat === "board"));
+  }
+
+  function renderClaim(state) {
+    const visible = claimVisible(state);
+    document.querySelector(".table-felt").classList.toggle("claim-visible", visible);
+    document.getElementById("claim-notice").classList.toggle("hidden", !visible);
+    if (!visible) return;
+    const claim = state.claim;
+    document.getElementById("claim-title").textContent = nameOf(state, claim.seat) + " table !";
+    const count = claim.remaining_tricks;
+    const reason = claim.reason === "trumps"
+      ? "Il ne lui reste que des atouts, et personne d’autre n’en a."
+      : "Il n’y a plus d’atouts et toutes ses cartes sont maîtresses.";
+    document.getElementById("claim-detail").textContent =
+      reason + (count === 1 ? " Le dernier pli est" : " Les " + count + " derniers plis sont") +
+      " pour l’équipe " + (claim.seat % 2 === 0 ? "A" : "B") + ".";
+    document.getElementById("last-trick-popup").classList.add("hidden");
+  }
+
+  document.getElementById("btn-claim-scores").addEventListener("click", event => {
+    event.stopPropagation();
+    if (!lastRenderedState) return;
+    dismissedClaimDonneNumber = lastRenderedState.donne_number;
+    renderGame(lastRenderedState);
+  });
+
   function renderGame(state) {
     lastRenderedState = state;
     if (state.your_seat !== undefined && state.your_seat !== "board") {
@@ -340,17 +400,22 @@
     renderBoardPanel(state);
     if (!isBoard) renderHandPanel(state);
 
+    renderClaim(state);
     renderDonneRecap(state);
-    renderGameOver(state);
   }
 
   function renderBoardPanel(state) {
     lastRenderedState = state;
+    // Les identifiants restent ceux du jeu ; seule la position visuelle tourne.
+    // Le plateau partagé conserve la vue de référence du siège 0.
+    const viewer = Number.isInteger(state.your_seat) ? state.your_seat : 0;
 
     for (let seat = 0; seat < 4; seat++) {
       const marker = document.getElementById("seat-marker-" + seat);
+      const position = String((seat - viewer + 4) % 4);
+      marker.dataset.position = position;
+      document.getElementById("trick-slot-" + seat).dataset.position = position;
       const name = nameOf(state, seat) + (state.your_seat === seat ? " (toi)" : "");
-      const existingBubble = marker.querySelector(".speech-bubble");
 
       let nameHtml = escapeHtml(name);
       if (state.contract && state.contract.player === seat) {
@@ -362,29 +427,31 @@
         nameHtml += ' <span class="contract-tag" style="color:' + color + '">' + escapeHtml(tag) + "</span>";
       }
 
-      marker.innerHTML =
-        '<div class="sm-name">' + nameHtml + "</div>";
-      if (existingBubble) marker.appendChild(existingBubble); // on préserve une bulle en cours d'affichage
+      let nameEl = marker.querySelector(".sm-name");
+      if (!nameEl) {
+        nameEl = document.createElement("div");
+        nameEl.className = "sm-name";
+        marker.prepend(nameEl);
+      }
+      nameEl.innerHTML = nameHtml;
+      // Laisser la bulle attachée : seules les nouvelles annonces la rejouent.
+      marker.querySelectorAll(".claimed-hand").forEach(row => row.remove());
       marker.classList.toggle("active-turn", state.waiting_seat === seat);
       marker.classList.toggle("dealer", state.dealer === seat);
-    }
-
-    // Cartes posées "devant" chaque joueur pendant le pli en cours (ou pendant
-    // la courte pause où le pli complet reste visible avant d'être ramassé).
-    for (let seat = 0; seat < 4; seat++) {
-      document.getElementById("trick-slot-" + seat).innerHTML = "";
-    }
-    let plays = state.current_trick && state.current_trick.length ? state.current_trick : state.completed_trick;
-    if (plays && plays.length) {
-      const isCollectedTrick = !(state.current_trick && state.current_trick.length);
-      plays.forEach(p => {
-        const slot = document.getElementById("trick-slot-" + p.seat);
-        slot.appendChild(cardEl(p.card, "small" + (isCollectedTrick ? " trick-flying" : "")));
-      });
+      marker.classList.toggle("claim-winner", claimVisible(state) && state.claim.seat === seat);
+      if (claimVisible(state)) {
+        const row = document.createElement("div");
+        row.className = "claimed-hand";
+        row.setAttribute("aria-label", "Cartes restantes de " + nameOf(state, seat));
+        (state.claim.hands[String(seat)] || []).forEach(card => row.appendChild(cardEl(card, "small")));
+        marker.appendChild(row);
+      }
     }
 
     renderTrickPile(state);
+    renderPlayedCards(state);
     handleBidBubbles(state);
+    handleBeloteBubbles(state);
 
     const tricksInfo = document.getElementById("tricks-info");
     let turnTxt = "";
@@ -405,6 +472,59 @@
   // ------------------------------------------------------------------
   // Pli ramassé : pile cliquable en haut à droite (dernier pli uniquement)
   // ------------------------------------------------------------------
+  function trickCollectionDelay(state) {
+    const lastTrick = state.tricks_won_this_donne["0"] + state.tricks_won_this_donne["1"] === 8;
+    // Synchronisé avec LAST_TRICK_EXTRA_PAUSE côté serveur : une seconde de plus.
+    return 350 + (lastTrick ? 1000 : 0);
+  }
+
+  function renderPlayedCards(state) {
+    const current = state.current_trick || [];
+    const plays = claimVisible(state) ? [] : (current.length ? current : state.completed_trick || []);
+    const collecting = !current.length && plays.length === 4;
+    const winner = state.last_completed_trick_winner_seat;
+    const key = state.donne_number + ":" + plays.map(p => p.seat + ":" + p.card.id).join(",");
+    const cards = [];
+
+    for (let seat = 0; seat < 4; seat++) {
+      const slot = document.getElementById("trick-slot-" + seat);
+      const play = plays.find(p => p.seat === seat);
+      const cardKey = play ? state.donne_number + ":" + play.card.id : null;
+      let card = slot.firstElementChild;
+      // Ne pas recréer le pli ni relancer sa pause sur une diffusion identique.
+      if (!play || !card || card.dataset.playedKey !== cardKey) {
+        slot.innerHTML = "";
+        card = play ? cardEl(play.card, "small") : null;
+        if (card) {
+          card.dataset.playedKey = cardKey;
+          slot.appendChild(card);
+        }
+      }
+      slot.classList.toggle("collecting", collecting);
+      if (card) cards.push(card);
+    }
+
+    if (!collecting || !Number.isInteger(winner) || cards.every(card => card.dataset.collectionKey === key)) return;
+    const pile = document.querySelector("#trick-pile-" + (winner % 2 === 0 ? "a" : "b") + " .trick-pile-card");
+    const target = pile.getBoundingClientRect();
+    const rects = cards.map(card => card.getBoundingClientRect());
+    const centerX = rects.reduce((sum, r) => sum + r.left + r.width / 2, 0) / cards.length;
+    const centerY = rects.reduce((sum, r) => sum + r.top + r.height / 2, 0) / cards.length;
+    cards.forEach((card, index) => {
+      const rect = rects[index];
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const stackOffset = (index - 1.5) * 2;
+      card.style.setProperty("--gather-x", (centerX + stackOffset - x) + "px");
+      card.style.setProperty("--gather-y", (centerY + stackOffset - y) + "px");
+      card.style.setProperty("--collect-x", (target.left + target.width / 2 - x) + "px");
+      card.style.setProperty("--collect-y", (target.top + target.height / 2 - y) + "px");
+      card.style.setProperty("--collect-delay", trickCollectionDelay(state) + "ms");
+      card.dataset.collectionKey = key;
+      card.classList.add("trick-flying");
+    });
+  }
+
   function renderTrickPile(state) {
     const piles = [document.getElementById("trick-pile-a"), document.getElementById("trick-pile-b")];
     const popup = document.getElementById("last-trick-popup");
@@ -427,6 +547,7 @@
     if (hasLastTrick && animationKey !== lastTrickAnimationKey) {
       lastTrickAnimationKey = animationKey;
       const pile = piles[winnerTeam];
+      pile.style.setProperty("--pile-arrival-delay", trickCollectionDelay(state) + 1000 + "ms");
       pile.classList.remove("pile-arrival");
       void pile.offsetWidth;
       pile.classList.add("pile-arrival");
@@ -502,6 +623,34 @@
     }
   }
 
+  function resetBeloteBubbles(donne = null) {
+    clearTimeout(beloteBubbleState.timer);
+    beloteBubbleState.donne = donne;
+    beloteBubbleState.count = 0;
+    beloteBubbleState.timer = null;
+    document.querySelectorAll(".belote-bubble").forEach(bubble => bubble.remove());
+  }
+
+  function handleBeloteBubbles(state) {
+    if (beloteBubbleState.donne !== state.donne_number) resetBeloteBubbles(state.donne_number);
+    const announcements = state.belote_announcements || [];
+    if (announcements.length <= beloteBubbleState.count) return;
+    beloteBubbleState.count = announcements.length;
+    if (state.phase !== "trick") return;
+
+    const entry = announcements[announcements.length - 1];
+    const plays = (state.current_trick && state.current_trick.length
+      ? state.current_trick : state.completed_trick) || [];
+    // À la reconnexion, ne pas rejouer une annonce dont la carte a déjà été ramassée.
+    if (!plays.some(play => play.seat === entry.seat && play.card.id === entry.card_id)) return;
+    clearTimeout(beloteBubbleState.timer);
+    showBidBubble(entry.seat, { type: "BELOTE", label: entry.label });
+    const bubble = document.querySelector("#seat-marker-" + entry.seat + " .speech-bubble");
+    bubble.classList.add("belote-bubble");
+    bubble.setAttribute("role", "status");
+    beloteBubbleState.timer = setTimeout(() => bubble.remove(), 3200);
+  }
+
   function showBidBubble(seat, entry) {
     const marker = document.getElementById("seat-marker-" + seat);
     if (!marker) return;
@@ -521,6 +670,36 @@
     }
     bubble.classList.remove("fade-out");
     bubble.classList.add("visible");
+    // Une nouvelle annonce, même identique (« Passe »), doit se voir.
+    bubble.classList.remove("announcement-replay");
+    void bubble.offsetWidth;
+    bubble.classList.add("announcement-replay");
+  }
+
+  function animateHandReorder(previous, cards, handWrap) {
+    const ids = new Set(cards.map(card => card.id));
+    const oldOrder = Array.from(previous.keys()).filter(id => ids.has(id));
+    const newOrder = cards.map(card => card.id).filter(id => previous.has(id));
+    if (oldOrder.join(",") === newOrder.join(",") ||
+        (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+
+    // Les mêmes éléments DOM passent de leur ancienne position à la nouvelle.
+    // Capturer la position visuelle permet aussi de repartir d'une animation en cours.
+    Array.from(handWrap.children).forEach(el => {
+      const old = previous.get(el.dataset.cardId);
+      if (!old || !old.rect.width || typeof el.animate !== "function") return;
+      el.getAnimations().forEach(animation => animation.cancel());
+      const rect = el.getBoundingClientRect();
+      const dx = old.rect.left - rect.left;
+      const dy = old.rect.top - rect.top;
+      if (Math.abs(dx) + Math.abs(dy) < 0.5) return;
+      const computed = getComputedStyle(el).transform;
+      const base = computed === "none" ? "" : computed;
+      el.animate([
+        { transform: "translate(" + dx + "px," + dy + "px) " + base },
+        { transform: base || "none" },
+      ], { duration: 420, easing: "cubic-bezier(.22,.61,.36,1)" });
+    });
   }
 
   function renderHandPanel(state) {
@@ -537,28 +716,38 @@
     const bidControls = document.getElementById("bid-controls");
     if (state.your_turn && state.waiting_kind === "bid" && state.legal_bid_actions.length) {
       bidControls.classList.remove("hidden");
-      renderBidControls(state.legal_bid_actions);
+      renderBidControls(state);
     } else {
       bidControls.classList.add("hidden");
       bidControls.innerHTML = "";
     }
 
     const handWrap = document.getElementById("hand-cards");
-    handWrap.innerHTML = "";
+    const previous = new Map(Array.from(handWrap.children).map(el => [
+      el.dataset.cardId, { el, rect: el.getBoundingClientRect() },
+    ]));
+    const ids = new Set(state.your_hand.map(card => card.id));
+    previous.forEach((old, id) => { if (!ids.has(id)) old.el.remove(); });
     const cardMode = state.your_turn && state.waiting_kind === "card";
     const n = state.your_hand.length;
     const center = (n - 1) / 2;
     state.your_hand.forEach((card, i) => {
       const legal = cardMode && state.legal_card_ids.includes(card.id);
       const cls = cardMode ? (legal ? "legal" : "disabled") : "";
-      const el = cardEl(card, cls);
+      const old = previous.get(card.id);
+      const el = old ? old.el : cardEl(card, cls);
+      el.dataset.cardId = card.id;
+      el.className = "playing-card " + card.color + (cls ? " " + cls : "");
       const off = i - center;
       el.style.setProperty("--r", (off * 7).toFixed(1) + "deg");
       el.style.setProperty("--y", (Math.abs(off) * Math.abs(off) * 2.2).toFixed(1) + "px");
       el.style.zIndex = String(i);
-      if (legal) {
+      if (!old) {
+        const isPlayable = () => lastRenderedState && lastRenderedState.your_turn &&
+          lastRenderedState.waiting_kind === "card" && lastRenderedState.legal_card_ids.includes(card.id);
         let downX = 0, downY = 0, dx = 0, dy = 0, isDown = false, isDrag = false;
         el.addEventListener("pointerdown", e => {
+          if (!isPlayable()) return;
           isDown = true; isDrag = false; dx = 0; dy = 0;
           downX = e.clientX; downY = e.clientY;
           try { el.setPointerCapture(e.pointerId); } catch (_) {}
@@ -578,9 +767,11 @@
           el.style.transform = "";
         };
         el.addEventListener("pointerup", e => {
+          if (!isDown) return;
           const wasDrag = isDrag;
           const upDy = e.clientY - downY;
           resetDrag();
+          if (!isPlayable()) return;
           if (wasDrag) {
             // Glissé vers le plateau (vers le haut) = jouer la carte.
             if (upDy < -60) socket.emit("play_card", { code: roomCode, card_id: card.id });
@@ -591,18 +782,26 @@
         });
         el.addEventListener("pointercancel", resetDrag);
       }
-      handWrap.appendChild(el);
+      if (handWrap.children[i] !== el) handWrap.insertBefore(el, handWrap.children[i] || null);
     });
+    animateHandReorder(previous, state.your_hand, handWrap);
   }
 
-  function renderBidControls(actions) {
+  function renderBidControls(state) {
+    const actions = state.legal_bid_actions;
     const container = document.getElementById("bid-controls");
-    const key = actions.map(a => a.index + ":" + a.type + ":" + (a.suit || "") + ":" + (a.points == null ? "" : a.points) + ":" + (a.is_capot ? "C" : "")).join("|");
+    const turnKey = state.donne_number + ":" + state.your_seat + ":" + (state.bidding_history || []).length;
+    const key = turnKey + "|" + actions.map(a => a.index + ":" + a.type + ":" + (a.suit || "") + ":" + (a.points == null ? "" : a.points) + ":" + (a.is_capot ? "C" : "")).join("|");
     if (bidFormState.key !== key) {
       bidFormState.key = key;
       bidFormState.points = null;
       bidFormState.isCapot = false;
-      const firstEnchere = actions.find(a => a.type === "ENCHERE");
+      const partnerSeat = Number.isInteger(state.your_seat) ? (state.your_seat + 2) % 4 : null;
+      const partnerBid = (state.bidding_history || []).slice().reverse().find(entry =>
+        entry.seat === partnerSeat && entry.type === "ENCHERE" && entry.suit);
+      const firstEnchere = (partnerBid && actions.find(a =>
+        a.type === "ENCHERE" && a.suit === partnerBid.suit)) ||
+        actions.find(a => a.type === "ENCHERE");
       bidFormState.suit = firstEnchere ? firstEnchere.suit : null;
     }
     container.innerHTML = "";
@@ -635,11 +834,6 @@
         else if (a.points != null) pointsSet.add(a.points);
       });
 
-      const suitLabel = document.createElement("div");
-      suitLabel.className = "bid-section-label";
-      suitLabel.textContent = "Couleur";
-      container.appendChild(suitLabel);
-
       const suitRow = document.createElement("div");
       suitRow.className = "bid-suit-row";
       const suitButtons = {};
@@ -658,44 +852,45 @@
       });
       container.appendChild(suitRow);
 
-      const numLabel = document.createElement("div");
-      numLabel.className = "bid-section-label";
-      numLabel.textContent = "Montant";
-      container.appendChild(numLabel);
+      const amounts = Array.from(pointsSet).sort((a, b) => a - b).map(points =>
+        ({ label: String(points), points, isCapot: false }));
+      if (hasCapot) amounts.push({ label: "Capot", points: null, isCapot: true });
+      // TODO Générale : les huit plis par le seul annonceur ; règles et score à définir.
+      // amounts.push({ label: "Générale", points: null, isCapot: false, isGenerale: true });
+      let amountIndex = amounts.findIndex(amount =>
+        amount.points === bidFormState.points && amount.isCapot === bidFormState.isCapot);
+      if (amountIndex < 0) amountIndex = 0;
 
-      const numRow = document.createElement("div");
-      numRow.className = "bid-num-row";
-      const pointButtons = [];
-      Array.from(pointsSet).sort((a, b) => a - b).forEach(pts => {
-        const chip = document.createElement("button");
-        chip.className = "bid-chip" + (bidFormState.points === pts && !bidFormState.isCapot ? " selected" : "");
-        chip.textContent = String(pts);
-        chip.onclick = () => {
-          bidFormState.points = pts;
-          bidFormState.isCapot = false;
-          pointButtons.forEach(b => b.classList.remove("selected"));
-          if (capotChip) capotChip.classList.remove("selected");
-          chip.classList.add("selected");
-          refreshConfirm();
-        };
-        pointButtons.push(chip);
-        numRow.appendChild(chip);
-      });
-      let capotChip = null;
-      if (hasCapot) {
-        capotChip = document.createElement("button");
-        capotChip.className = "bid-chip capot-chip" + (bidFormState.isCapot ? " selected" : "");
-        capotChip.textContent = "Capot";
-        capotChip.onclick = () => {
-          bidFormState.isCapot = true;
-          bidFormState.points = null;
-          pointButtons.forEach(b => b.classList.remove("selected"));
-          capotChip.classList.add("selected");
-          refreshConfirm();
-        };
-        numRow.appendChild(capotChip);
-      }
-      container.appendChild(numRow);
+      const amountRow = document.createElement("div");
+      amountRow.className = "bid-amount-row";
+      const decrease = document.createElement("button");
+      decrease.className = "bid-chip bid-step-btn";
+      decrease.textContent = "−";
+      decrease.setAttribute("aria-label", "Diminuer l’enchère");
+      const amountDisplay = document.createElement("output");
+      amountDisplay.className = "bid-amount";
+      amountDisplay.setAttribute("aria-live", "polite");
+      amountDisplay.setAttribute("aria-label", "Montant du contrat");
+      const increase = document.createElement("button");
+      increase.className = "bid-chip bid-step-btn";
+      increase.textContent = "+";
+      increase.setAttribute("aria-label", "Augmenter l’enchère");
+      const selectAmount = index => {
+        amountIndex = Math.max(0, Math.min(amounts.length - 1, index));
+        const amount = amounts[amountIndex];
+        bidFormState.points = amount.points;
+        bidFormState.isCapot = amount.isCapot;
+        amountDisplay.textContent = amount.label;
+        decrease.disabled = amountIndex === 0;
+        increase.disabled = amountIndex === amounts.length - 1;
+        refreshConfirm();
+      };
+      decrease.onclick = () => selectAmount(amountIndex - 1);
+      increase.onclick = () => selectAmount(amountIndex + 1);
+      amountRow.appendChild(decrease);
+      amountRow.appendChild(amountDisplay);
+      amountRow.appendChild(increase);
+      container.appendChild(amountRow);
 
       const confirmBtn = document.createElement("button");
       confirmBtn.className = "bid-chip bid-confirm-btn";
@@ -711,7 +906,7 @@
           (bidFormState.isCapot || a.points === bidFormState.points));
         if (match) socket.emit("bid_choice", { code: roomCode, index: match.index });
       };
-      refreshConfirm();
+      selectAmount(amountIndex);
       container.appendChild(confirmBtn);
     }
 
@@ -741,20 +936,30 @@
     if (actionsRow.childNodes.length) container.appendChild(actionsRow);
   }
 
+  function isFinalRecap(state) {
+    return !!(state && (state.final_donne || state.game_over));
+  }
+
   function renderDonneRecap(state) {
     const overlay = document.getElementById("donne-recap");
+    if (claimVisible(state)) {
+      overlay.classList.add("hidden");
+      return;
+    }
     const content = document.getElementById("donne-recap-content");
-    const canViewRecap = !state.board_present || state.your_seat === "board";
+    const canViewRecap = !state.board_present || state.your_seat === "board" || isFinalRecap(state);
     if (!canViewRecap) {
       overlay.classList.add("hidden");
       return;
     }
-    if (state.last_donne_result && state.donne_number !== recapDonneNumber) {
+    if (state.last_donne_result && (state.donne_number !== recapDonneNumber || isFinalRecap(state))) {
       recapState = state;
       recapDonneNumber = state.donne_number;
     }
 
-    if (recapState && dismissedDonneNumber !== recapDonneNumber) {
+    const finalRecap = isFinalRecap(recapState);
+    overlay.classList.toggle("recap-final", finalRecap);
+    if (recapState && (finalRecap || dismissedDonneNumber !== recapDonneNumber)) {
       const r = recapState.last_donne_result;
       const c = recapState.contract;
       const contractLine = c
@@ -782,8 +987,11 @@
       const f1 = r.final_scores ? r.final_scores["1"] : 0;
       const markedLine = "Points marqués : Équipe A +" + f0 + " · Équipe B +" + f1;
       content.innerHTML =
-        "<h2>Fin de la donne</h2>" +
-        '<p class="result-line">' + contractLine + "</p>" +
+        (finalRecap ? "<h2>Fin de la partie</h2>" : "<h2>Fin de la donne</h2>") +
+        (finalRecap ? '<p class="final-winner" role="status">Équipe ' +
+          (recapState.winner_team === 0 ? "A" : "B") + " remporte la partie !</p>" +
+          '<p class="score-caption">Dernière donne · n°' + recapDonneNumber + "</p>" : "") +
+        '<p class="result-line">' + escapeHtml(contractLine) + "</p>" +
         '<p class="result-line">Équipe A — <span class="pts-toggle" data-team="0" title="' + detailTextOf("0") + '"><strong>' + totalOf("0") + "</strong></span></p>" +
         '<p class="result-line">Équipe B — <span class="pts-toggle" data-team="1" title="' + detailTextOf("1") + '"><strong>' + totalOf("1") + "</strong></span></p>" +
         '<div class="pts-detail hidden" id="pts-detail"></div>' +
@@ -794,7 +1002,11 @@
         '<div class="score-head"><span>Équipe A</span><span>Équipe B</span></div>' +
         '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
         '<div class="score-caption">Total</div>' +
-        '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote) — cliquez n’importe où pour continuer</p>';
+        (finalRecap
+          ? '<p class="recap-hint">Touchez les points pour voir le détail de la dernière donne.</p>' +
+            '<button id="btn-new-game" class="btn btn-primary"' +
+            (recapState.game_over ? "" : " disabled") + ">Retour au salon</button>"
+          : '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote) — cliquez n’importe où pour continuer</p>');
       content.querySelectorAll(".pts-toggle").forEach(el => {
         el.addEventListener("click", ev => {
           ev.stopPropagation();
@@ -823,27 +1035,14 @@
     const canDismiss = lastRenderedState &&
       (!lastRenderedState.board_present || lastRenderedState.your_seat === "board");
     if (canDismiss && (recapState || (lastRenderedState.phase === "donne_annulee"))) {
+      if (isFinalRecap(recapState)) return;
+      if (claimVisible(lastRenderedState)) return;
       dismissedDonneNumber = recapDonneNumber;
       socket.emit("dismiss_recap", { code: roomCode });
       document.getElementById("donne-recap").classList.add("hidden");
     }
   });
 
-  function renderGameOver(state) {
-    const overlay = document.getElementById("gameover-overlay");
-    if (state.game_over) {
-      const winnerLabel = state.winner_team === 0 ? "Équipe A" : "Équipe B";
-      document.getElementById("gameover-title").textContent = winnerLabel + " remporte la partie !";
-      document.getElementById("gameover-detail").textContent =
-        "Score final — Équipe A : " + state.cumulative_scores["0"] +
-        " · Équipe B : " + state.cumulative_scores["1"];
-      document.getElementById("donne-recap").classList.add("hidden");
-      overlay.classList.remove("hidden");
-      showScreen("screen-game");
-    } else {
-      overlay.classList.add("hidden");
-    }
-  }
 
   socket.on("state_update", state => {
     if (state.code !== roomCode) return;

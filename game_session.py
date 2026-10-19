@@ -21,7 +21,8 @@ import time
 
 from belote.bidding import BiddingState
 from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_name
-from belote.cards import cut_deck, deal, new_shuffled_deck
+from belote.cards import Rank, cut_deck, deal, new_shuffled_deck
+from belote.claim import find_claim, play_claim
 from belote.game import DonneLog, Game
 from belote.player import Player
 from belote.scoring import compute_donne_score, find_belote_holder
@@ -32,8 +33,10 @@ from rooms import PLAYER_SEATS
 from serialize import bid_action_to_dict, card_from_id, card_id, card_to_dict, sorted_hand
 
 TRICK_COLLECT_PAUSE_RANGE = (1.6, 2.3)   # secondes pour "voir" le pli complet avant qu'il ne soit ramassé
+LAST_TRICK_EXTRA_PAUSE = 1.0             # seconde supplémentaire pour lire les quatre dernières cartes
 BOT_BID_THINK_RANGE = (0.9, 1.9)     # secondes de "réflexion" simulée d'un bot avant d'enchérir
 BOT_CARD_THINK_RANGE = (0.8, 1.7)    # secondes de "réflexion" simulée d'un bot avant de jouer une carte
+AUTO_CARD_PLAY_DELAY = 0.6          # pause avant de jouer la dernière carte
 
 
 class GameContext:
@@ -44,6 +47,7 @@ class GameContext:
         self.dealer = None
         self.donne_number = 0
         self.hands = {p: [] for p in PLAYER_SEATS}
+        self.hand_suit_orders = {p: [] for p in PLAYER_SEATS}
         self.bidding_state: BiddingState | None = None
         self.current_trick: TrickState | None = None
         self.completed_trick_cards = None   # liste (seat, card) du dernier pli, affichée brièvement
@@ -52,8 +56,10 @@ class GameContext:
         self.last_completed_trick_winner_seat = None
         self.tricks_won_this_donne = {0: 0, 1: 0}
         self.last_donne_result = None
+        self.claim = None              # mains révélées uniquement lorsqu'un tablage est certain
         self.belote_team = None          # équipe détenant la belote (connue dès la fin des enchères)
         self.belote_holder_seat = None   # siège du détenteur Roi+Dame d'atout
+        self.belote_announcements = []  # annonces émises à la pose réelle du roi/de la dame
         self.waiting_seat = None
         self.waiting_kind = None       # "bid" | "card" | None
         self.pending_legal_bid = None
@@ -62,8 +68,10 @@ class GameContext:
 
 
 class NetworkPlayer(Player):
-    """Un joueur humain : choose_bid/choose_card bloquent jusqu'à réception d'un choix
-    envoyé depuis le téléphone via Socket.IO (voir GameSession.submit_bid/submit_card)."""
+    """Joueur web : attend un choix via Socket.IO, sauf pour les cartes automatiques.
+
+    Voir GameSession.submit_bid/submit_card pour la réception des choix manuels.
+    """
 
     def __init__(self, seat: int, session: "GameSession", name: str):
         super().__init__(seat, name)
@@ -73,6 +81,18 @@ class NetworkPlayer(Player):
         return self.session._wait_for_choice(self.player_id, "bid")
 
     def choose_card(self, hand, trick_state, legal_cards):
+        if len(hand) == 1 and hand[0] in legal_cards:
+            self.session.sleep(AUTO_CARD_PLAY_DELAY)
+            return hand[0]
+        # Jeu automatique des singletons désactivé temporairement à la demande du joueur.
+        # if trick_state.plays:
+        #     suit_led = trick_state.plays[0][1].suit
+        #     following = [card for card in hand if card.suit == suit_led]
+        #     # Un seul choix légal ne suffit pas : la coupe et la défausse
+        #     # restent manuelles, tout comme l'entame, s'il reste plusieurs cartes.
+        #     if len(following) == 1 and following[0] in legal_cards:
+        #         self.session.sleep(AUTO_CARD_PLAY_DELAY)
+        #         return following[0]
         return self.session._wait_for_choice(self.player_id, "card")
 
     def notify(self, message: str) -> None:
@@ -113,18 +133,21 @@ class NetworkGame(Game):
         ctx.dealer = dealer
         ctx.donne_number = len(self.donne_logs) + 1
         ctx.hands = {p: list(h) for p, h in hands.items()}
+        ctx.hand_suit_orders = {p: [] for p in PLAYER_SEATS}
         ctx.phase = "bidding"
         ctx.current_trick = None
         ctx.completed_trick_cards = None
         ctx.last_completed_trick = None
         ctx.last_completed_trick_winner_seat = None
         ctx.last_donne_result = None
+        ctx.claim = None
         ctx.tricks_won_this_donne = {0: 0, 1: 0}
 
         bidding_state = BiddingState(dealer=dealer)
         ctx.bidding_state = bidding_state
         ctx.belote_team = None
         ctx.belote_holder_seat = None
+        ctx.belote_announcements = []
         self.session.broadcast()
 
         while not bidding_state.finished:
@@ -162,9 +185,8 @@ class NetworkGame(Game):
         contract = bidding_state.contract
         atout = contract.suit
         leader = (dealer - 1) % 4
-        # Belote connue dès la fin des enchères (mains de départ + atout) :
-        # on l'annonce tout de suite pour que ce soit visible pendant le jeu,
-        # et on la réutilise en fin de donne pour le score.
+        # Connue du moteur dès la fin des enchères pour calculer le score,
+        # mais privée jusqu'à la première annonce réelle (ou au bilan final).
         belote_holder = find_belote_holder(initial_hands, atout)
         belote_team = team_of(belote_holder) if belote_holder is not None else None
         ctx.belote_holder_seat = belote_holder
@@ -176,33 +198,73 @@ class NetworkGame(Game):
         ctx.phase = "trick"
 
         for _ in range(8):
+            claim = find_claim(hands, leader, atout)
+            if claim is not None:
+                claimed = play_claim(hands, leader, atout, claim)
+                log.claim = claim
+                ctx.claim = {
+                    "seat": claim.seat,
+                    "reason": claim.reason,
+                    "remaining_tricks": len(claimed),
+                    "hands": {
+                        str(seat): [card_to_dict(card) for card in
+                                    self.session._sorted_display_hand(seat, hand, atout)]
+                        for seat, hand in hands.items()
+                    },
+                }
+                for trick in claimed:
+                    trick_points[team_of(claim.seat)] += trick.points()
+                    tricks_won_by_team[team_of(claim.seat)] += 1
+                    log.tricks.append(list(trick.plays))
+                    log.trick_winners.append(claim.seat)
+                last_trick_winner = claim.seat
+                ctx.tricks_won_this_donne = dict(tricks_won_by_team)
+                ctx.current_trick = None
+                ctx.completed_trick_cards = None
+                ctx.last_trick_winner_seat = claim.seat
+                ctx.last_completed_trick = list(claimed[-1].plays)
+                ctx.last_completed_trick_winner_seat = claim.seat
+                break
             trick = TrickState(leader=leader, atout=atout)
             ctx.current_trick = trick
             ctx.completed_trick_cards = None
             self.session.broadcast()
 
+            last_trick = all(len(hand) == 1 for hand in hands.values())
             for _ in range(4):
                 p = trick.current_player
                 legal = trick.legal_cards_for(hands[p])
-                ctx.waiting_seat = p
-                ctx.waiting_kind = "card"
-                ctx.pending_legal_cards = legal
-                self.session.broadcast()
+                if last_trick:
+                    # Un seul choix par joueur : poser les quatre cartes ensemble,
+                    # sans attente humaine/bot ni diffusion d'un pli partiel.
+                    card = legal[0]
+                else:
+                    ctx.waiting_seat = p
+                    ctx.waiting_kind = "card"
+                    ctx.pending_legal_cards = legal
+                    self.session.broadcast()
 
-                if not isinstance(self.players[p], NetworkPlayer):
-                    self.session.sleep(random.uniform(*BOT_CARD_THINK_RANGE))
+                    if not isinstance(self.players[p], NetworkPlayer):
+                        self.session.sleep(random.uniform(*BOT_CARD_THINK_RANGE))
 
-                card = self.players[p].choose_card(hands[p], trick, legal)
+                    card = self.players[p].choose_card(hands[p], trick, legal)
                 if card not in legal:
                     raise ValueError(f"Le joueur {p} a tenté de jouer une carte illégale: {card}")
                 trick.play(p, card)
                 hands[p].remove(card)
                 ctx.hands[p] = list(hands[p])
+                if p == belote_holder and card.suit == atout and card.rank in (Rank.ROI, Rank.DAME):
+                    ctx.belote_announcements.append({
+                        "seat": p,
+                        "label": "Rebelote !" if ctx.belote_announcements else "Belote !",
+                        "card_id": card_id(card),
+                    })
 
                 ctx.waiting_seat = None
                 ctx.waiting_kind = None
                 ctx.pending_legal_cards = None
-                self.session.broadcast()
+                if not last_trick:
+                    self.session.broadcast()
 
             winner = trick.winner()
             last_trick_winner = winner
@@ -219,7 +281,8 @@ class NetworkGame(Game):
             ctx.last_completed_trick_winner_seat = winner
             ctx.current_trick = None
             self.session.broadcast()
-            self.session.sleep(random.uniform(*TRICK_COLLECT_PAUSE_RANGE))
+            self.session.sleep(random.uniform(*TRICK_COLLECT_PAUSE_RANGE) +
+                               (LAST_TRICK_EXTRA_PAUSE if last_trick else 0))
 
             leader = winner
 
@@ -292,9 +355,11 @@ class GameSession:
         try:
             while not self.game.finished and not self._stop:
                 log = self.game.play_one_donne()
-                if self.game.finished or self._stop:
+                if self._stop:
                     break
-                if log.result is not None:
+                if log.result is not None and not self.game.finished:
+                    # Seules les donnes intermédiaires attendent « continuer ».
+                    # Le récapitulatif final reste affiché jusqu'au retour au salon.
                     self._wait_for_recap()
                     self._recap_closed.clear()
         except Exception as exc:  # ne doit jamais planter le thread silencieusement
@@ -459,6 +524,7 @@ class GameSession:
     def _build_common(self):
         ctx = self.ctx
         board_seat = self.room.seats.get("board")
+        belote_visible = bool(ctx.belote_announcements) or ctx.last_donne_result is not None
         return {
             "code": self.room.code,
             "phase": ctx.phase,
@@ -494,9 +560,11 @@ class GameSession:
                 "0": ctx.tricks_won_this_donne.get(0, 0),
                 "1": ctx.tricks_won_this_donne.get(1, 0),
             },
-            "belote_team": ctx.belote_team,
-            "belote_holder_seat": ctx.belote_holder_seat,
+            "belote_team": ctx.belote_team if belote_visible else None,
+            "belote_holder_seat": ctx.belote_holder_seat if belote_visible else None,
+            "belote_announcements": list(ctx.belote_announcements),
             "last_donne_result": self._result_dict(),
+            "claim": ctx.claim,
             "score_history": [
                 {
                     "0": log.result.final_scores.get(0, 0),
@@ -506,16 +574,26 @@ class GameSession:
                 if log.result is not None
             ],
             "game_over": self.finished,
-            "winner_team": self.winner_team,
+            "final_donne": self.game.finished,
+            "winner_team": self.game.winner_team,
         }
+
+    def _sorted_display_hand(self, seat, hand, atout):
+        with self._lock:
+            ordered = sorted_hand(hand, atout, self.ctx.hand_suit_orders[seat])
+            self.ctx.hand_suit_orders[seat] = list(dict.fromkeys(card.suit for card in ordered))
+        return ordered
 
     def _build_for_player(self, common: dict, seat: int) -> dict:
         payload = dict(common)
         ctx = self.ctx
         your_turn = ctx.waiting_seat == seat
+        bidding = ctx.bidding_state
+        atout = bidding.contract.suit if bidding and bidding.finished and bidding.contract else None
         payload.update({
             "your_seat": seat,
-            "your_hand": [card_to_dict(c) for c in sorted_hand(ctx.hands.get(seat, []))],
+            "your_hand": [card_to_dict(c) for c in
+                          self._sorted_display_hand(seat, ctx.hands.get(seat, []), atout)],
             "your_turn": your_turn,
             "legal_bid_actions": (
                 [bid_action_to_dict(a, i) for i, a in enumerate(ctx.pending_legal_bid)]
