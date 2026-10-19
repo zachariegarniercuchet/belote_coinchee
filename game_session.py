@@ -38,13 +38,14 @@ LAST_TRICK_EXTRA_PAUSE = 1.0             # seconde supplémentaire pour lire les
 BOT_BID_THINK_RANGE = (0.9, 1.9)     # secondes de "réflexion" simulée d'un bot avant d'enchérir
 BOT_CARD_THINK_RANGE = (0.8, 1.7)    # secondes de "réflexion" simulée d'un bot avant de jouer une carte
 AUTO_CARD_PLAY_DELAY = 0.6          # pause avant de jouer la dernière carte
+REDEAL_STAGE_PAUSE = 1.4            # ramassage puis redistribution après quatre passes
 
 
 class GameContext:
     """Instantané mutable de l'état de jeu, relu à chaque diffusion (broadcast)."""
 
     def __init__(self):
-        self.phase = "lobby"           # lobby | bidding | trick | donne_annulee | donne_end | game_end | error
+        self.phase = "lobby"           # lobby | dealing | bidding | trick | donne_annulee | donne_end | game_end | error
         self.dealer = None
         self.donne_number = 0
         self.hands = {p: [] for p in PLAYER_SEATS}
@@ -125,6 +126,7 @@ class NetworkGame(Game):
     def _play_network_donne(self, dealer: int) -> DonneLog:
         ctx = self.session.ctx
         rng = self.rng
+        redealing = ctx.phase == "donne_annulee"
 
         deck = cut_deck(new_shuffled_deck(rng), rng)
         starting_player = (dealer - 1) % 4
@@ -135,7 +137,7 @@ class NetworkGame(Game):
         ctx.donne_number = len(self.donne_logs) + 1
         ctx.hands = {p: list(h) for p, h in hands.items()}
         ctx.hand_suit_orders = {p: [] for p in PLAYER_SEATS}
-        ctx.phase = "bidding"
+        ctx.phase = "dealing" if redealing else "bidding"
         ctx.current_trick = None
         ctx.completed_trick_cards = None
         ctx.last_completed_trick = None
@@ -150,6 +152,10 @@ class NetworkGame(Game):
         ctx.belote_holder_seat = None
         ctx.belote_announcements = []
         self.session.broadcast()
+        if redealing:
+            self.session.sleep(REDEAL_STAGE_PAUSE)
+            ctx.phase = "bidding"
+            self.session.broadcast()
 
         while not bidding_state.finished:
             p = bidding_state.current_player
@@ -181,6 +187,7 @@ class NetworkGame(Game):
         if bidding_state.annulee:
             ctx.phase = "donne_annulee"
             self.session.broadcast()
+            self.session.sleep(REDEAL_STAGE_PAUSE)
             return log
 
         contract = bidding_state.contract

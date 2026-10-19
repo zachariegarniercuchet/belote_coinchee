@@ -66,7 +66,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `frontend-github-pages/` | Copie statique de l'interface pour un backend distant. |
 | `supabase/setup.sql`, `SUPABASE.md` | Table `game_history` avec RLS et guide de mise en route des comptes (Render, GitHub Pages, Google plus tard). |
 | `tests/test_rules.py` | Script autonome de vérification des règles et scores. |
-| `tests/test_autoplay.py` | Dernière carte automatique et singletons joués manuellement sur le web. |
+| `tests/test_autoplay.py` | Dernière carte automatique, singletons manuels et redistribution après quatre passes sur le web. |
 | `tests/test_claim.py` | Tablage, exploration des ordres légaux, équivalence des scores console/web et confidentialité des mains. |
 | `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
@@ -333,6 +333,16 @@ insère une ligne dans `game_history` (clé anti-doublon `game_id` diffusée par
 `GameSession`) : aucune écriture n'a lieu en mode invité. L'inscription est
 ouverte ; la connexion Google n'est pas encore câblée, la procédure est dans
 `SUPABASE.md`.
+
+Après quatre passes, `donne_annulee` dure 1,4 s pour ramasser les cartes au
+centre ; la donne suivante commence en phase `dealing` pendant 1,4 s avant
+`bidding`. Synchroniser `REDEAL_STAGE_PAUSE` avec l'animation cliente (1,2 s).
+Pas de fenêtre modale pour une donne annulée. Le client anime uniquement des
+dos de cartes (32 au plateau, 8 pour sa main en mode manette), masque sa main
+pendant la transition et ne révèle aucune main adverse. Dédupliquer par numéro
+de donne/phase et nettoyer à la navigation ; en mouvement réduit, afficher
+seulement le message sans déplacement de cartes. Un parcours représentatif
+vérifie deux donnes passées, le donneur suivant, les phases, scores et états publics.
 
 ## État initial constaté le 17 octobre 2026
 

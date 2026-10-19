@@ -8,12 +8,45 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+from belote.bidding import ActionType
 from belote.cards import Card, Rank, Suit
 from belote.trick import TrickState
-from game_session import AUTO_CARD_PLAY_DELAY, NetworkPlayer
+from game_session import AUTO_CARD_PLAY_DELAY, REDEAL_STAGE_PAUSE, GameSession, NetworkPlayer
+from rooms import Room
 
 
 class AutoplayTests(unittest.TestCase):
+    def test_four_passes_collect_then_redeal_before_reopening_bids(self):
+        session = GameSession(Room("TEST"), target_score=1000)
+        for player in session.players.values():
+            player.choose_bid = Mock(side_effect=lambda hand, bidding, legal:
+                                     next(action for action in legal if action.type == ActionType.PASSE))
+        states, pauses = [], []
+        session.broadcast = Mock(side_effect=lambda: states.append(session._build_common()))
+        session.sleep = Mock(side_effect=lambda delay: pauses.append((session.ctx.phase, delay)))
+        first_dealer = session.game.dealer
+
+        for _ in range(2):
+            self.assertTrue(session.game.play_one_donne().annulee)
+
+        stages = [(state["donne_number"], state["phase"]) for state in states]
+        collecting = stages.index((1, "donne_annulee"))
+        dealing = stages.index((2, "dealing"))
+        bidding = stages.index((2, "bidding"))
+        self.assertLess(collecting, dealing)
+        self.assertLess(dealing, bidding)
+        self.assertNotIn((1, "dealing"), stages)
+        self.assertEqual([(phase, delay) for phase, delay in pauses if phase != "bidding"],
+                         [("donne_annulee", REDEAL_STAGE_PAUSE), ("dealing", REDEAL_STAGE_PAUSE),
+                          ("donne_annulee", REDEAL_STAGE_PAUSE)])
+        self.assertEqual(states[dealing]["dealer"], (first_dealer - 1) % 4)
+        self.assertEqual(states[dealing]["hand_counts"], {str(seat): 8 for seat in range(4)})
+        self.assertIsNone(states[dealing]["waiting_kind"])
+        self.assertEqual(states[dealing]["bidding_history"], [])
+        self.assertNotIn("your_hand", states[dealing])
+        self.assertNotIn("hands", states[dealing])
+        self.assertEqual(session.game.cumulative_scores, {0: 0, 1: 0})
+
     def choose(self, hand, plays):
         trick = TrickState(leader=0, atout=Suit.PIQUE, plays=list(plays))
         legal = trick.legal_cards_for(hand)

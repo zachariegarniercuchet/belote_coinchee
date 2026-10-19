@@ -30,6 +30,7 @@
   // Formulaire d'enchère (popup centrale) : on choisit couleur + montant,
   // puis on valide avec "Confirmer". Mémorisé entre deux state_update.
   const bidFormState = { key: null, suit: null, points: null, isCapot: false };
+  const redealAnimation = { key: null, layer: null, timer: null };
 
   // Tenir compte du plateau réellement disponible, y compris en paysage.
   const tableFelt = document.querySelector(".table-felt");
@@ -306,6 +307,7 @@
   });
 
   function resetGameView() {
+    clearRedealAnimation();
     resetBeloteBubbles();
     recapState = null;
     recapDonneNumber = null;
@@ -464,6 +466,92 @@
 
     renderClaim(state);
     renderDonneRecap(state);
+    renderRedeal(state, controllerMode);
+  }
+
+  function clearRedealAnimation(resetKey = true) {
+    clearTimeout(redealAnimation.timer);
+    if (redealAnimation.layer) redealAnimation.layer.remove();
+    redealAnimation.layer = null;
+    redealAnimation.timer = null;
+    if (resetKey) redealAnimation.key = null;
+    document.getElementById("screen-game").classList.remove("redeal-collecting", "redeal-dealing");
+  }
+
+  function renderRedeal(state, controllerMode) {
+    const collecting = state.phase === "donne_annulee";
+    if (!collecting && state.phase !== "dealing") {
+      clearRedealAnimation();
+      return;
+    }
+    const key = state.donne_number + ":" + state.phase;
+    if (redealAnimation.key === key) return; // Diffusions identiques et reconnexions.
+    clearRedealAnimation();
+    redealAnimation.key = key;
+
+    const game = document.getElementById("screen-game");
+    const felt = document.querySelector(".table-felt");
+    const area = (controllerMode ? document.getElementById("phone-panel") : felt).getBoundingClientRect();
+    const center = { x: area.left + area.width / 2, y: area.top + area.height / 2 };
+    const width = Math.max(28, Math.min(48, area.width * .10));
+    const height = width * 1.44;
+    const layer = document.createElement("div");
+    layer.className = "redeal-layer";
+    const notice = document.createElement("div");
+    notice.className = "redeal-notice";
+    notice.setAttribute("role", "status");
+    notice.textContent = collecting ? "Tout le monde passe — on ramasse !" : "Nouvelle distribution…";
+    notice.style.left = center.x + "px";
+    notice.style.top = center.y - height + "px";
+    layer.appendChild(notice);
+
+    const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reducedMotion) {
+      // Aucune main adverse n'est révélée : uniquement des dos de cartes.
+      const seats = controllerMode ? [state.your_seat] : [0, 1, 2, 3];
+      const viewer = Number.isInteger(state.your_seat) ? state.your_seat : 0;
+      const ownCards = Array.from(document.getElementById("hand-cards").children);
+      seats.forEach(seat => {
+        const marker = document.getElementById("seat-marker-" + seat).getBoundingClientRect();
+        const position = (seat - viewer + 4) % 4;
+        const fallback = [
+          { x: center.x, y: area.bottom - height },
+          { x: area.right - width, y: center.y },
+          { x: center.x, y: area.top + height },
+          { x: area.left + width, y: center.y },
+        ][position];
+        const count = (state.hand_counts || {})[String(seat)] || 0;
+        for (let i = 0; i < count; i++) {
+          const own = seat === state.your_seat && ownCards[i]
+            ? ownCards[i].getBoundingClientRect() : null;
+          const hand = own && own.width ? { x: own.left + own.width / 2, y: own.top + own.height / 2 }
+            : marker.width ? {
+              x: (marker.left + marker.width / 2) * .8 + center.x * .2 + (i - (count - 1) / 2) * 4,
+              y: (marker.top + marker.height / 2) * .8 + center.y * .2,
+            } : fallback;
+          const deck = { x: center.x + (i % 4) * 1.5, y: center.y + (i % 4) * 1.5 };
+          const from = collecting ? hand : deck;
+          const to = collecting ? deck : hand;
+          const card = document.createElement("div");
+          card.className = "redeal-card";
+          card.setAttribute("aria-hidden", "true");
+          card.style.width = width + "px";
+          card.style.height = height + "px";
+          card.style.setProperty("--from-x", from.x - width / 2 + "px");
+          card.style.setProperty("--from-y", from.y - height / 2 + "px");
+          card.style.setProperty("--to-x", to.x - width / 2 + "px");
+          card.style.setProperty("--to-y", to.y - height / 2 + "px");
+          card.style.setProperty("--deal-delay", (collecting ? i * 24 : (i * 4 + seat) * 22) + "ms");
+          card.style.setProperty("--deal-duration", collecting ? "850ms" : "420ms");
+          layer.appendChild(card);
+        }
+      });
+    }
+    game.classList.add(collecting ? "redeal-collecting" : "redeal-dealing");
+    game.appendChild(layer);
+    redealAnimation.layer = layer;
+    // Inférieur aux 1,4 s de REDEAL_STAGE_PAUSE ; ne pas bloquer les prochains tours.
+    redealAnimation.timer = setTimeout(() => clearRedealAnimation(false), 1200);
   }
 
   function renderBoardPanel(state) {
@@ -1097,10 +1185,6 @@
           }
         });
       });
-      overlay.classList.remove("hidden");
-    } else if (state.phase === "donne_annulee" && !recapState) {
-      content.innerHTML =
-        "<h2>Donne annulée</h2><p>Personne n'a assez enchéri (minimum 80). Nouvelle donne dans un instant...</p>";
       overlay.classList.remove("hidden");
     } else if (!recapState || dismissedDonneNumber === recapDonneNumber) {
       overlay.classList.add("hidden");

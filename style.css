@@ -637,6 +637,40 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 
 /* ---------- Main : éventail absolu ancré en bas du plateau ---------- */
+.redeal-collecting #hand-cards, .redeal-dealing #hand-cards { visibility: hidden; }
+.redeal-layer { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
+.redeal-notice {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  max-width: min(85vw, 340px);
+  width: max-content;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--wood);
+  color: var(--gold-light);
+  font-size: 13px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+}
+.redeal-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  background: repeating-linear-gradient(45deg, var(--wood), var(--wood) 3px, var(--wood-light) 3px, var(--wood-light) 6px);
+  box-shadow: 0 3px 8px rgba(0,0,0,.35);
+  animation: redeal-card var(--deal-duration) ease-in-out both;
+  animation-delay: var(--deal-delay);
+}
+@keyframes redeal-card {
+  from { transform: translate(var(--from-x), var(--from-y)); }
+  to { transform: translate(var(--to-x), var(--to-y)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .redeal-card { animation: none; }
+}
+
 .hand-cards {
   position: absolute;
   bottom: max(10px, env(safe-area-inset-bottom));
