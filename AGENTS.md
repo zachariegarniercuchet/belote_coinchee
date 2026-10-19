@@ -342,7 +342,20 @@ ouverte ; la connexion Google n'est pas encore câblée, la procédure est dans
   traitée (le SMTP intégré a répondu « email rate limit exceeded », message
   traduit), demande de mot de passe oublié, création de salon invité, aucune
   exception JS (10 vérifications, 0 échec).
-- Vérification **non faite** : session connectée, écriture/lecture de
-  `game_history` (table non encore créée à cette date) et clic sur le lien de
-  confirmation. Deux comptes de test `e2e.…@gmail.com` peuvent exister dans
-  Authentication → Users et être supprimés.
+- Vérification navigateur **faite en bout à bout** le 19 octobre, après
+  exécution de `supabase/setup.sql` et désactivation temporaire de
+  « Confirm email » : inscription → session connectée (bandeau
+  « Zozo / Mes parties / Déconnexion »), prénom du compte pré-rempli dans les
+  champs de jeu, historique vide, `recordGameEnd` qui insère une ligne
+  réellement lue ensuite (1 victoire sur 1, 1000 – 745, salon E2E0), puis
+  déconnexion, reconnexion avec retrouvaille de l'historique, création de
+  salon, aucune exception JS (**16 vérifications, 0 échec**).
+- Reste à vérifier avant mise en ligne : le déploiement Render (push des
+  commits puis variables `SUPABASE_URL` / `SUPABASE_ANON_KEY` — la page servie
+  par `https://belote-coinchee-g77g.onrender.com` le 19/10 ne contient ni
+  `auth.js` ni la configuration, donc l'ancienne version est encore en
+  ligne), un lien de confirmation réel si « Confirm email » est rallumé, et la
+  copie GitHub Pages avec ses propres clés. Un compte de test
+  `e2e.1792447462@gmail.com` existe et peut être supprimé dans
+  Authentication → Users ; les inscriptions précédentes avaient été bloquées
+  (adresse invalide puis limite d'emails) et n'avaient rien créé.
