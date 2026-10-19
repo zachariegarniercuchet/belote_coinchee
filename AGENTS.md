@@ -351,12 +351,15 @@ ouverte ; la connexion Google n'est pas encore câblée, la procédure est dans
   déconnexion, reconnexion avec retrouvaille de l'historique, création de
   salon, aucune exception JS (**16 vérifications, 0 échec**). « Confirm email »
   est resté désactivé par choix produit (voir `SUPABASE.md`, étape 1).
-- Reste à vérifier avant mise en ligne : le déploiement Render (push des
-  commits puis variables `SUPABASE_URL` / `SUPABASE_ANON_KEY` — la page servie
-  par `https://belote-coinchee-g77g.onrender.com` le 19/10 ne contient ni
-  `auth.js` ni la configuration, donc l'ancienne version est encore en
-  ligne), un lien de confirmation réel si « Confirm email » est rallumé, et la
-  copie GitHub Pages avec ses propres clés. Un compte de test
-  `e2e.1792447462@gmail.com` existe et peut être supprimé dans
-  Authentication → Users ; les inscriptions précédentes avaient été bloquées
-  (adresse invalide puis limite d'emails) et n'avaient rien créé.
+- Vérification navigateur **faite sur la production** après push et
+  redéploiement Render : `auth.js` servi, `window.BELOTE_SUPABASE` renseigné
+  depuis les variables du service, bandeau invité, modale et onglets, échec de
+  connexion réel traduit depuis l'origine de production (CORS OK), création de
+  salon, aucune exception JS (**9 vérifications, 0 échec**).
+- Reste à vérifier : un lien de confirmation réel si « Confirm email » est
+  rallumé, le déploiement de la copie GitHub Pages (ses clés sont renseignées
+  mais son hébergement n'a pas été testé ici), et un SMTP externe avant
+  d'ouvrir les inscriptions à plusieurs (limite horaire du SMTP intégré).
+  Un compte de test `e2e.1792447462@gmail.com` existe et peut être supprimé
+  dans Authentication → Users ; les inscriptions précédentes avaient été
+  bloquées (adresse invalide puis limite d'emails) et n'avaient rien créé.
