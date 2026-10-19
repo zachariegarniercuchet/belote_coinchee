@@ -112,8 +112,7 @@
     return bot ? "★".repeat(bot.level) + "☆".repeat(5 - bot.level) : "";
   }
 
-  // Ce que voit l'utilisateur : prénom humain + étoiles, jamais de nom
-  // technique ("Spark v3"). Le détail du moteur est derrière le bouton ⓘ.
+  // Identité stable à table : prénom distinct + famille/version du catalogue.
   function botSeatName(botId, seat) {
     const bot = findBot(botId);
     if (!bot) return botId;
@@ -125,8 +124,10 @@
     const bot = findBot(botId);
     if (!bot) return;
     const name = (bot.names && bot.names[seat]) || bot.label;
-    document.getElementById("bot-info-name").textContent = name + " " + botStars(bot);
-    document.getElementById("bot-info-engine").textContent = "Moteur : " + bot.label;
+    document.getElementById("bot-info-name").textContent = name;
+    document.getElementById("bot-info-engine").textContent = "Version : " + bot.label +
+      " · Niveau indicatif : " + botStars(bot);
+    document.getElementById("bot-info-author").textContent = "Auteur : " + bot.author;
     document.getElementById("bot-info-desc").textContent = bot.description;
     document.getElementById("bot-info-overlay").classList.remove("hidden");
   }
@@ -173,29 +174,53 @@
       // Sélecteur de bot sous chaque siège vide : le choix est partagé
       // (stocké dans la room, diffusé à tout le lobby via lobby_update).
       if (!info.name && key !== "board" && bots.length) {
+        row.classList.add("with-bot");
+        const picker = document.createElement("div");
+        picker.className = "bot-picker";
+        const pickerControls = document.createElement("div");
+        pickerControls.className = "bot-picker-controls";
         const select = document.createElement("select");
         select.className = "bot-select";
-        select.title = "Choisir le bot adverse pour ce siège";
+        select.title = "Choisir une famille et une version de bot";
+        select.setAttribute("aria-label", "Version du bot pour le joueur " + (key + 1));
+        select.setAttribute("aria-describedby", "bot-summary-" + key);
+        const families = new Map();
         bots.forEach(b => {
+          const family = b.family || b.label;
+          if (!families.has(family)) {
+            const group = document.createElement("optgroup");
+            group.label = family;
+            families.set(family, group);
+            select.appendChild(group);
+          }
           const opt = document.createElement("option");
           opt.value = b.id;
-          opt.textContent = ((b.names && b.names[key]) || b.label) + " " + botStars(b);
+          opt.textContent = b.label + " " + botStars(b);
           if (b.id === choices[String(key)]) opt.selected = true;
-          select.appendChild(opt);
+          families.get(family).appendChild(opt);
         });
         select.onchange = () => {
           socket.emit("set_bot", { code: roomCode, seat: key, bot_id: select.value });
         };
-        controls.appendChild(select);
+        pickerControls.appendChild(select);
 
-        // La « fiche » du bot (vrai moteur, description) : un clic, sinon
-        // on ne voit que le prénom et les étoiles, comme un humain.
+        // La fiche détaille la méthode et crédite l'auteur du bot choisi.
         const infoBtn = document.createElement("button");
         infoBtn.className = "info-btn";
         infoBtn.textContent = "ⓘ";
-        infoBtn.title = "Qui est-ce ?";
+        infoBtn.title = "Méthode et auteur du bot";
+        infoBtn.setAttribute("aria-label", "À propos du bot pour le joueur " + (key + 1));
         infoBtn.onclick = () => showBotInfo(select.value, key);
-        controls.appendChild(infoBtn);
+        pickerControls.appendChild(infoBtn);
+        picker.appendChild(pickerControls);
+        const summary = document.createElement("p");
+        summary.className = "bot-summary";
+        summary.id = "bot-summary-" + key;
+        const selectedBot = findBot(choices[String(key)]);
+        summary.textContent = selectedBot
+          ? "Par " + selectedBot.author + " — " + selectedBot.description : "";
+        picker.appendChild(summary);
+        controls.appendChild(picker);
       }
 
       if (!info.name) {

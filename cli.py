@@ -79,7 +79,8 @@ def main() -> None:
 
     print("\nBots disponibles :")
     for b in list_bots():
-        print(f"  {b['id']:>10} : {' / '.join(b['names'])} ({'★' * b['level']}{'☆' * (5 - b['level'])}) — {b['label']}")
+        print(f"  {b['id']:>10} : {b['label']} ({'★' * b['level']}{'☆' * (5 - b['level'])}) — par {b['author']}")
+        print(f"               {b['description']}")
     bot_id = input(f"Quel bot pour les sièges non humains ? [{DEFAULT_BOT_ID}] : ").strip() or DEFAULT_BOT_ID
     if bot_id not in {b["id"] for b in list_bots()}:
         print(f"Bot inconnu, on garde {DEFAULT_BOT_ID}.")

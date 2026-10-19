@@ -177,6 +177,18 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 
 ## Règles et configuration actuelles
 
+Le catalogue des bots définit `family`, `version`, `author`, `description`,
+`level` (indicatif) et quatre prénoms par version dans `belote/bots/registry.py`.
+Le créateur choisit ces métadonnées. Les noms publics combinent prénom,
+famille et version (« Raphaël Spark v3 »), identiques dans le catalogue,
+le salon et la partie. Garder les identifiants API inchangés : l'ancien
+`spark` est présenté comme Spark v0. Tous les bots actuels ont Zach pour auteur.
+Le sélecteur natif est regroupé par famille et affiche les versions, pas
+des prénoms différents par siège ; l'auteur et la méthode sont visibles sous
+le sélecteur et dans la fiche ⓘ. Les descriptions suivent le code réel :
+Spark/v1 à règles, v2 à simulations, v3 avec contraintes d'enchères et
+résolution exacte de chaque répartition simulée en fin de donne.
+
 Dans le salon, une connexion n'occupe qu'un siège, plateau compris. Le serveur
 vérifie puis déplace sous le même verrou : si la destination est prise, garder
 la place précédente et signaler le refus. Libérer aussi le prénom de l'ancienne
