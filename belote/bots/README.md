@@ -4,8 +4,8 @@
 |----------------|----------------------------------------------------------------------|
 | `classic.py`   | `RandomBot`, `HeuristicBot` — baselines sans apprentissage           |
 | `spark.py`     | `SparkBot` — enchères calibrées + jeu contract-aware                 |
-| `spark_v1.py`  | `SparkBotV1` — + Monte-Carlo sur mondes possibles                    |
-| `spark_v2.py`  | `SparkBotV2` — + échantillonnage des mondes amélioré                 |
+| `spark_v1.py`  | `SparkBotV1` — version figée à règles et enchères calibrées          |
+| `spark_v2.py`  | `SparkBotV2` — simulations de répartitions possibles des cartes      |
 | `spark_v3.py`  | `SparkBotV3` — + finales exactes et mondes contraints (le plus fort) |
 | `registry.py`  | `BOT_REGISTRY` : le catalogue officiel + fabriques                   |
 | `weights/`     | **n'existe pas encore** — créé le jour où un bot a des poids (voir §3) |
@@ -32,11 +32,14 @@ registre : `from belote.bots import list_bots, create_bot`.
    paresseux obligatoire) :
    ```python
    "mon_bot": {
-       "label": "MonBot — Expérimental",
-       "description": "Monte-Carlo maison.",
+       "label": "MonBot v1",
+       "family": "MonBot",  # nom de famille choisi par le créateur
+       "version": "v1",
+       "author": "Ton nom",
+       "description": "Simule plusieurs mains adverses pour choisir une carte.",
        "level": 3,  # 1 (faible) → 5 (expert), affiché en ★ dans le lobby
-       "names": ["Tom", "Nina", "Enzo", "Lisa"],  # prénoms par siège (0-3),
-           # affichés à la place du label — un même siège = même prénom
+       "names": ["Tom", "Nina", "Enzo", "Lisa"],  # prénoms distincts par siège
+           # À table : "Tom MonBot v1", "Nina MonBot v1", etc.
        "factory": lambda seat, name: _mon_bot(seat, name),
    },
    # ...
@@ -47,6 +50,14 @@ registre : `from belote.bots import list_bots, create_bot`.
 
 C'est tout : le bot apparaît **automatiquement** dans le lobby web
 (sélecteur par siège vide), dans la CLI et dans `GET /api/bots`.
+
+Conserver l'identifiant API d'une version une fois publiée. Les prénoms,
+le nom de famille, la version, l'auteur et la courte description sont définis
+par son créateur ici, pas dans le frontend. `get_bot_name` et `create_bot`
+utilisent le même nom que le champ public `names` du catalogue. Le sélecteur
+montre le nom de version, identique à tous les sièges. Les étoiles indiquent
+un niveau estimé, pas un classement mesuré. Tous les bots actuels sont de Zach ;
+l'ancienne entrée `spark` est présentée comme Spark v0, sans modifier son code.
 
 ## 2. Compétition entre bots (à venir, non implémenté)
 

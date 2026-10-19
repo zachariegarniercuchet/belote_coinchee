@@ -13,12 +13,14 @@ Philosophie :
 
 Chaque entrée contient :
     id          : identifiant stable (clé API, stocké en room, envoyé au front)
-    label       : nom affiché dans l'interface ("Spark v3 — Expert")
+    label       : nom de la version dans le sélecteur ("Spark v3")
+    family      : nom de famille choisi par le créateur ("Spark")
+    version     : version publique ("v3")
+    author      : auteur du bot
     description : une ligne pour l'utilisateur
     level       : 1 (faible) → 5 (expert), affiché sous forme d'étoiles
-    names       : 4 prénoms « humains » (index = siège). C'est le prénom —
-                  jamais le label technique — que voit l'utilisateur.
-                  Un même bot au même siège = toujours le même prénom.
+    names       : 4 prénoms distincts (index = siège). Le nom à table combine
+                  prénom, famille et version : "Raphaël Spark v3".
     factory     : callable (seat, name) -> Player. Import paresseux à
                   l'intérieur de la factory pour ne pas charger torch/onnx
                   (et les futurs gros modèles) au démarrage du serveur.
@@ -36,43 +38,61 @@ DEFAULT_BOT_ID = "spark_v3"
 
 BOT_REGISTRY: dict[str, dict] = {
     "random": {
-        "label": "Aléatoire",
-        "description": "Joue au hasard — utile pour déboguer, très faible.",
+        "label": "Hasard v1",
+        "family": "Hasard",
+        "version": "v1",
+        "author": "Zach",
+        "description": "Choisit ses cartes au hasard parmi les coups légaux et passe le plus souvent aux enchères.",
         "level": 1,
         "names": ["Milo", "Lina", "Sacha", "Noa"],
         "factory": lambda seat, name: _random_bot(seat, name),
     },
     "heuristic": {
-        "label": "Heuristique",
-        "description": "Règles expertes simples (enchères prudentes, chasse d'atout).",
+        "label": "Classique v1",
+        "family": "Classique",
+        "version": "v1",
+        "author": "Zach",
+        "description": "Suit des règles écrites à la main : enchères prudentes et suivi des cartes déjà jouées.",
         "level": 2,
         "names": ["Louis", "Emma", "Hugo", "Chloé"],
         "factory": lambda seat, name: _heuristic_bot(seat, name),
     },
     "spark": {
-        "label": "Spark",
-        "description": "Enchères calibrées + jeu contract-aware. Solide.",
+        "label": "Spark v0",
+        "family": "Spark",
+        "version": "v0",
+        "author": "Zach",
+        "description": "Version originale : enchères calibrées et règles de jeu adaptées au contrat et au partenaire.",
         "level": 3,
         "names": ["Gabin", "Anna", "Théo", "Jade"],
         "factory": lambda seat, name: _spark_bot(seat, name),
     },
     "spark_v1": {
         "label": "Spark v1",
-        "description": "Spark + Monte-Carlo sur mondes possibles (jeu de la carte).",
+        "family": "Spark",
+        "version": "v1",
+        "author": "Zach",
+        "description": "Version figée à règles : évalue sa main aux enchères et adapte ses cartes à l'attaque ou à la défense.",
         "level": 4,
         "names": ["Léo", "Manon", "Nathan", "Camille"],
         "factory": lambda seat, name: _spark_bot_v1(seat, name),
     },
     "spark_v2": {
         "label": "Spark v2",
-        "description": "v1 + échantillonnage des mondes amélioré.",
+        "family": "Spark",
+        "version": "v2",
+        "author": "Zach",
+        "description": "Simule plusieurs répartitions possibles des cartes cachées et choisit le coup au meilleur score moyen.",
         "level": 4,
         "names": ["Ethan", "Sarah", "Maxime", "Inès"],
         "factory": lambda seat, name: _spark_bot_v2(seat, name),
     },
     "spark_v3": {
-        "label": "Spark v3 — Expert",
-        "description": "v2 + finales exactes (minimax) et mondes contraints par les enchères. Le plus fort.",
+        "label": "Spark v3",
+        "family": "Spark",
+        "version": "v3",
+        "author": "Zach",
+        "description": "Affine les simulations avec les enchères et calcule exactement les trois derniers plis dans chaque répartition simulée.",
         "level": 5,
         "names": ["Raphaël", "Léa", "Arthur", "Eva"],
         "factory": lambda seat, name: _spark_bot_v3(seat, name),
@@ -121,21 +141,22 @@ def is_valid_bot(bot_id: str) -> bool:
 def get_bot_info(bot_id: str) -> dict:
     entry = BOT_REGISTRY[bot_id]  # lève KeyError si inconnu : volontaire
     return {"id": bot_id, "label": entry["label"],
+            "family": entry["family"], "version": entry["version"], "author": entry["author"],
             "description": entry["description"], "level": entry["level"],
-            "names": list(entry["names"])}
+            "names": [get_bot_name(bot_id, seat) for seat in range(4)]}
 
 
 def get_bot_name(bot_id: str, seat: int) -> str:
-    """Prénom « humain » du bot `bot_id` au siège `seat`.
+    """Nom public du bot `bot_id` au siège `seat` (prénom, famille, version).
 
-    Déterministe : un même bot au même siège porte toujours le même prénom
-    (c'est ce prénom — jamais le nom technique — que voit l'utilisateur).
+    Déterministe : un même bot au même siège porte toujours le même nom.
     `bot_id` inconnu → repli sur le bot par défaut.
     """
     if bot_id not in BOT_REGISTRY:
         bot_id = DEFAULT_BOT_ID
-    names = BOT_REGISTRY[bot_id]["names"]
-    return names[seat % len(names)]
+    entry = BOT_REGISTRY[bot_id]
+    first_name = entry["names"][seat % len(entry["names"])]
+    return f"{first_name} {entry['family']} {entry['version']}"
 
 
 def list_bots() -> list[dict]:
@@ -148,7 +169,7 @@ def create_bot(bot_id: str, seat: int, name: str | None = None) -> Player:
 
     `bot_id` inconnu → repli silencieux sur DEFAULT_BOT_ID (une partie web ne
     doit jamais planter à cause d'un vieil id stocké en room).
-    Sans `name` explicite, le bot prend son prénom humain (`get_bot_name`).
+    Sans `name` explicite, le bot prend son nom public (`get_bot_name`).
     """
     if bot_id not in BOT_REGISTRY:
         bot_id = DEFAULT_BOT_ID

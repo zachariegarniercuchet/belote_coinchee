@@ -344,8 +344,7 @@ class GameSession:
             if seat.occupied:
                 players[p] = NetworkPlayer(p, self, seat.name)
             elif fill_bots:
-                # Le bot prend son prénom humain (registre) : à table, on ne
-                # voit que des prénoms, jamais de nom technique.
+                # Même identité dans le salon et à table : prénom, famille, version.
                 bot_id = room_choices.get(p, DEFAULT_BOT_ID)
                 players[p] = create_bot(bot_id, p, name=get_bot_name(bot_id, p))
             else:

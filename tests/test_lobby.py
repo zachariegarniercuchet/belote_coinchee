@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from belote.bots import DEFAULT_BOT_ID, list_bots
+from belote.bots import DEFAULT_BOT_ID, get_bot_name, list_bots
 from rooms import RoomManager
 import server
 
@@ -27,6 +27,16 @@ class LobbyTests(unittest.TestCase):
                         if message["name"] == event][-1]
 
             try:
+                # Le même catalogue documente les versions et nomme les joueurs.
+                catalog = server.app.test_client().get("/api/bots").get_json()
+                for bot_info in catalog:
+                    for field in ("family", "version", "author", "description"):
+                        self.assertTrue(bot_info[field])
+                    self.assertIn(bot_info["family"], bot_info["label"])
+                    self.assertIn(bot_info["version"], bot_info["label"])
+                    self.assertEqual(len(set(bot_info["names"])), 4)
+                    self.assertEqual(bot_info["names"],
+                                     [get_bot_name(bot_info["id"], seat) for seat in range(4)])
                 alice = connect("Alice")
                 code = latest(alice, "room_created")["code"]
                 room = server.rooms.get(code)
