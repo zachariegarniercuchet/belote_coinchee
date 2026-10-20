@@ -115,6 +115,18 @@ BOT_REGISTRY: dict[str, dict] = {
         "names": ["Charles", "Aliénor", "Octave", "Apolline"],
         "factory": lambda seat, name: _spark_bot_v3(seat, name),
     },
+    "brooklyn_v1": {
+        "label": "Brooklyn v1",
+        "family": "Brooklyn",
+        "theme": "New-Yorkais",
+        "avatars": [None, None, None, None],
+        "version": "v1",
+        "author": "David",
+        "description": "Règles de David : chasse l'atout en attaque et encaisse les cartes de valeur plutôt que le plus petit gagnant. Enchères héritées de Spark.",
+        "level": 3,
+        "names": ["Miles", "Nora", "Eli", "Maya"],
+        "factory": lambda seat, name: _brooklyn_bot(seat, name),
+    },
 }
 
 
@@ -150,6 +162,11 @@ def _spark_bot_v3(seat: int, name: str) -> Player:
     return SparkBotV3(seat, name=name)
 
 
+def _brooklyn_bot(seat: int, name: str) -> Player:
+    from .brooklyn import BrooklynBot
+    return BrooklynBot(seat, name=name)
+
+
 # --- API publique ------------------------------------------------------------
 
 def is_valid_bot(bot_id: str) -> bool:
@@ -175,7 +192,7 @@ def get_bot_name(bot_id: str, seat: int) -> str:
         bot_id = DEFAULT_BOT_ID
     entry = BOT_REGISTRY[bot_id]
     first_name = entry["names"][seat % len(entry["names"])]
-    if entry["family"] == "de Belote":
+    if entry["family"] in ("de Belote", "Brooklyn"):
         return f"{first_name} {entry['family']}"
     return f"{first_name} {entry['family']} {entry['version']}"
 

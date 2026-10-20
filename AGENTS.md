@@ -69,6 +69,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_autoplay.py` | Dernière carte automatique, singletons manuels et redistribution après quatre passes sur le web. |
 | `tests/test_claim.py` | Tablage, exploration des ordres légaux, équivalence des scores console/web et confidentialité des mains. |
 | `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
+| `tests/test_brooklyn.py` | Deux parcours : stratégie de David et parties complètes légales, famille Brooklyn. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
 | `tests/test_supabase_config.py` | Injection des clés Supabase dans la page, repli invité sans configuration et service de `auth.js`. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
@@ -181,13 +182,19 @@ Le catalogue des bots définit `family`, `version`, `author`, `description`,
 `theme`, `avatars`, `level` (indicatif) et quatre prénoms par version dans
 `belote/bots/registry.py`.
 Le créateur choisit ces métadonnées. Les noms publics combinent prénom et
-famille (« Charles de Belote »), sans suffixe de version pour de Belote ; les
+famille (« Charles de Belote »), sans suffixe de version pour de Belote et Brooklyn ; les
 autres familles gardent leur suffixe. Ils sont identiques dans le catalogue,
 le salon et la partie. Les versions restent dans les métadonnées et le
 sélecteur pour distinguer les moteurs. Garder les identifiants API inchangés : l'ancien
 `random` devient West v1 (cowboys), `heuristic` Bohème v1 (bobos à bonnet),
 et `spark`/`spark_v1` à `spark_v3` de Belote v0 à v3 (aristos).
-Tous les bots actuels ont Zach pour auteur.
+Les bots historiques ont Zach pour auteur ; la famille Brooklyn (`brooklyn_v1`)
+est de David (Miles, Nora, Eli, Maya). Brooklyn hérite des enchères de Spark,
+mais son jeu de carte est indépendant : chasse à l'atout en attaque, points
+encaissés plutôt que plus petit gagnant, soutien au partenaire. Ne pas modifier
+les versions existantes ni le bot par défaut en ajustant cette famille.
+Ses portraits ne sont pas encore définis : quatre `None` dans `avatars`,
+images masquées par le frontend. Les étoiles restent purement indicatives.
 Le sélecteur natif est regroupé par famille et affiche les versions, pas
 des prénoms différents par siège ; l'auteur et la méthode sont visibles sous
 le sélecteur et dans la fiche ⓘ. Les descriptions suivent le code réel :

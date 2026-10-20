@@ -7,8 +7,14 @@
 | `spark_v1.py`  | `SparkBotV1` — version figée à règles et enchères calibrées          |
 | `spark_v2.py`  | `SparkBotV2` — simulations de répartitions possibles des cartes      |
 | `spark_v3.py`  | `SparkBotV3` — + finales exactes et mondes contraints (le plus fort) |
+| `brooklyn.py`  | `BrooklynBot` — règles de David : chasse à l'atout et encaissement des points |
 | `registry.py`  | `BOT_REGISTRY` : le catalogue officiel + fabriques                   |
 | `weights/`     | **n'existe pas encore** — créé le jour où un bot a des poids (voir §3) |
+
+Pour la stratégie Brooklyn, les premiers benchmarks et le défaut de
+notifications du moteur web identifié pendant ces comparaisons, voir
+[`BROOKLYN.md`](BROOKLYN.md). Les mesures concernent le moteur console ;
+l'intégration web doit être corrigée avant une évaluation dans l'application.
 
 Règle d'or : le moteur (`belote/cards.py`, `game.py`, …) ne sait rien des
 bots. Tout accès aux bots (serveur web, CLI, futurs tournois) passe par le
@@ -58,16 +64,20 @@ le nom de famille, la version, l'auteur et la courte description sont définis
 par son créateur ici, pas dans le frontend. `get_bot_name` et `create_bot`
 utilisent le même nom que le champ public `names` du catalogue. Le sélecteur
 montre le nom de version, identique à tous les sièges. Les étoiles indiquent
-un niveau estimé, pas un classement mesuré. Tous les bots actuels sont de Zach ;
+un niveau estimé, pas un classement mesuré. Les bots historiques sont de Zach ;
 l'ancienne entrée `spark` est présentée comme de Belote v0, sans modifier son code.
 Les familles actuelles sont West (cowboys, `random`), Bohème (bonnets,
-`heuristic`) et de Belote (aristos, `spark` et `spark_v1` à `spark_v3`).
-Les noms des personnages de Belote n'affichent pas de suffixe de version
+`heuristic`), de Belote (aristos, `spark` et `spark_v1` à `spark_v3`) et
+Brooklyn (`brooklyn_v1`, auteur David, Miles/Nora/Eli/Maya).
+Les noms des personnages de Belote et Brooklyn n'affichent pas de suffixe de version
 (« Charles de Belote ») ; le sélecteur et les métadonnées distinguent toujours
 les moteurs. Les noms des autres familles restent inchangés.
 Déposer les portraits dans `frontend-github-pages/assets/bots/` : ce dossier
 est partagé par le frontend statique et la route Flask `/assets/bots/<fichier>`.
 Le catalogue expose les quatre noms de fichiers dans `avatars`. La session
+accepte aussi quatre valeurs `None` pour une famille sans portraits (Brooklyn
+pour le moment) ; le frontend masque alors les images sans emprunter celles
+d'une autre famille. La session
 transmet `bot_profiles` par siège uniquement pour les joueurs bots ; ne jamais
 déduire le type du joueur de son prénom. Les versions d'une même famille
 partagent les portraits, mais restent distinguées par leur numéro de version.

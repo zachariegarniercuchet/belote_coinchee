@@ -43,8 +43,10 @@ class LobbyTests(unittest.TestCase):
                         self.assertEqual(bot_info["names"], ["Charles de Belote", "Aliénor de Belote",
                                                             "Octave de Belote", "Apolline de Belote"])
                     self.assertTrue(bot_info["theme"])
-                    self.assertEqual(len(set(bot_info["avatars"])), 4)
-                    portraits.update(bot_info["avatars"])
+                    self.assertEqual(len(bot_info["avatars"]), 4)
+                    self.assertTrue(all(avatar is None for avatar in bot_info["avatars"])
+                                    or len(set(bot_info["avatars"])) == 4)
+                    portraits.update(avatar for avatar in bot_info["avatars"] if avatar)
                 for portrait in portraits:
                     with http.head("/assets/bots/" + portrait) as response:
                         self.assertEqual(response.status_code, 200)
