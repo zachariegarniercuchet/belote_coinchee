@@ -127,3 +127,66 @@ breakdowns by bid amount. Include failures, not just made contracts. Separate
 capots, whose special scoring otherwise distorts the margin distribution.
 David's tentative goal is a high declaring rate and high success rate, often
 bidding 10–20 below the points actually earned. Measure first; tune later.
+
+### First v2 comparison — 20 October 2026
+
+Policy frozen before running: `a01a62b`. Corrected web engine (`GameSession` /
+`NetworkGame`), with display sleeps and broadcasts disabled, not the running
+server. Target 1000; seeds 30000–30049, each replayed with Brooklyn on team 0
+and team 1; dealer `seed % 4`; each bot RNG seeded with `seed * 17 + seat`.
+100 full games per row, 400 total. V1 and v2 use the same card-play policy.
+Matched seeds do not imply identical later deals: different bids can change
+the number of deals and random draws before the target score is reached.
+No parameters were tuned after observing these results.
+
+| Brooklyn | Opponent | Game wins | Takes / played deals | Contracts made | Mean bid |
+| --- | --- | ---: | ---: | ---: | ---: |
+| v1 | de Belote v2 | 53/100 | 306/604 (50.7%) | 240/306 (78.4%) | 102.4 |
+| v2 | de Belote v2 | 22/100 | 311/583 (53.3%) | 155/311 (49.8%) | 111.2 |
+| v1 | de Belote v3 | 50/100 | 313/622 (50.3%) | 242/313 (77.3%) | 102.5 |
+| v2 | de Belote v3 | 18/100 | 308/579 (53.2%) | 152/308 (49.4%) | 111.2 |
+
+Taking excludes passed-out deals: respectively 51, 17, 51 and 14 cancelled
+deals in the row order above. Success includes all contracts and uses the
+engine's actual success flag, not just a nonnegative point margin.
+
+Calibration below excludes capot deals (either team), but includes failed
+contracts. Margin = points earned including belote/dix de der, minus bid;
+no awarded contract or coinche bonus. Percentages use the sample in column N.
+
+| Brooklyn / opponent | N | Mean margin | Median | Below bid | 0–9 above | 10–20 above | >20 above |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| v1 / de Belote v2 | 286 | +17.4 | +17 | 23.1% | 12.6% | 19.6% | 44.8% |
+| v2 / de Belote v2 | 292 | −2.5 | −2.5 | 53.1% | 15.1% | 14.7% | 17.1% |
+| v1 / de Belote v3 | 289 | +15.6 | +16 | 24.6% | 15.6% | 18.0% | 41.9% |
+| v2 / de Belote v3 | 288 | −3.4 | −3 | 54.2% | 14.9% | 12.5% | 18.4% |
+
+Including capots, mean/median margins are respectively +26.1/+20,
++5.6/0, +25.7/+19, +5.3/−1 in the main table's row order. Capot counts
+on Brooklyn's contracts are 20, 19, 24 and 20. One v2 contract against
+de Belote v2 failed despite a nonnegative margin because of the majority
+condition. On failed contracts, mean opponent-minus-Brooklyn awarded scores
+are 272.3, 280.1, 270.4 and 278.7 points respectively.
+
+V2 contracts made by amount, including capots (made/attempted):
+
+| Bid | Against de Belote v2 | Against de Belote v3 |
+| --- | ---: | ---: |
+| 80 | 10/23 | 14/23 |
+| 90 | 10/19 | 11/20 |
+| 100 | 21/55 | 19/53 |
+| 110 | 39/88 | 33/86 |
+| 120 | 40/74 | 41/75 |
+| 130 | 23/37 | 22/36 |
+| 140 | 8/10 | 8/10 |
+| 150 | 3/4 | 3/4 |
+| 160 | 1/1 | 1/1 |
+
+Conclusion for this sample: a small gain in taking rate does not compensate
+for the large fall in contract success. V2 bids about nine points higher on
+average while ordinary-deal margins are negative. Even contracts left at
+80/90 are not reliably made, so excessive rebid bonuses alone do not explain
+all failures. Isolating opening quality versus bonus valuation requires a
+separate controlled comparison; this run does not establish their individual
+causal contributions. Do not promote v2 as an improvement or change the
+default bot on the basis of this experiment.
