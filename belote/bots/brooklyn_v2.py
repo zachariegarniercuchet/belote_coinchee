@@ -30,8 +30,7 @@ class BrooklynBotV2(BrooklynBot):
     All accounting is reconstructed from public history, never hidden hands.
     """
 
-    # Provisional interpretations, pending David's clarification.
-    ALLOW_BONUS_OVERCALL = True
+    # Initial working convention: +10 for two dix seconds, on rebidding only.
     SECOND_TENS_REQUIRED = 2  # dix seconds: ten + exactly one other side-suit card
 
     def __init__(self, player_id, name=None, rng=None):
@@ -55,10 +54,16 @@ class BrooklynBotV2(BrooklynBot):
             return None
         return 90 if len(honours) == 2 else 80
 
+    @staticmethod
+    def _belote_bonus(hand, suit):
+        ranks = {c.rank for c in hand if c.suit == suit}
+        return 20 if {Rank.ROI, Rank.DAME} <= ranks else 0
+
     def _rebid_bonus(self, hand, suit):
         trumps = [c for c in hand if c.suit == suit]
-        ranks = {c.rank for c in trumps}
-        bonus = 20 if {Rank.ROI, Rank.DAME} <= ranks else 0
+        # Total own credits, including belote already used at the opening.
+        # The ceiling calculation subtracts nothing twice or on repeated turns.
+        bonus = self._belote_bonus(hand, suit) + 10 * sum(c.rank == Rank.AS for c in hand)
         sides = [[c for c in hand if c.suit == s] for s in Suit if s != suit]
         voids = sum(not cards for cards in sides)
         if voids >= 2 and len(trumps) >= 4:
@@ -118,7 +123,7 @@ class BrooklynBotV2(BrooklynBot):
         bids, spent = self._episode(bidding_state)
         numeric = [a for a in legal_actions if a.type == ActionType.ENCHERE and not a.is_capot]
         if bids:
-            _, opener, opening = bids[0]
+            _, opener, _ = bids[0]
             latest = bids[-1][2]
             if not latest.is_capot:
                 suit = latest.suit
@@ -139,11 +144,12 @@ class BrooklynBotV2(BrooklynBot):
             base = self._opening_value(hand, suit)
             if base is None:
                 continue
-            bonus = self._rebid_bonus(hand, suit) if self.ALLOW_BONUS_OVERCALL else 0
-            candidates = [a for a in numeric if a.suit == suit and base <= a.points <= base + bonus]
+            opening = base + self._belote_bonus(hand, suit)
+            candidates = [a for a in numeric if a.suit == suit and a.points == opening]
             if candidates:
-                # Open at 80/90; use bonuses immediately only if needed to enter.
-                action = min(candidates, key=lambda a: a.points)
+                # Describe trumps + belote only. Shape/aces/tens cannot fund an
+                # initial overcall: those credits are reserved for a later rebid.
+                action = candidates[0]
                 trumps = [c for c in hand if c.suit == suit]
                 openings.append((base, len(trumps), self._rebid_bonus(hand, suit),
                                  sum(c.points(suit) for c in trumps), action))

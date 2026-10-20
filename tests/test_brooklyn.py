@@ -1,4 +1,4 @@
-"""Two representative journeys for David's rule-based Brooklyn family."""
+"""Card play, partnership bidding and full-game parity for the Brooklyn family."""
 
 import random
 import unittest
@@ -29,10 +29,13 @@ class BrooklynTests(unittest.TestCase):
         for opener_hand, support_hand, expected in [
             (cards("V_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "10_TREFLE", "7_TREFLE"),
              cards("9_PIQUE", "A_PIQUE", "A_COEUR", "R_COEUR", "D_COEUR", "D_TREFLE", "V_TREFLE", "9_TREFLE"),
-             [80, 110, 150]),
+             [100, 130, 150]),
             (cards("V_PIQUE", "9_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "7_COEUR", "8_COEUR", "10_COEUR"),
              cards("A_PIQUE", "A_COEUR", "A_TREFLE", "A_CARREAU", "10_TREFLE", "7_TREFLE", "7_CARREAU", "8_CARREAU"),
-             [90, 130, 170]),
+             [110, 150, 170]),
+            (cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "A_COEUR", "8_COEUR", "A_TREFLE", "8_TREFLE", "7_CARREAU"),
+             cards("A_PIQUE", "R_PIQUE", "R_COEUR", "D_COEUR", "A_CARREAU", "R_CARREAU", "D_TREFLE", "V_TREFLE"),
+             [90, 110, 130]),
         ]:
             bots = {seat: BrooklynBotV2(seat) for seat in (0, 2)}
             state = BiddingState(dealer=1)
@@ -73,6 +76,13 @@ class BrooklynTests(unittest.TestCase):
             state = BiddingState(dealer=1)
             self.assertEqual(BrooklynBotV2(0).choose_bid(weak_hand, state, state.legal_actions()).type,
                              ActionType.PASSE)
+        # Aces/voids/tens cannot justify entering above the opening description.
+        state = BiddingState(dealer=0)  # seat 3 opens, then Brooklyn at seat 0
+        state.apply(next(a for a in state.legal_actions() if a.type == ActionType.ENCHERE
+                         and a.suit == Suit.CARREAU and a.points == 90))
+        hand = cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "A_COEUR", "8_COEUR", "A_TREFLE", "8_TREFLE", "7_CARREAU")
+        self.assertEqual(BrooklynBotV2(0).choose_bid(hand, state, state.legal_actions()).type,
+                         ActionType.PASSE)
 
     def test_trump_hunt_then_bank_points_with_public_information(self):
         bot = BrooklynBot(0)

@@ -69,7 +69,7 @@ un niveau estimé, pas un classement mesuré. Les bots historiques sont de Zach 
 l'ancienne entrée `spark` est présentée comme de Belote v0, sans modifier son code.
 Les familles actuelles sont West (cowboys, `random`), Bohème (bonnets,
 `heuristic`), de Belote (aristos, `spark` et `spark_v1` à `spark_v3`) et
-Brooklyn (`brooklyn_v1`, auteur David, Miles/Nora/Eli/Maya).
+Brooklyn (`brooklyn_v1` et `brooklyn_v2`, auteur David, Miles/Nora/Eli/Maya).
 Les noms des personnages de Belote et Brooklyn n'affichent pas de suffixe de version
 (« Charles de Belote ») ; le sélecteur et les métadonnées distinguent toujours
 les moteurs. Les noms des autres familles restent inchangés.

@@ -204,15 +204,18 @@ les versions existantes ni le bot par défaut en ajustant cette famille.
 Ses portraits ne sont pas encore définis : quatre `None` dans `avatars`,
 images masquées par le frontend. Les étoiles restent purement indicatives.
 Brooklyn v2 (`brooklyn_v2`) garde les cartes de v1 mais change les enchères :
-80/90, soutien J/9 manquant et as, puis belote/distribution du premier
-enchérisseur. Les mêmes cartes ne financent pas plusieurs hausses ; les
+80/90 avec belote possible dès l'ouverture, soutien J/9 manquant et as, puis
+as/distribution/dix seconds du premier enchérisseur au rebid. Les mêmes
+cartes ne financent pas plusieurs hausses ; les
 crédits sont calculés depuis la dernière enchère de l'équipe, sans compter
 une surenchère adverse comme une force supplémentaire. `partner_raises` et
 `partner_raise_points` conservent les hausses publiques jusqu'à la donne
 suivante. TODO : en tenir compte pour ouvrir une couleur au jeu, sans déduire
-quelles cartes précises se cachent derrière ces montants. Les deux paramètres
-provisoires (dix seconds et bonus d'entrée après une enchère adverse) sont
-à confirmer avec David avant les benchmarks ; voir `BROOKLYN.md`.
+quelles cartes précises se cachent derrière ces montants. Paramètre initial :
++10 pour deux dix seconds (10 + une seule autre carte dans une couleur
+secondaire). Les bonus autres que la belote ne financent pas une ouverture,
+même après une enchère adverse. Mesurer prise, réussite et marge du contrat
+avant de calibrer ces conventions ; voir `BROOKLYN.md`.
 Le sélecteur natif est regroupé par famille et affiche les versions, pas
 des prénoms différents par siège ; l'auteur et la méthode sont visibles sous
 le sélecteur et dans la fiche ⓘ. Les descriptions suivent le code réel :
