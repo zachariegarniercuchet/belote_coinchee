@@ -266,6 +266,11 @@ La bulle est décalée en diagonale à droite du joueur (vers l'intérieur au
 bord droit), indépendamment de sa carte. Conserver les bulles dans le DOM
 sur les états identiques ; chaque nouvelle enchère, même « Passe » répété,
 relance sa courte disparition/réapparition.
+À la fin des enchères, diffuser la dernière annonce puis rester en phase
+`bidding` pendant `FINAL_BID_READ_PAUSE` (1,5 s), sans joueur en attente, avant
+le premier pli ou le ramassage d'une donne passée. Les bulles sont ensuite
+retirées à la sortie des enchères, pas avant ce temps de lecture. Réarmer
+leur nettoyage à l'entrée des enchères, même après la phase `dealing`.
 Les cartes simulées après tablage ne déclenchent pas ces bulles.
 Ne pas modifier ces choix sans demande correspondante.
 

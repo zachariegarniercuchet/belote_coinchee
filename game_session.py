@@ -38,6 +38,7 @@ LAST_TRICK_EXTRA_PAUSE = 1.0             # seconde supplémentaire pour lire les
 BOT_BID_THINK_RANGE = (0.9, 1.9)     # secondes de "réflexion" simulée d'un bot avant d'enchérir
 BOT_CARD_THINK_RANGE = (0.8, 1.7)    # secondes de "réflexion" simulée d'un bot avant de jouer une carte
 AUTO_CARD_PLAY_DELAY = 0.6          # pause avant de jouer la dernière carte
+FINAL_BID_READ_PAUSE = 1.5         # laisser lire la dernière annonce avant de quitter les enchères
 REDEAL_STAGE_PAUSE = 1.4            # ramassage puis redistribution après quatre passes
 
 
@@ -175,6 +176,10 @@ class NetworkGame(Game):
             ctx.waiting_kind = None
             ctx.pending_legal_bid = None
             self.session.broadcast()
+            if bidding_state.finished:
+                # Diffuser puis laisser lire la dernière passe (ou surcoinche),
+                # avant le premier pli comme avant un ramassage/une redistribution.
+                self.session.sleep(FINAL_BID_READ_PAUSE)
 
         log = DonneLog(
             dealer=dealer,

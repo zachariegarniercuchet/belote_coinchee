@@ -14,7 +14,7 @@ from belote.claim import find_claim, play_claim
 from belote.game import Donne
 from belote.player import Player
 from belote.trick import TrickState
-from game_session import GameSession, TRICK_COLLECT_PAUSE_RANGE
+from game_session import FINAL_BID_READ_PAUSE, GameSession, TRICK_COLLECT_PAUSE_RANGE
 from rooms import Room
 
 
@@ -175,10 +175,20 @@ class ClaimGameTests(unittest.TestCase):
             session.game.players = players
             session.game.dealer = 0
             session.game.rng = random.Random(seed)
-            session.sleep = Mock()
             broadcasts = []
+            last_bids = []
+            def observe_pause(delay):
+                if session.ctx.phase == "bidding" and session.ctx.bidding_state.finished:
+                    last_bids.append((delay, broadcasts[-1]))
+            session.sleep = Mock(side_effect=observe_pause)
             session.broadcast = lambda: broadcasts.append(copy.deepcopy(session._build_common()))
             web = session.game.play_one_donne()
+            self.assertEqual(len(last_bids), 1)
+            delay, last_bid = last_bids[0]
+            self.assertEqual(delay, FINAL_BID_READ_PAUSE)
+            self.assertEqual(last_bid["bidding_history"][-1]["type"], "PASSE")
+            self.assertIsNone(last_bid["waiting_seat"])
+            self.assertEqual(last_bid["current_trick"], [])
             for log in (console, web):
                 with self.subTest(seed=seed, web=log is web):
                     self.assertEqual(log.result, reference.result)

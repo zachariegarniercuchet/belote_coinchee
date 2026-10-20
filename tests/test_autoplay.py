@@ -11,7 +11,7 @@ from unittest.mock import Mock
 from belote.bidding import ActionType
 from belote.cards import Card, Rank, Suit
 from belote.trick import TrickState
-from game_session import AUTO_CARD_PLAY_DELAY, REDEAL_STAGE_PAUSE, GameSession, NetworkPlayer
+from game_session import AUTO_CARD_PLAY_DELAY, FINAL_BID_READ_PAUSE, REDEAL_STAGE_PAUSE, GameSession, NetworkPlayer
 from rooms import Room
 
 
@@ -21,9 +21,13 @@ class AutoplayTests(unittest.TestCase):
         for player in session.players.values():
             player.choose_bid = Mock(side_effect=lambda hand, bidding, legal:
                                      next(action for action in legal if action.type == ActionType.PASSE))
-        states, pauses = [], []
+        states, pauses, last_bids = [], [], []
         session.broadcast = Mock(side_effect=lambda: states.append(session._build_common()))
-        session.sleep = Mock(side_effect=lambda delay: pauses.append((session.ctx.phase, delay)))
+        def observe_pause(delay):
+            pauses.append((session.ctx.phase, delay))
+            if session.ctx.phase == "bidding" and session.ctx.bidding_state.finished:
+                last_bids.append((delay, states[-1]))
+        session.sleep = Mock(side_effect=observe_pause)
         first_dealer = session.game.dealer
 
         for _ in range(2):
@@ -46,6 +50,13 @@ class AutoplayTests(unittest.TestCase):
         self.assertNotIn("your_hand", states[dealing])
         self.assertNotIn("hands", states[dealing])
         self.assertEqual(session.game.cumulative_scores, {0: 0, 1: 0})
+        self.assertEqual(len(last_bids), 2)
+        for delay, state in last_bids:
+            self.assertEqual(delay, FINAL_BID_READ_PAUSE)
+            self.assertEqual(state["phase"], "bidding")
+            self.assertEqual([entry["type"] for entry in state["bidding_history"]], ["PASSE"] * 4)
+            self.assertIsNone(state["waiting_seat"])
+            self.assertIsNone(state["waiting_kind"])
 
     def choose(self, hand, plays):
         trick = TrickState(leader=0, atout=Suit.PIQUE, plays=list(plays))
