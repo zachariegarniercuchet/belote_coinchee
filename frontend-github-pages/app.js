@@ -778,6 +778,8 @@
       return;
     }
 
+    // La redistribution a pu passer ici avant les enchères : réarmer leur nettoyage.
+    bidBubbleState.clearedForPhase = false;
     const hist = state.bidding_history || [];
     if (hist.length > bidBubbleState.count) {
       hist.slice(bidBubbleState.count).forEach(h => showBidBubble(h.seat, h));
