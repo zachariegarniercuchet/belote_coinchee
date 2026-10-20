@@ -2,6 +2,7 @@
 
 import random
 import unittest
+from unittest.mock import Mock
 
 from belote.bidding import Contract
 from belote.bots import create_bot, get_bot_info
@@ -9,6 +10,8 @@ from belote.bots.brooklyn import BrooklynBot
 from belote.cards import Card, Rank, Suit
 from belote.game import Game
 from belote.trick import TrickState, trick_winner
+from game_session import GameSession
+from rooms import Room
 
 
 def cards(*codes):
@@ -86,6 +89,27 @@ class BrooklynTests(unittest.TestCase):
             self.assertTrue(all(isinstance(bot, BrooklynBot) for bot in players.values()))
             game = Game(players, target_score=300, first_dealer=seed, rng=random.Random(seed))
             self.assertIn(game.play_until_end(), (0, 1))
+            # The same public notifications must reach bots in the web engine,
+            # including automatic last tricks, claims and the next deal's reset.
+            session = GameSession(Room("TEST"), target_score=300,
+                                  bot_ids={seat: "brooklyn_v1" for seat in range(4)})
+            session.game.dealer = seed
+            session.game.rng = random.Random(seed)
+            session.sleep = Mock()
+            session.broadcast = Mock()
+            for bot in session.players.values():
+                bot.notify_contract = Mock(wraps=bot.notify_contract)
+                bot.notify_trick_result = Mock(wraps=bot.notify_trick_result)
+            session.run()
+            accepted = sum(not log.annulee for log in session.game.donne_logs)
+            for bot in session.players.values():
+                self.assertEqual(bot.notify_contract.call_count, accepted)
+                self.assertEqual(bot.notify_trick_result.call_count, accepted * 8)
+                self.assertEqual(bot.tricks_played, 8)
+                self.assertEqual(bot.is_preneur, bot.player_id % 2 == session.game.donne_logs[-1].contract.team)
+            self.assertEqual(session.game.donne_logs, game.donne_logs)
+            self.assertEqual(session.game.cumulative_scores, game.cumulative_scores)
+            self.assertEqual(session.winner_team, game.winner_team)
             for log in game.donne_logs:
                 if log.annulee:
                     continue

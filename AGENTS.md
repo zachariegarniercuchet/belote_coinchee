@@ -124,6 +124,14 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 
 - Conserver le moteur `belote/` indépendant de Flask, du réseau et du DOM.
   Centraliser les règles dans ses modules existants.
+- Tous les joueurs partagent `Player.contract` et les propriétés dérivées
+  `is_attacking` / `is_defending` ; pas de copie de rôle dans le salon.
+  Les deux moteurs appellent `notify_donne_start` avant les enchères (contrat
+  remis à `None`), `notify_contract` une fois le contrat retenu, puis
+  `notify_trick_result` pour chacun des huit plis, y compris tablage et dernier
+  pli automatique. Une surcharge doit conserver le contrat dans `self.contract`.
+  Pendant les enchères, le contrat provisoire est dans `BiddingState` fourni
+  à `choose_bid`. Ces notifications ne transmettent aucune main adverse.
 - Le déroulement d'une donne est présent à la fois dans `belote/game.py` et
   `NetworkGame` dans `game_session.py`. Pour une modification de déroulement,
   vérifier les chemins console et web.

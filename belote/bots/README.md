@@ -11,10 +11,10 @@
 | `registry.py`  | `BOT_REGISTRY` : le catalogue officiel + fabriques                   |
 | `weights/`     | **n'existe pas encore** — créé le jour où un bot a des poids (voir §3) |
 
-Pour la stratégie Brooklyn, les premiers benchmarks et le défaut de
-notifications du moteur web identifié pendant ces comparaisons, voir
-[`BROOKLYN.md`](BROOKLYN.md). Les mesures concernent le moteur console ;
-l'intégration web doit être corrigée avant une évaluation dans l'application.
+Pour la stratégie Brooklyn, les premiers benchmarks et la correction des
+notifications du moteur web identifiée pendant ces comparaisons, voir
+[`BROOKLYN.md`](BROOKLYN.md). Les replays console/web vérifient les mêmes
+décisions pour des distributions et graines identiques.
 
 Règle d'or : le moteur (`belote/cards.py`, `game.py`, …) ne sait rien des
 bots. Tout accès aux bots (serveur web, CLI, futurs tournois) passe par le

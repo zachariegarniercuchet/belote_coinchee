@@ -39,6 +39,8 @@ class Donne:
         self.rng = rng or random.Random()
 
     def play(self) -> DonneLog:
+        for player in self.players.values():
+            player.notify_donne_start()
         deck = new_shuffled_deck(self.rng)
         deck = cut_deck(deck, self.rng)
         starting_player = (self.dealer - 1) % 4

@@ -80,7 +80,7 @@ class BrooklynBot(SparkBot):
 
     def _draw_trump(self, hand, trick, legal):
         trumps = [c for c in legal if c.suit == trick.atout]
-        if not self.is_preneur or not trumps or not self._opponents_have_trumps(hand, trick):
+        if not self.is_attacking or not trumps or not self._opponents_have_trumps(hand, trick):
             return None
         jack = next((c for c in trumps if c.rank == Rank.VALET), None)
         if jack is not None:
@@ -135,7 +135,7 @@ class BrooklynBot(SparkBot):
 
         if winning:
             safe = [c for c in winning if self._reasonably_safe(hand, trick, c)]
-            if (self.is_preneur and len(trick.plays) == 3
+            if (self.is_attacking and len(trick.plays) == 3
                     and not self._opponents_have_trumps(hand, trick)):
                 # Rare economy exception: last to play, no enemy trumps remain.
                 return min(winning, key=lambda c: (c.points(atout), -self._strength(c, atout)))

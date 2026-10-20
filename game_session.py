@@ -128,6 +128,8 @@ class NetworkGame(Game):
         ctx = self.session.ctx
         rng = self.rng
         redealing = ctx.phase == "donne_annulee"
+        for player in self.players.values():
+            player.notify_donne_start()
 
         deck = cut_deck(new_shuffled_deck(rng), rng)
         starting_player = (dealer - 1) % 4
@@ -196,6 +198,8 @@ class NetworkGame(Game):
             return log
 
         contract = bidding_state.contract
+        for player in self.players.values():
+            player.notify_contract(contract)
         atout = contract.suit
         leader = (dealer - 1) % 4
         # Connue du moteur dès la fin des enchères pour calculer le score,
@@ -230,6 +234,8 @@ class NetworkGame(Game):
                     tricks_won_by_team[team_of(claim.seat)] += 1
                     log.tricks.append(list(trick.plays))
                     log.trick_winners.append(claim.seat)
+                    for player in self.players.values():
+                        player.notify_trick_result(list(trick.plays), claim.seat)
                 last_trick_winner = claim.seat
                 ctx.tricks_won_this_donne = dict(tricks_won_by_team)
                 ctx.current_trick = None
@@ -287,6 +293,8 @@ class NetworkGame(Game):
 
             log.tricks.append(list(trick.plays))
             log.trick_winners.append(winner)
+            for player in self.players.values():
+                player.notify_trick_result(list(trick.plays), winner)
 
             ctx.completed_trick_cards = list(trick.plays)
             ctx.last_trick_winner_seat = winner

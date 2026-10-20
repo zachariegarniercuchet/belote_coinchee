@@ -6,7 +6,9 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from belote.bots import DEFAULT_BOT_ID, get_bot_name, list_bots
+from belote.bidding import Contract
+from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_name, list_bots
+from belote.cards import Suit
 from rooms import RoomManager
 import server
 
@@ -47,6 +49,18 @@ class LobbyTests(unittest.TestCase):
                     self.assertTrue(all(avatar is None for avatar in bot_info["avatars"])
                                     or len(set(bot_info["avatars"])) == 4)
                     portraits.update(avatar for avatar in bot_info["avatars"] if avatar)
+                    # All families share the same public contract/role interface.
+                    player = create_bot(bot_info["id"], 0)
+                    for team in (0, 1):
+                        contract = Contract(player=team, team=team, points=90,
+                                            suit=Suit.COEUR, is_capot=False)
+                        player.notify_contract(contract)
+                        self.assertIs(player.contract, contract)
+                        self.assertEqual(player.is_attacking, team == 0)
+                        self.assertEqual(player.is_defending, team == 1)
+                    player.notify_donne_start()
+                    self.assertIsNone(player.contract)
+                    self.assertFalse(player.is_attacking or player.is_defending)
                 for portrait in portraits:
                     with http.head("/assets/bots/" + portrait) as response:
                         self.assertEqual(response.status_code, 200)

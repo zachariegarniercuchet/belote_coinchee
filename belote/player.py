@@ -8,15 +8,29 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from .bidding import BidAction, BiddingState
+from .bidding import BidAction, BiddingState, Contract
 from .cards import Card
-from .trick import TrickState
+from .trick import TrickState, team_of
 
 
 class Player(ABC):
     def __init__(self, player_id: int, name: str):
         self.player_id = player_id
         self.name = name
+        self.contract: Contract | None = None
+
+    @property
+    def is_attacking(self) -> bool:
+        """Role in the accepted contract; neither role applies before acceptance."""
+        return self.contract is not None and self.contract.team == team_of(self.player_id)
+
+    @property
+    def is_defending(self) -> bool:
+        return self.contract is not None and self.contract.team != team_of(self.player_id)
+
+    def notify_donne_start(self) -> None:
+        """Forget the previous contract before new bidding, even if all pass."""
+        self.contract = None
 
     @abstractmethod
     def choose_bid(self, hand: list[Card], bidding_state: BiddingState,
@@ -34,11 +48,14 @@ class Player(ABC):
         """Point d'extension optionnel pour informer le joueur d'un événement (log, UI...)."""
         pass
 
-    def notify_contract(self, contract) -> None:
+    def notify_contract(self, contract: Contract) -> None:
         """Point d'extension optionnel : informe le joueur du contrat retenu,
         juste avant le début du jeu de la carte (permet à un bot de savoir s'il
-        est preneur et de réinitialiser sa mémoire de donne)."""
-        pass
+        est preneur et de réinitialiser sa mémoire de donne).
+        Une surcharge doit conserver `self.contract` (ou appeler super()).
+        Le contrat provisoire pendant les enchères est dans `bidding_state`.
+        """
+        self.contract = contract
 
     def notify_trick_result(self, plays: list[tuple[int, Card]], winner: int) -> None:
         """Point d'extension optionnel : informe le joueur du résultat d'un pli

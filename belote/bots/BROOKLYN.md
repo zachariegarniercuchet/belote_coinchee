@@ -58,13 +58,24 @@ over Spark; attacking play against the simulation bots needs investigation.
 
 ## Important integration finding
 
-The console engine calls `notify_contract` and `notify_trick_result`; the web
-engine currently calls neither. Instrumented seed 0, identical hands/contract:
+Before the fix, the console engine called `notify_contract` and
+`notify_trick_result`, but the web engine called neither. Instrumented seed 0, identical hands/contract:
 console = 4 contract notifications and 32 trick notifications; web = 0 and 0.
 All four web Brooklyn bots therefore remained `is_preneur=False`.
 
-These benchmarks describe the console engine, NOT current web behaviour.
-Wire the public notifications into `NetworkGame` and verify console/web
-parity before treating the family as ready for in-app evaluation. This also
-affects the existing memory-based bots. Do not silently tune their versions
-or change the default bot as part of that repair.
+The web engine now delivers the same contract and all eight trick results,
+including claims and automatic last tricks. All players have `contract` and
+derived `is_attacking`/`is_defending` properties in the base `Player` API.
+`notify_donne_start` clears the old contract before bidding, including deals
+where everyone passes; provisional bids are available through `BiddingState`.
+Overrides of `notify_contract` must retain `self.contract` or call `super()`.
+
+The existing complete-game test now compares seeded Brooklyn console and web
+games, including notification counts, role resets, histories, scores and
+winners. The public catalogue journey also checks this common interface on
+every bot family. No additional test functions were added for the wiring fix.
+Additional mixed-team replays compare Brooklyn against Bohème and Spark v1,
+v2, v3 on identical hands and bot RNG seeds: 32, 32, 8 and 8 deal pairs
+respectively, all 80 logs identical (including 17 claims and 8 passed-out
+deals). Existing bot strategies and the
+default selection were not modified; they now receive their missing inputs.
