@@ -69,7 +69,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_autoplay.py` | Dernière carte automatique, singletons manuels et redistribution après quatre passes sur le web. |
 | `tests/test_claim.py` | Tablage, exploration des ordres légaux, équivalence des scores console/web et confidentialité des mains. |
 | `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
-| `tests/test_brooklyn.py` | Deux parcours : stratégie de David et parties complètes légales, famille Brooklyn. |
+| `tests/test_brooklyn.py` | Stratégie de David, enchères de partenariat v2 et parties légales identiques console/web. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
 | `tests/test_supabase_config.py` | Injection des clés Supabase dans la page, repli invité sans configuration et service de `auth.js`. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
@@ -203,6 +203,16 @@ encaissés plutôt que plus petit gagnant, soutien au partenaire. Ne pas modifie
 les versions existantes ni le bot par défaut en ajustant cette famille.
 Ses portraits ne sont pas encore définis : quatre `None` dans `avatars`,
 images masquées par le frontend. Les étoiles restent purement indicatives.
+Brooklyn v2 (`brooklyn_v2`) garde les cartes de v1 mais change les enchères :
+80/90, soutien J/9 manquant et as, puis belote/distribution du premier
+enchérisseur. Les mêmes cartes ne financent pas plusieurs hausses ; les
+crédits sont calculés depuis la dernière enchère de l'équipe, sans compter
+une surenchère adverse comme une force supplémentaire. `partner_raises` et
+`partner_raise_points` conservent les hausses publiques jusqu'à la donne
+suivante. TODO : en tenir compte pour ouvrir une couleur au jeu, sans déduire
+quelles cartes précises se cachent derrière ces montants. Les deux paramètres
+provisoires (dix seconds et bonus d'entrée après une enchère adverse) sont
+à confirmer avec David avant les benchmarks ; voir `BROOKLYN.md`.
 Le sélecteur natif est regroupé par famille et affiche les versions, pas
 des prénoms différents par siège ; l'auteur et la méthode sont visibles sous
 le sélecteur et dans la fiche ⓘ. Les descriptions suivent le code réel :

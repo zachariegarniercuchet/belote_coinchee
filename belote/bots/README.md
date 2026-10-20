@@ -8,6 +8,7 @@
 | `spark_v2.py`  | `SparkBotV2` — simulations de répartitions possibles des cartes      |
 | `spark_v3.py`  | `SparkBotV3` — + finales exactes et mondes contraints (le plus fort) |
 | `brooklyn.py`  | `BrooklynBot` — règles de David : chasse à l'atout et encaissement des points |
+| `brooklyn_v2.py` | `BrooklynBotV2` — enchères de partenariat 80/90, crédits et mémoire des soutiens |
 | `registry.py`  | `BOT_REGISTRY` : le catalogue officiel + fabriques                   |
 | `weights/`     | **n'existe pas encore** — créé le jour où un bot a des poids (voir §3) |
 

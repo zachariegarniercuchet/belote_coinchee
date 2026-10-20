@@ -127,6 +127,18 @@ BOT_REGISTRY: dict[str, dict] = {
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot(seat, name),
     },
+    "brooklyn_v2": {
+        "label": "Brooklyn v2",
+        "family": "Brooklyn",
+        "theme": "New-Yorkais",
+        "avatars": [None, None, None, None],
+        "version": "v2",
+        "author": "David",
+        "description": "Ouvre à 80/90 avec trois atouts et valet/neuf ; soutien du partenaire, puis bonus de belote et distribution, comptés une seule fois. Jeu de carte Brooklyn.",
+        "level": 3,
+        "names": ["Miles", "Nora", "Eli", "Maya"],
+        "factory": lambda seat, name: _brooklyn_bot_v2(seat, name),
+    },
 }
 
 
@@ -165,6 +177,11 @@ def _spark_bot_v3(seat: int, name: str) -> Player:
 def _brooklyn_bot(seat: int, name: str) -> Player:
     from .brooklyn import BrooklynBot
     return BrooklynBot(seat, name=name)
+
+
+def _brooklyn_bot_v2(seat: int, name: str) -> Player:
+    from .brooklyn_v2 import BrooklynBotV2
+    return BrooklynBotV2(seat, name=name)
 
 
 # --- API publique ------------------------------------------------------------

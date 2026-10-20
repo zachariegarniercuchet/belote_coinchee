@@ -2,11 +2,13 @@
 
 import random
 import unittest
+from itertools import product
 from unittest.mock import Mock
 
-from belote.bidding import Contract
+from belote.bidding import ActionType, BiddingState, Contract
 from belote.bots import create_bot, get_bot_info
 from belote.bots.brooklyn import BrooklynBot
+from belote.bots.brooklyn_v2 import BrooklynBotV2
 from belote.cards import Card, Rank, Suit
 from belote.game import Game
 from belote.trick import TrickState, trick_winner
@@ -23,6 +25,55 @@ def contract(team=0):
 
 
 class BrooklynTests(unittest.TestCase):
+    def test_v2_partnership_auction_counts_each_contribution_once(self):
+        for opener_hand, support_hand, expected in [
+            (cards("V_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "10_TREFLE", "7_TREFLE"),
+             cards("9_PIQUE", "A_PIQUE", "A_COEUR", "R_COEUR", "D_COEUR", "D_TREFLE", "V_TREFLE", "9_TREFLE"),
+             [80, 110, 150]),
+            (cards("V_PIQUE", "9_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "7_COEUR", "8_COEUR", "10_COEUR"),
+             cards("A_PIQUE", "A_COEUR", "A_TREFLE", "A_CARREAU", "10_TREFLE", "7_TREFLE", "7_CARREAU", "8_CARREAU"),
+             [90, 130, 170]),
+        ]:
+            bots = {seat: BrooklynBotV2(seat) for seat in (0, 2)}
+            state = BiddingState(dealer=1)
+            hands = {0: opener_hand, 2: support_hand}
+            while not state.finished:
+                seat = state.current_player
+                legal = state.legal_actions()
+                if seat in bots:
+                    action = bots[seat].choose_bid(hands[seat], state, legal)
+                    # Re-reading the same state must not spend a second credit.
+                    self.assertEqual(bots[seat].choose_bid(hands[seat], state, legal), action)
+                else:
+                    if seat == 1 and len(state.history) == 1:
+                        # Enemy overcalls must not inflate our card-value credits.
+                        action = next(a for a in legal if a.type == ActionType.ENCHERE
+                                      and a.suit == Suit.COEUR and a.points == expected[0] + 10)
+                    else:
+                        action = next(a for a in legal if a.type == ActionType.PASSE)
+                self.assertIn(action, legal)
+                state.apply(action)
+            numeric = [a.points for seat, a in state.history
+                       if seat % 2 == 0 and a.type == ActionType.ENCHERE]
+            self.assertEqual(numeric, expected)
+            self.assertEqual(bots[0].partner_raise_points, expected[1] - expected[0])
+            self.assertEqual([r.points for r in bots[0].partner_raises], [expected[1] - expected[0]])
+            for bot in bots.values():
+                bot.notify_contract(state.contract)
+                self.assertTrue(bot.is_attacking)
+            # Support observations survive acceptance, then reset for the next deal.
+            self.assertTrue(bots[0].partner_raises)
+            bots[0].notify_donne_start()
+            self.assertEqual(bots[0].partner_raise_points, 0)
+            self.assertEqual(bots[0].partner_raises, [])
+        for weak_hand in [
+            cards("V_PIQUE", "A_PIQUE", "A_COEUR", "10_COEUR", "A_TREFLE", "10_TREFLE", "A_CARREAU", "10_CARREAU"),
+            cards("A_PIQUE", "10_PIQUE", "R_PIQUE", "A_COEUR", "R_COEUR", "A_TREFLE", "R_TREFLE", "A_CARREAU"),
+        ]:
+            state = BiddingState(dealer=1)
+            self.assertEqual(BrooklynBotV2(0).choose_bid(weak_hand, state, state.legal_actions()).type,
+                             ActionType.PASSE)
+
     def test_trump_hunt_then_bank_points_with_public_information(self):
         bot = BrooklynBot(0)
         bot.notify_contract(contract())
@@ -84,15 +135,15 @@ class BrooklynTests(unittest.TestCase):
         info = get_bot_info("brooklyn_v1")
         self.assertEqual((info["family"], info["author"]), ("Brooklyn", "David"))
         self.assertEqual(len(set(info["names"])), 4)
-        for seed in range(4):
-            players = {seat: create_bot("brooklyn_v1", seat) for seat in range(4)}
+        for bot_id, seed in product(("brooklyn_v1", "brooklyn_v2"), range(4)):
+            players = {seat: create_bot(bot_id, seat) for seat in range(4)}
             self.assertTrue(all(isinstance(bot, BrooklynBot) for bot in players.values()))
             game = Game(players, target_score=300, first_dealer=seed, rng=random.Random(seed))
             self.assertIn(game.play_until_end(), (0, 1))
             # The same public notifications must reach bots in the web engine,
             # including automatic last tricks, claims and the next deal's reset.
             session = GameSession(Room("TEST"), target_score=300,
-                                  bot_ids={seat: "brooklyn_v1" for seat in range(4)})
+                                  bot_ids={seat: bot_id for seat in range(4)})
             session.game.dealer = seed
             session.game.rng = random.Random(seed)
             session.sleep = Mock()

@@ -79,3 +79,48 @@ v2, v3 on identical hands and bot RNG seeds: 32, 32, 8 and 8 deal pairs
 respectively, all 80 logs identical (including 17 claims and 8 passed-out
 deals). Existing bot strategies and the
 default selection were not modified; they now receive their missing inputs.
+
+## Brooklyn v2 — draft partnership bidding
+
+V1 is unchanged. V2 inherits the same card play, but opens with at least
+three trumps including J or 9: 80 for one honour, 90 for both. The supporting
+partner adds 10 per missing trump honour held and per ace (including trump
+ace). Opener's rebid credits: 20 for trump K+Q; 10 for a void with at least
+three trumps, or 20 TOTAL for at least two voids with at least four trumps.
+Support and bonuses are credited once, not again on each turn. No capot bid.
+V1's conservative coinche/surcoinche decisions remain in use.
+
+Credits are relative to the team's last bid, not the intervening opponents'
+bid. This avoids turning enemy overcalls into fictitious extra hand strength.
+Both attack partners remember public raise amounts via `partner_raises` and
+`partner_raise_points`. These survive contract acceptance and reset on the
+next deal; history is re-read without spending duplicate credits.
+
+Two interpretations are PROVISIONAL, with questions sent to David:
+
+- `SECOND_TENS_REQUIRED = 2`: +10 for at least two dix seconds (ten + exactly
+  one other card in a non-trump suit). Three side-suit dix seconds cannot fit
+  alongside three trumps. Confirm the intended holding AND threshold.
+- `ALLOW_BONUS_OVERCALL = True`: bonuses can fund an initial overcall if
+  necessary; otherwise opener announces only 80/90 and keeps bonuses for a
+  rebid. Confirm whether bonuses should instead be strictly rebid-only.
+
+TODO: use partnership raises to inform leading a new side suit during play.
+Amounts alone do not identify specific aces; opener's raises can also contain
+belote and shape credits. Do not inspect partner's hand or implement that
+card-play inference before its convention is specified.
+
+### Calibration measurements to report when comparing v2
+
+Use fixed seed schedules and swap teams; compare v1 and v2 against the same
+opponents. Report game wins, declaring share among non-cancelled deals, and
+actual contract success (including the engine's majority condition). Report
+failures and their awarded-score cost, rather than success rate alone.
+
+For every numeric contract, measure `result.total_points[team] - bid`, using
+trick points + dix de der + belote, NOT awarded contract/coinche bonuses.
+Report mean/median and margin buckets below 0, 0–9, 10–20 and above 20, plus
+breakdowns by bid amount. Include failures, not just made contracts. Separate
+capots, whose special scoring otherwise distorts the margin distribution.
+David's tentative goal is a high declaring rate and high success rate, often
+bidding 10–20 below the points actually earned. Measure first; tune later.
