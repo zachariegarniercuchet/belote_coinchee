@@ -29,13 +29,14 @@ class BrooklynTests(unittest.TestCase):
         for opener_hand, support_hand, expected in [
             (cards("V_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "10_TREFLE", "7_TREFLE"),
              cards("9_PIQUE", "A_PIQUE", "A_COEUR", "R_COEUR", "D_COEUR", "D_TREFLE", "V_TREFLE", "9_TREFLE"),
-             [100, 130, 150]),
+             [100, 120, 140]),
             (cards("V_PIQUE", "9_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "7_COEUR", "8_COEUR", "10_COEUR"),
              cards("A_PIQUE", "A_COEUR", "A_TREFLE", "A_CARREAU", "10_TREFLE", "7_TREFLE", "7_CARREAU", "8_CARREAU"),
-             [110, 150, 170]),
-            (cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "A_COEUR", "8_COEUR", "A_TREFLE", "8_TREFLE", "7_CARREAU"),
-             cards("A_PIQUE", "R_PIQUE", "R_COEUR", "D_COEUR", "A_CARREAU", "R_CARREAU", "D_TREFLE", "V_TREFLE"),
-             [90, 110, 130]),
+             [110, 140, 160]),
+            # Trump aces fund neither partner support (above) nor opener rebids.
+            (cards("V_PIQUE", "9_PIQUE", "A_PIQUE", "A_COEUR", "8_COEUR", "R_TREFLE", "8_TREFLE", "7_CARREAU"),
+             cards("7_PIQUE", "R_PIQUE", "R_COEUR", "D_COEUR", "A_CARREAU", "R_CARREAU", "A_TREFLE", "V_TREFLE"),
+             [90, 110, 120]),
         ]:
             bots = {seat: BrooklynBotV2(seat) for seat in (0, 2)}
             state = BiddingState(dealer=1)

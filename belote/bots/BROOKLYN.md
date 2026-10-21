@@ -85,8 +85,9 @@ default selection were not modified; they now receive their missing inputs.
 V1 is unchanged. V2 inherits the same card play, but opens with at least
 three trumps including J or 9: 80 for one honour, 90 for both, plus 20 for
 trump K+Q at the opening. The supporting partner adds 10 per missing trump
-honour held and per ace (including trump ace). Opener's later credits include
-10 per ace, and 10 for a void with at least
+honour held and per non-trump ace. The trump ace is included in the base
+80/90 description and never earns another +10. Opener's later credits include
+10 per non-trump ace, and 10 for a void with at least
 three trumps, or 20 TOTAL for at least two voids with at least four trumps.
 Support and bonuses are credited once, not again on each turn. No capot bid.
 V1's conservative coinche/surcoinche decisions remain in use.
@@ -102,7 +103,7 @@ Working parameters following David's clarification (20 October):
 - `SECOND_TENS_REQUIRED = 2`: +10 for at least two dix seconds (ten + exactly
   one other card in a non-trump suit). Three side-suit dix seconds cannot fit
   alongside three trumps. This is an initial parameter to measure, not a
-  claimed optimal valuation. An ace is credited separately at +10.
+  claimed optimal valuation. A non-trump ace is credited separately at +10.
 - Initial entry is limited to the 80/90 trump description plus belote, whether
   opening an empty auction or overcalling opponents. Aces, voids and dix
   seconds are reserved for rebidding and cannot fund initial entry. Belote
@@ -138,6 +139,8 @@ and team 1; dealer `seed % 4`; each bot RNG seeded with `seed * 17 + seat`.
 Matched seeds do not imply identical later deals: different bids can change
 the number of deals and random draws before the target score is reached.
 No parameters were tuned after observing these results.
+These historical results PRECEDE David's correction excluding the trump ace
+from +10 ace credits; they do not measure that corrected policy.
 
 | Brooklyn | Opponent | Game wins | Takes / played deals | Contracts made | Mean bid |
 | --- | --- | ---: | ---: | ---: | ---: |

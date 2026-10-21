@@ -63,7 +63,9 @@ class BrooklynBotV2(BrooklynBot):
         trumps = [c for c in hand if c.suit == suit]
         # Total own credits, including belote already used at the opening.
         # The ceiling calculation subtracts nothing twice or on repeated turns.
-        bonus = self._belote_bonus(hand, suit) + 10 * sum(c.rank == Rank.AS for c in hand)
+        # Trump ace is already covered by the 80/90 trump description.
+        bonus = self._belote_bonus(hand, suit) + 10 * sum(
+            c.rank == Rank.AS and c.suit != suit for c in hand)
         sides = [[c for c in hand if c.suit == s] for s in Suit if s != suit]
         voids = sum(not cards for cards in sides)
         if voids >= 2 and len(trumps) >= 4:
@@ -81,7 +83,7 @@ class BrooklynBotV2(BrooklynBot):
         honours = sum(c.suit == suit and c.rank in (Rank.VALET, Rank.NEUF) for c in hand)
         # Under this convention opener already has at least one J/9.
         missing_honour = min(1, honours)
-        aces = sum(c.rank == Rank.AS for c in hand)  # includes the trump ace
+        aces = sum(c.rank == Rank.AS and c.suit != suit for c in hand)
         return 10 * (missing_honour + aces)
 
     def _episode(self, state):
