@@ -354,6 +354,16 @@ manette ; le tablage reste consultable avant les scores sur le plateau.
 Le bouton de retour est activé une fois `game_over` reçu, lorsque la session
 est effectivement terminée et peut être libérée par `new_game`.
 
+Le bouton « Voir les mains de départ » du récapitulatif ouvre une vue de
+consultation : quatre mains initiales autour d'un carré, regroupées par
+couleur et triées selon l'atout du contrat, avec le joueur courant en bas.
+Un sélecteur permet de revoir les donnes terminées de la partie en cours ;
+les donnes passées sans contrat sont exclues. `completed_deals` ne contient
+que des logs avec résultat et contrat, et n'est envoyé qu'en `donne_end` ou
+`game_end` (liste vide pendant le jeu). Ne jamais y inclure la donne courante
+inachevée. Fermer la consultation ne valide pas le récapitulatif ; conserver
+les contrôles clavier, les couleurs d'équipe et les deux frontends.
+
 Les salons et parties sont stockés en mémoire : un redémarrage perd leur
 état ; l'architecture actuelle suppose un seul processus serveur. Variables
 de configuration : `PORT`, `BELOTE_SECRET`, `CORS_ALLOWED_ORIGIN`,

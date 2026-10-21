@@ -18,6 +18,7 @@
   let dismissedDonneNumber = null;
   let recapState = null;
   let recapDonneNumber = null;
+  let handReviewState = null;
   let lastTrickAnimationKey = null;
   let dismissedClaimDonneNumber = null;
 
@@ -311,6 +312,8 @@
     resetBeloteBubbles();
     recapState = null;
     recapDonneNumber = null;
+    handReviewState = null;
+    document.getElementById("hand-review").classList.add("hidden");
     dismissedDonneNumber = null;
     dismissedClaimDonneNumber = null;
     lastTrickAnimationKey = null;
@@ -1106,6 +1109,80 @@
     return !!(state && (state.final_donne || state.game_over));
   }
 
+  function closeHandReview() {
+    document.getElementById("hand-review").classList.add("hidden");
+    handReviewState = null;
+    document.getElementById("btn-hand-review")?.focus();
+  }
+
+  function renderHandReview() {
+    const state = handReviewState;
+    const number = Number(document.getElementById("hand-review-deal").value);
+    const deal = state?.completed_deals?.find(item => item.number === number);
+    if (!deal) return;
+    const c = deal.contract;
+    document.getElementById("hand-review-contract").textContent =
+      "Contrat : " + (c.is_capot ? "Capot" : c.points) + " " + c.symbol + " · " + nameOf(state, c.player);
+    const viewer = Number.isInteger(state.your_seat) ? state.your_seat : 0;
+    const symbols = { PIQUE: "♠", COEUR: "♥", TREFLE: "♣", CARREAU: "♦" };
+    const ranks = { V: "J", D: "Q", R: "K" };
+    const panels = [0, 1, 2, 3].map(seat => {
+      const hand = deal.hands[String(seat)] || [];
+      const suits = [...new Set([...hand.map(card => card.suit), ...Object.keys(symbols)])];
+      const rows = suits.map(suit => {
+        const cards = hand.filter(card => card.suit === suit);
+        const red = suit === "COEUR" || suit === "CARREAU";
+        return '<div class="review-suit' + (red ? ' review-red' : '') +
+          (suit === c.suit ? ' review-trump' : '') + '">' +
+          '<span class="review-symbol" title="' + suit + '">' + symbols[suit] + '</span>' +
+          '<span class="review-ranks">' +
+          (cards.length ? cards.map(card => '<span>' + escapeHtml(ranks[card.rank] || card.rank) + '</span>').join("")
+            : '<span class="review-void">—</span>') + '</span></div>';
+      }).join("");
+      return '<section class="review-hand" data-position="' + ((seat - viewer + 4) % 4) +
+        '" data-team="' + (seat % 2) + '"><h3>' +
+        escapeHtml(nameOf(state, seat) + (seat === state.your_seat ? " (toi)" : "")) + '</h3>' + rows + '</section>';
+    }).join("");
+    document.getElementById("hand-review-table").innerHTML = panels +
+      '<div class="review-centre"><small>Atout</small><strong>' + c.symbol + '</strong></div>';
+  }
+
+  document.getElementById("hand-review-deal").addEventListener("change", renderHandReview);
+  document.getElementById("hand-review").addEventListener("click", event => {
+    event.stopPropagation(); // Reviewing must not dismiss the underlying recap.
+    if (event.target.id === "hand-review" || event.target.closest("#hand-review-close")) closeHandReview();
+  });
+  document.getElementById("donne-recap").addEventListener("click", event => {
+    if (!event.target.closest("#btn-hand-review")) return;
+    event.stopPropagation();
+    if (!recapState?.completed_deals?.length) return;
+    handReviewState = recapState;
+    const select = document.getElementById("hand-review-deal");
+    select.innerHTML = handReviewState.completed_deals.map(deal =>
+      '<option value="' + deal.number + '">Donne n°' + deal.number + '</option>').join("");
+    select.value = String(handReviewState.completed_deals.at(-1).number);
+    renderHandReview();
+    document.getElementById("hand-review").classList.remove("hidden");
+    select.focus();
+  });
+  document.addEventListener("keydown", event => {
+    if (!handReviewState) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeHandReview();
+    } else if (event.key === "Tab") {
+      const first = document.getElementById("hand-review-close");
+      const last = document.getElementById("hand-review-deal");
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+
   function renderDonneRecap(state) {
     const overlay = document.getElementById("donne-recap");
     if (claimVisible(state)) {
@@ -1168,6 +1245,9 @@
         '<div class="score-head"><span>Équipe A</span><span>Équipe B</span></div>' +
         '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
         '<div class="score-caption">Total</div>' +
+        (recapState.completed_deals?.length
+          ? '<button id="btn-hand-review" class="btn btn-secondary" type="button">Voir les mains de départ</button>'
+          : "") +
         (finalRecap
           ? '<p class="recap-hint">Touchez les points pour voir le détail de la dernière donne.</p>' +
             '<button id="btn-new-game" class="btn btn-primary"' +

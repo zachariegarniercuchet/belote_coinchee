@@ -107,6 +107,12 @@ bots dans les sélecteurs du salon. Le plateau affiche le jeu et attend un clic
 sur le récapitulatif entre les donnes ; en cas de tablage, cliquer d'abord sur
 **Voir les scores**.
 
+À la fin d'une donne, **Voir les mains de départ** affiche les quatre mains
+initiales autour d'un carré, couleur par couleur et triées selon le contrat.
+Le joueur reste en bas. Le sélecteur permet de revoir les donnes terminées
+de cette partie, y compris depuis le bilan final ; **Retour aux scores**
+ferme cette vue sans continuer la partie. Aucune main inachevée n'est révélée.
+
 Si l'environnement `.venv` a déjà été préparé, double-cliquer sur
 **`start-server.cmd`**, ou lancer cette commande PowerShell depuis la racine :
 

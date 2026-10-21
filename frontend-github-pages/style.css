@@ -960,6 +960,39 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .score-caption { font-size: 11px; opacity: .6; margin-top: 3px; text-align: right; }
 .recap-hint { font-size: 11px; color: var(--gold-light); margin: 16px 0 0; }
 
+#btn-hand-review { margin-top: 14px; width: 100%; pointer-events: auto; }
+#hand-review { z-index: 1100; }
+#hand-review .hand-review-box { width: min(720px, calc(100vw - 24px)); max-width: 720px; max-height: calc(100dvh - 24px); overflow-y: auto; padding: clamp(10px, 3vw, 24px); }
+.hand-review-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.hand-review-header h2 { margin: 0; }
+.hand-review-picker { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; }
+.hand-review-picker select { max-width: 100%; padding: 7px; background: var(--cream); color: #17251e; border-radius: 6px; }
+#hand-review-contract { font-size: 13px; margin: 10px 0; }
+.hand-review-table { display: grid; grid-template-columns: minmax(0, 1fr) minmax(28px, .45fr) minmax(0, 1fr); grid-template-areas: "north north north" "west centre east" "south south south"; gap: 10px; align-items: center; }
+.review-hand { min-width: 0; width: 100%; padding: 8px; border: 1px solid var(--team-a); border-radius: 8px; background: rgba(0,0,0,.18); }
+.review-hand[data-team="1"] { border-color: var(--team-b); }
+.review-hand h3 { color: var(--team-a); font-size: 13px; margin: 0 0 6px; overflow-wrap: anywhere; }
+.review-hand[data-team="1"] h3 { color: var(--team-b); }
+.review-hand[data-position="0"] { grid-area: south; }
+.review-hand[data-position="1"] { grid-area: east; }
+.review-hand[data-position="2"] { grid-area: north; }
+.review-hand[data-position="3"] { grid-area: west; }
+.review-hand[data-position="0"], .review-hand[data-position="2"] { max-width: 230px; justify-self: center; }
+.review-suit { display: flex; gap: 6px; align-items: baseline; background: #f7f1e3; color: #18212a; border-radius: 3px; padding: 3px 5px; margin-top: 3px; text-align: left; }
+.review-red { color: #b52435; }
+.review-trump { box-shadow: inset 3px 0 #b18b30; }
+.review-symbol { font-size: 18px; flex: 0 0 16px; }
+.review-ranks { display: flex; flex-wrap: wrap; gap: 3px 6px; font-size: clamp(12px, 2.5vw, 16px); font-weight: 700; }
+.review-void { opacity: .45; }
+.review-centre { grid-area: centre; display: flex; flex-direction: column; color: var(--gold-light); }
+.review-centre small { font-size: 10px; }
+.review-centre strong { font-size: clamp(24px, 5vw, 40px); }
+@media (max-width: 420px) {
+  .hand-review-table { gap: 6px; }
+  .review-hand { padding: 5px; }
+  .review-hand h3 { font-size: 12px; }
+}
+
 @media (max-width: 420px) {
   .trick-pile { padding-right: 5px; }
   .trick-pile-label { display: none; }
