@@ -94,6 +94,11 @@ configurable avec `PORT`. Pour la console :
 python -B cli.py
 ```
 
+Une fois `.venv` installé, `./start-server.cmd` (ou un double-clic sous Windows)
+lance le serveur depuis le dossier du dépôt, sans téléchargement ni assistant.
+Conserver le terminal ouvert ; `Ctrl+C` arrête le serveur. Le lanceur conserve
+les variables de configuration existantes, notamment `PORT`.
+
 Vérifications disponibles sans installer les dépendances web :
 
 ```powershell

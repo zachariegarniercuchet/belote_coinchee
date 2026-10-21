@@ -107,17 +107,21 @@ bots dans les sélecteurs du salon. Le plateau affiche le jeu et attend un clic
 sur le récapitulatif entre les donnes ; en cas de tablage, cliquer d'abord sur
 **Voir les scores**.
 
-Si l'environnement `.venv` a déjà été préparé, le lancement local tient en une
-commande PowerShell depuis la racine :
+Si l'environnement `.venv` a déjà été préparé, double-cliquer sur
+**`start-server.cmd`**, ou lancer cette commande PowerShell depuis la racine :
 
 ```powershell
-.\.venv\Scripts\python.exe -B server.py
+.\start-server.cmd
 ```
 
 Ouvrir `http://localhost:5000` sur ce PC, ou l'adresse Wi-Fi affichée dans le
 terminal depuis l'iPhone connecté au même réseau. Arrêter le serveur avec
 `Ctrl+C`. Cette version locale utilise directement les fichiers de la racine,
 sans déploiement Render ni copie GitHub Pages.
+Le lanceur fonctionne sans assistant et ne télécharge rien. Il utilise le
+dossier du script, même si on le lance depuis un autre répertoire. La première
+installation des dépendances nécessite Internet ; les comptes et certaines
+ressources web peuvent aussi nécessiter une connexion pour jouer.
 
 ### Comptes optionnels
 
