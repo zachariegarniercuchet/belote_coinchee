@@ -57,7 +57,9 @@ class BrooklynBotV2(BrooklynBot):
     @staticmethod
     def _belote_bonus(hand, suit):
         ranks = {c.rank for c in hand if c.suit == suit}
-        return 20 if {Rank.ROI, Rank.DAME} <= ranks else 0
+        if not {Rank.ROI, Rank.DAME} <= ranks:
+            return 0
+        return 20 if sum(c.suit == suit for c in hand) >= 4 else 10
 
     def _rebid_bonus(self, hand, suit):
         trumps = [c for c in hand if c.suit == suit]
@@ -70,7 +72,7 @@ class BrooklynBotV2(BrooklynBot):
         voids = sum(not cards for cards in sides)
         if voids >= 2 and len(trumps) >= 4:
             bonus += 20  # total void bonus, not 10 + 20
-        elif voids and len(trumps) >= 3:
+        elif voids and len(trumps) >= 4:
             bonus += 10
         seconds = sum(len(cards) == 2 and any(c.rank == Rank.DIX for c in cards)
                       for cards in sides)

@@ -33,10 +33,14 @@ class BrooklynTests(unittest.TestCase):
             (cards("V_PIQUE", "9_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "7_COEUR", "8_COEUR", "10_COEUR"),
              cards("A_PIQUE", "A_COEUR", "A_TREFLE", "A_CARREAU", "10_TREFLE", "7_TREFLE", "7_CARREAU", "8_CARREAU"),
              [110, 140, 160]),
-            # Trump aces fund neither partner support (above) nor opener rebids.
-            (cards("V_PIQUE", "9_PIQUE", "A_PIQUE", "A_COEUR", "8_COEUR", "R_TREFLE", "8_TREFLE", "7_CARREAU"),
+            # With only three trumps, neither the trump ace nor a void adds credit.
+            (cards("V_PIQUE", "9_PIQUE", "A_PIQUE", "A_COEUR", "8_COEUR", "R_TREFLE", "8_TREFLE", "7_COEUR"),
              cards("7_PIQUE", "R_PIQUE", "R_COEUR", "D_COEUR", "A_CARREAU", "R_CARREAU", "A_TREFLE", "V_TREFLE"),
              [90, 110, 120]),
+            # Three-trump belote is +10, including in the later total ceiling.
+            (cards("V_PIQUE", "R_PIQUE", "D_PIQUE", "A_COEUR", "7_COEUR", "10_TREFLE", "7_TREFLE", "7_CARREAU"),
+             cards("9_PIQUE", "A_PIQUE", "A_TREFLE", "A_CARREAU", "R_COEUR", "D_COEUR", "8_TREFLE", "8_CARREAU"),
+             [90, 120, 130]),
         ]:
             bots = {seat: BrooklynBotV2(seat) for seat in (0, 2)}
             state = BiddingState(dealer=1)

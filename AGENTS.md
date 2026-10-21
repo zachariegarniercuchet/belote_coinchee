@@ -212,7 +212,10 @@ Brooklyn v2 (`brooklyn_v2`) garde les cartes de v1 mais change les enchères :
 80/90 avec belote possible dès l'ouverture, soutien J/9 manquant et as, puis
 as hors atout/distribution/dix seconds du premier enchérisseur au rebid.
 L'as d'atout est inclus dans la base 80/90, jamais crédité de +10, ni en
-soutien ni au rebid. Les mêmes
+soutien ni au rebid. La belote vaut +10 aux enchères avec trois atouts, +20
+avec au moins quatre (son score réel reste +20). Une coupe franche n'ajoute
+de crédit qu'avec au moins quatre atouts : +10, ou +20 au total pour deux.
+Les mêmes
 cartes ne financent pas plusieurs hausses ; les
 crédits sont calculés depuis la dernière enchère de l'équipe, sans compter
 une surenchère adverse comme une force supplémentaire. `partner_raises` et

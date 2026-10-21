@@ -83,12 +83,13 @@ default selection were not modified; they now receive their missing inputs.
 ## Brooklyn v2 — initial partnership bidding convention
 
 V1 is unchanged. V2 inherits the same card play, but opens with at least
-three trumps including J or 9: 80 for one honour, 90 for both, plus 20 for
-trump K+Q at the opening. The supporting partner adds 10 per missing trump
+three trumps including J or 9: 80 for one honour, 90 for both, plus belote at
+the opening: 10 with three trumps, 20 with at least four. This is the bidding
+valuation, not a change to the actual +20 belote score. The supporting partner adds 10 per missing trump
 honour held and per non-trump ace. The trump ace is included in the base
 80/90 description and never earns another +10. Opener's later credits include
 10 per non-trump ace, and 10 for a void with at least
-three trumps, or 20 TOTAL for at least two voids with at least four trumps.
+four trumps, or 20 TOTAL for at least two voids with at least four trumps.
 Support and bonuses are credited once, not again on each turn. No capot bid.
 V1's conservative coinche/surcoinche decisions remain in use.
 
@@ -139,8 +140,9 @@ and team 1; dealer `seed % 4`; each bot RNG seeded with `seed * 17 + seat`.
 Matched seeds do not imply identical later deals: different bids can change
 the number of deals and random draws before the target score is reached.
 No parameters were tuned after observing these results.
-These historical results PRECEDE David's correction excluding the trump ace
-from +10 ace credits; they do not measure that corrected policy.
+These historical results PRECEDE David's corrections excluding the trump ace,
+reducing three-trump belote to +10, and requiring four trumps for void credit;
+they do not measure the corrected policy.
 
 | Brooklyn | Opponent | Game wins | Takes / played deals | Contracts made | Mean bid |
 | --- | --- | ---: | ---: | ---: | ---: |
