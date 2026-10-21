@@ -11,6 +11,11 @@ de Belote v2/v3, target 1000, seeds 30000–30049, each with Brooklyn on both
 teams. Change `--seed`, `--pairs` or `--target` for a separate sample.
 The command does not contact the running server, create live rooms, or alter
 bot policies. Web-engine display sleeps and broadcasts are disabled.
+To run the hybrid alone, add `--brooklyn brooklyn_v3` (200 games at 50 pairs).
+To include it alongside both baselines, use
+`--brooklyn brooklyn_v1 brooklyn_v2 brooklyn_v3` (600 games). The legacy
+`changes` field still compares v2 minus v1 only when both are present;
+all selected versions have full metric rows and per-game records.
 Progress is printed to stderr; the summary goes to stdout. Optional JSON
 output also contains every game's deal outcomes and lead counts, plus the
 source revision, so reported metrics can be audited.
