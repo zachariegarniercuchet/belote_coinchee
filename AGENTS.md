@@ -70,6 +70,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_claim.py` | Tablage, exploration des ordres légaux, équivalence des scores console/web et confidentialité des mains. |
 | `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
 | `tests/test_brooklyn.py` | Stratégie de David, enchères de partenariat v2 et parties légales identiques console/web. |
+| `benchmarks/bots.py`, `benchmarks/README.md` | Comparaison reproductible des bots via le moteur web, calibration des contrats et diagnostic des entames à l'atout, sans toucher au serveur actif. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
 | `tests/test_supabase_config.py` | Injection des clés Supabase dans la page, repli invité sans configuration et service de `auth.js`. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |

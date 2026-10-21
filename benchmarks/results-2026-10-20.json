@@ -1,0 +1,4241 @@
+{
+  "revision": "edbd52e639faa9132ce7036fbc4b6014acacf718",
+  "pairs_per_matchup": 50,
+  "first_seed": 30000,
+  "target": 1000,
+  "engine": "web",
+  "elapsed_s": 557.52,
+  "rows": [
+    {
+      "bot": "brooklyn_v1",
+      "against": "spark_v2",
+      "games": 100,
+      "wins": 53,
+      "win_pct": 53,
+      "win_ci95_seed_cluster": [
+        45,
+        62
+      ],
+      "played_deals": 604,
+      "cancelled": 51,
+      "takes": 306,
+      "take_pct": 50.7,
+      "made": 240,
+      "made_pct": 78.4,
+      "mean_bid": 102.35,
+      "margin_all": {
+        "n": 306,
+        "mean": 26.13,
+        "median": 20,
+        "sd": 39.63,
+        "buckets": {
+          "below_bid": {
+            "n": 66,
+            "pct": 21.6
+          },
+          "0_to_9": {
+            "n": 36,
+            "pct": 11.8
+          },
+          "10_to_20": {
+            "n": 56,
+            "pct": 18.3
+          },
+          "over_20": {
+            "n": 148,
+            "pct": 48.4
+          }
+        }
+      },
+      "margin_no_capot": {
+        "n": 286,
+        "mean": 17.4,
+        "median": 17,
+        "sd": 22.36,
+        "buckets": {
+          "below_bid": {
+            "n": 66,
+            "pct": 23.1
+          },
+          "0_to_9": {
+            "n": 36,
+            "pct": 12.6
+          },
+          "10_to_20": {
+            "n": 56,
+            "pct": 19.6
+          },
+          "over_20": {
+            "n": 128,
+            "pct": 44.8
+          }
+        }
+      },
+      "mean_failed_net_loss": 272.27,
+      "by_bid": {
+        "90": {
+          "n": 117,
+          "made": 94,
+          "made_pct": 80.3
+        },
+        "100": {
+          "n": 56,
+          "made": 40,
+          "made_pct": 71.4
+        },
+        "110": {
+          "n": 77,
+          "made": 60,
+          "made_pct": 77.9
+        },
+        "120": {
+          "n": 56,
+          "made": 46,
+          "made_pct": 82.1
+        }
+      },
+      "by_opening": {
+        "3:both": {
+          "n": 49,
+          "made": 37,
+          "made_pct": 75.5
+        },
+        "3:jack_only": {
+          "n": 56,
+          "made": 44,
+          "made_pct": 78.6
+        },
+        "3:neither": {
+          "n": 1,
+          "made": 0,
+          "made_pct": 0
+        },
+        "3:nine_only": {
+          "n": 11,
+          "made": 6,
+          "made_pct": 54.5
+        },
+        "4:both": {
+          "n": 45,
+          "made": 39,
+          "made_pct": 86.7
+        },
+        "4:jack_only": {
+          "n": 47,
+          "made": 40,
+          "made_pct": 85.1
+        },
+        "4:neither": {
+          "n": 13,
+          "made": 11,
+          "made_pct": 84.6
+        },
+        "4:nine_only": {
+          "n": 39,
+          "made": 26,
+          "made_pct": 66.7
+        },
+        "5:both": {
+          "n": 20,
+          "made": 16,
+          "made_pct": 80
+        },
+        "5:jack_only": {
+          "n": 9,
+          "made": 7,
+          "made_pct": 77.8
+        },
+        "5:nine_only": {
+          "n": 11,
+          "made": 9,
+          "made_pct": 81.8
+        },
+        "6:both": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:jack_only": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:neither": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:nine_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        }
+      },
+      "attack_leads": {
+        "opportunities": 530,
+        "trump": 530,
+        "jack_opportunities": 94,
+        "jack_led": 94
+      },
+      "trump_lead_pct": 100,
+      "side_ace_lead_pct": 0,
+      "jack_lead_pct": 100
+    },
+    {
+      "bot": "spark_v2",
+      "against": "brooklyn_v1",
+      "games": 100,
+      "wins": 47,
+      "win_pct": 47,
+      "win_ci95_seed_cluster": [
+        38,
+        55
+      ],
+      "played_deals": 604,
+      "cancelled": 51,
+      "takes": 298,
+      "take_pct": 49.3,
+      "made": 238,
+      "made_pct": 79.9,
+      "mean_bid": 102.38,
+      "margin_all": {
+        "n": 298,
+        "mean": 21.52,
+        "median": 18,
+        "sd": 33.15,
+        "buckets": {
+          "below_bid": {
+            "n": 59,
+            "pct": 19.8
+          },
+          "0_to_9": {
+            "n": 51,
+            "pct": 17.1
+          },
+          "10_to_20": {
+            "n": 51,
+            "pct": 17.1
+          },
+          "over_20": {
+            "n": 137,
+            "pct": 46
+          }
+        }
+      },
+      "margin_no_capot": {
+        "n": 287,
+        "mean": 16.73,
+        "median": 17,
+        "sd": 22.62,
+        "buckets": {
+          "below_bid": {
+            "n": 59,
+            "pct": 20.6
+          },
+          "0_to_9": {
+            "n": 51,
+            "pct": 17.8
+          },
+          "10_to_20": {
+            "n": 51,
+            "pct": 17.8
+          },
+          "over_20": {
+            "n": 126,
+            "pct": 43.9
+          }
+        }
+      },
+      "mean_failed_net_loss": 274.5,
+      "by_bid": {
+        "90": {
+          "n": 114,
+          "made": 89,
+          "made_pct": 78.1
+        },
+        "100": {
+          "n": 54,
+          "made": 43,
+          "made_pct": 79.6
+        },
+        "110": {
+          "n": 75,
+          "made": 64,
+          "made_pct": 85.3
+        },
+        "120": {
+          "n": 55,
+          "made": 42,
+          "made_pct": 76.4
+        }
+      },
+      "by_opening": {
+        "3:both": {
+          "n": 45,
+          "made": 38,
+          "made_pct": 84.4
+        },
+        "3:jack_only": {
+          "n": 51,
+          "made": 38,
+          "made_pct": 74.5
+        },
+        "3:neither": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "3:nine_only": {
+          "n": 12,
+          "made": 8,
+          "made_pct": 66.7
+        },
+        "4:both": {
+          "n": 46,
+          "made": 39,
+          "made_pct": 84.8
+        },
+        "4:jack_only": {
+          "n": 45,
+          "made": 39,
+          "made_pct": 86.7
+        },
+        "4:neither": {
+          "n": 12,
+          "made": 8,
+          "made_pct": 66.7
+        },
+        "4:nine_only": {
+          "n": 42,
+          "made": 31,
+          "made_pct": 73.8
+        },
+        "5:both": {
+          "n": 19,
+          "made": 15,
+          "made_pct": 78.9
+        },
+        "5:jack_only": {
+          "n": 9,
+          "made": 8,
+          "made_pct": 88.9
+        },
+        "5:nine_only": {
+          "n": 11,
+          "made": 8,
+          "made_pct": 72.7
+        },
+        "6:both": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:jack_only": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:neither": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:nine_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        }
+      },
+      "attack_leads": {
+        "opportunities": 791,
+        "trump": 287,
+        "side_ace": 128,
+        "jack_opportunities": 316,
+        "jack_led": 106
+      },
+      "trump_lead_pct": 36.3,
+      "side_ace_lead_pct": 16.2,
+      "jack_lead_pct": 33.5
+    },
+    {
+      "bot": "brooklyn_v1",
+      "against": "spark_v3",
+      "games": 100,
+      "wins": 50,
+      "win_pct": 50,
+      "win_ci95_seed_cluster": [
+        42,
+        58
+      ],
+      "played_deals": 622,
+      "cancelled": 51,
+      "takes": 313,
+      "take_pct": 50.3,
+      "made": 242,
+      "made_pct": 77.3,
+      "mean_bid": 102.52,
+      "margin_all": {
+        "n": 313,
+        "mean": 25.74,
+        "median": 19,
+        "sd": 41.57,
+        "buckets": {
+          "below_bid": {
+            "n": 71,
+            "pct": 22.7
+          },
+          "0_to_9": {
+            "n": 45,
+            "pct": 14.4
+          },
+          "10_to_20": {
+            "n": 52,
+            "pct": 16.6
+          },
+          "over_20": {
+            "n": 145,
+            "pct": 46.3
+          }
+        }
+      },
+      "margin_no_capot": {
+        "n": 289,
+        "mean": 15.57,
+        "median": 16,
+        "sd": 22.45,
+        "buckets": {
+          "below_bid": {
+            "n": 71,
+            "pct": 24.6
+          },
+          "0_to_9": {
+            "n": 45,
+            "pct": 15.6
+          },
+          "10_to_20": {
+            "n": 52,
+            "pct": 18
+          },
+          "over_20": {
+            "n": 121,
+            "pct": 41.9
+          }
+        }
+      },
+      "mean_failed_net_loss": 270.42,
+      "by_bid": {
+        "90": {
+          "n": 118,
+          "made": 84,
+          "made_pct": 71.2
+        },
+        "100": {
+          "n": 57,
+          "made": 45,
+          "made_pct": 78.9
+        },
+        "110": {
+          "n": 79,
+          "made": 66,
+          "made_pct": 83.5
+        },
+        "120": {
+          "n": 59,
+          "made": 47,
+          "made_pct": 79.7
+        }
+      },
+      "by_opening": {
+        "3:both": {
+          "n": 49,
+          "made": 38,
+          "made_pct": 77.6
+        },
+        "3:jack_only": {
+          "n": 53,
+          "made": 41,
+          "made_pct": 77.4
+        },
+        "3:neither": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        },
+        "3:nine_only": {
+          "n": 12,
+          "made": 3,
+          "made_pct": 25
+        },
+        "4:both": {
+          "n": 47,
+          "made": 39,
+          "made_pct": 83
+        },
+        "4:jack_only": {
+          "n": 45,
+          "made": 37,
+          "made_pct": 82.2
+        },
+        "4:neither": {
+          "n": 12,
+          "made": 10,
+          "made_pct": 83.3
+        },
+        "4:nine_only": {
+          "n": 44,
+          "made": 31,
+          "made_pct": 70.5
+        },
+        "5:both": {
+          "n": 23,
+          "made": 20,
+          "made_pct": 87
+        },
+        "5:jack_only": {
+          "n": 10,
+          "made": 7,
+          "made_pct": 70
+        },
+        "5:nine_only": {
+          "n": 11,
+          "made": 9,
+          "made_pct": 81.8
+        },
+        "6:both": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:jack_only": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:neither": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:nine_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        }
+      },
+      "attack_leads": {
+        "opportunities": 545,
+        "trump": 545,
+        "jack_opportunities": 104,
+        "jack_led": 104
+      },
+      "trump_lead_pct": 100,
+      "side_ace_lead_pct": 0,
+      "jack_lead_pct": 100
+    },
+    {
+      "bot": "spark_v3",
+      "against": "brooklyn_v1",
+      "games": 100,
+      "wins": 50,
+      "win_pct": 50,
+      "win_ci95_seed_cluster": [
+        42,
+        58
+      ],
+      "played_deals": 622,
+      "cancelled": 51,
+      "takes": 309,
+      "take_pct": 49.7,
+      "made": 249,
+      "made_pct": 80.6,
+      "mean_bid": 101.97,
+      "margin_all": {
+        "n": 309,
+        "mean": 21.65,
+        "median": 20,
+        "sd": 31.05,
+        "buckets": {
+          "below_bid": {
+            "n": 60,
+            "pct": 19.4
+          },
+          "0_to_9": {
+            "n": 49,
+            "pct": 15.9
+          },
+          "10_to_20": {
+            "n": 49,
+            "pct": 15.9
+          },
+          "over_20": {
+            "n": 151,
+            "pct": 48.9
+          }
+        }
+      },
+      "margin_no_capot": {
+        "n": 299,
+        "mean": 17.59,
+        "median": 18,
+        "sd": 21.93,
+        "buckets": {
+          "below_bid": {
+            "n": 60,
+            "pct": 20.1
+          },
+          "0_to_9": {
+            "n": 49,
+            "pct": 16.4
+          },
+          "10_to_20": {
+            "n": 49,
+            "pct": 16.4
+          },
+          "over_20": {
+            "n": 141,
+            "pct": 47.2
+          }
+        }
+      },
+      "mean_failed_net_loss": 270.5,
+      "by_bid": {
+        "90": {
+          "n": 126,
+          "made": 103,
+          "made_pct": 81.7
+        },
+        "100": {
+          "n": 52,
+          "made": 44,
+          "made_pct": 84.6
+        },
+        "110": {
+          "n": 75,
+          "made": 59,
+          "made_pct": 78.7
+        },
+        "120": {
+          "n": 56,
+          "made": 43,
+          "made_pct": 76.8
+        }
+      },
+      "by_opening": {
+        "3:both": {
+          "n": 49,
+          "made": 39,
+          "made_pct": 79.6
+        },
+        "3:jack_only": {
+          "n": 54,
+          "made": 47,
+          "made_pct": 87
+        },
+        "3:neither": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "3:nine_only": {
+          "n": 12,
+          "made": 9,
+          "made_pct": 75
+        },
+        "4:both": {
+          "n": 47,
+          "made": 42,
+          "made_pct": 89.4
+        },
+        "4:jack_only": {
+          "n": 48,
+          "made": 40,
+          "made_pct": 83.3
+        },
+        "4:neither": {
+          "n": 13,
+          "made": 9,
+          "made_pct": 69.2
+        },
+        "4:nine_only": {
+          "n": 41,
+          "made": 28,
+          "made_pct": 68.3
+        },
+        "5:both": {
+          "n": 19,
+          "made": 14,
+          "made_pct": 73.7
+        },
+        "5:jack_only": {
+          "n": 9,
+          "made": 7,
+          "made_pct": 77.8
+        },
+        "5:nine_only": {
+          "n": 11,
+          "made": 8,
+          "made_pct": 72.7
+        },
+        "6:both": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:jack_only": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:neither": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:nine_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        }
+      },
+      "attack_leads": {
+        "opportunities": 824,
+        "trump": 332,
+        "jack_opportunities": 359,
+        "jack_led": 124,
+        "side_ace": 124
+      },
+      "trump_lead_pct": 40.3,
+      "side_ace_lead_pct": 15,
+      "jack_lead_pct": 34.5
+    },
+    {
+      "bot": "brooklyn_v2",
+      "against": "spark_v2",
+      "games": 100,
+      "wins": 31,
+      "win_pct": 31,
+      "win_ci95_seed_cluster": [
+        23,
+        40
+      ],
+      "played_deals": 595,
+      "cancelled": 19,
+      "takes": 282,
+      "take_pct": 47.4,
+      "made": 186,
+      "made_pct": 66,
+      "mean_bid": 103.4,
+      "margin_all": {
+        "n": 282,
+        "mean": 13.51,
+        "median": 12,
+        "sd": 36.69,
+        "buckets": {
+          "below_bid": {
+            "n": 96,
+            "pct": 34
+          },
+          "0_to_9": {
+            "n": 37,
+            "pct": 13.1
+          },
+          "10_to_20": {
+            "n": 47,
+            "pct": 16.7
+          },
+          "over_20": {
+            "n": 102,
+            "pct": 36.2
+          }
+        }
+      },
+      "margin_no_capot": {
+        "n": 269,
+        "mean": 7.45,
+        "median": 10,
+        "sd": 24.57,
+        "buckets": {
+          "below_bid": {
+            "n": 96,
+            "pct": 35.7
+          },
+          "0_to_9": {
+            "n": 37,
+            "pct": 13.8
+          },
+          "10_to_20": {
+            "n": 47,
+            "pct": 17.5
+          },
+          "over_20": {
+            "n": 89,
+            "pct": 33.1
+          }
+        }
+      },
+      "mean_failed_net_loss": 282.5,
+      "by_bid": {
+        "80": {
+          "n": 34,
+          "made": 24,
+          "made_pct": 70.6
+        },
+        "90": {
+          "n": 42,
+          "made": 24,
+          "made_pct": 57.1
+        },
+        "100": {
+          "n": 74,
+          "made": 40,
+          "made_pct": 54.1
+        },
+        "110": {
+          "n": 82,
+          "made": 60,
+          "made_pct": 73.2
+        },
+        "120": {
+          "n": 36,
+          "made": 25,
+          "made_pct": 69.4
+        },
+        "130": {
+          "n": 6,
+          "made": 6,
+          "made_pct": 100
+        },
+        "140": {
+          "n": 6,
+          "made": 5,
+          "made_pct": 83.3
+        },
+        "150": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        }
+      },
+      "by_opening": {
+        "3:both": {
+          "n": 34,
+          "made": 23,
+          "made_pct": 67.6
+        },
+        "3:jack_only": {
+          "n": 77,
+          "made": 56,
+          "made_pct": 72.7
+        },
+        "3:nine_only": {
+          "n": 60,
+          "made": 25,
+          "made_pct": 41.7
+        },
+        "4:both": {
+          "n": 25,
+          "made": 21,
+          "made_pct": 84
+        },
+        "4:jack_only": {
+          "n": 33,
+          "made": 25,
+          "made_pct": 75.8
+        },
+        "4:nine_only": {
+          "n": 36,
+          "made": 19,
+          "made_pct": 52.8
+        },
+        "5:both": {
+          "n": 8,
+          "made": 8,
+          "made_pct": 100
+        },
+        "5:jack_only": {
+          "n": 3,
+          "made": 3,
+          "made_pct": 100
+        },
+        "5:nine_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        },
+        "6:jack_only": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:nine_only": {
+          "n": 3,
+          "made": 3,
+          "made_pct": 100
+        }
+      },
+      "attack_leads": {
+        "opportunities": 506,
+        "trump": 506,
+        "jack_opportunities": 108,
+        "jack_led": 108
+      },
+      "trump_lead_pct": 100,
+      "side_ace_lead_pct": 0,
+      "jack_lead_pct": 100
+    },
+    {
+      "bot": "spark_v2",
+      "against": "brooklyn_v2",
+      "games": 100,
+      "wins": 69,
+      "win_pct": 69,
+      "win_ci95_seed_cluster": [
+        60,
+        77
+      ],
+      "played_deals": 595,
+      "cancelled": 19,
+      "takes": 313,
+      "take_pct": 52.6,
+      "made": 253,
+      "made_pct": 80.8,
+      "mean_bid": 102.04,
+      "margin_all": {
+        "n": 313,
+        "mean": 25.26,
+        "median": 19,
+        "sd": 38.22,
+        "buckets": {
+          "below_bid": {
+            "n": 60,
+            "pct": 19.2
+          },
+          "0_to_9": {
+            "n": 40,
+            "pct": 12.8
+          },
+          "10_to_20": {
+            "n": 62,
+            "pct": 19.8
+          },
+          "over_20": {
+            "n": 151,
+            "pct": 48.2
+          }
+        }
+      },
+      "margin_no_capot": {
+        "n": 295,
+        "mean": 17.52,
+        "median": 18,
+        "sd": 22.25,
+        "buckets": {
+          "below_bid": {
+            "n": 60,
+            "pct": 20.3
+          },
+          "0_to_9": {
+            "n": 40,
+            "pct": 13.6
+          },
+          "10_to_20": {
+            "n": 62,
+            "pct": 21
+          },
+          "over_20": {
+            "n": 133,
+            "pct": 45.1
+          }
+        }
+      },
+      "mean_failed_net_loss": 274.5,
+      "by_bid": {
+        "90": {
+          "n": 116,
+          "made": 94,
+          "made_pct": 81
+        },
+        "100": {
+          "n": 64,
+          "made": 49,
+          "made_pct": 76.6
+        },
+        "110": {
+          "n": 86,
+          "made": 72,
+          "made_pct": 83.7
+        },
+        "120": {
+          "n": 47,
+          "made": 38,
+          "made_pct": 80.9
+        }
+      },
+      "by_opening": {
+        "3:both": {
+          "n": 58,
+          "made": 48,
+          "made_pct": 82.8
+        },
+        "3:jack_only": {
+          "n": 46,
+          "made": 39,
+          "made_pct": 84.8
+        },
+        "3:neither": {
+          "n": 1,
+          "made": 0,
+          "made_pct": 0
+        },
+        "3:nine_only": {
+          "n": 16,
+          "made": 10,
+          "made_pct": 62.5
+        },
+        "4:both": {
+          "n": 51,
+          "made": 40,
+          "made_pct": 78.4
+        },
+        "4:jack_only": {
+          "n": 49,
+          "made": 44,
+          "made_pct": 89.8
+        },
+        "4:neither": {
+          "n": 11,
+          "made": 8,
+          "made_pct": 72.7
+        },
+        "4:nine_only": {
+          "n": 36,
+          "made": 26,
+          "made_pct": 72.2
+        },
+        "5:both": {
+          "n": 16,
+          "made": 14,
+          "made_pct": 87.5
+        },
+        "5:jack_only": {
+          "n": 12,
+          "made": 9,
+          "made_pct": 75
+        },
+        "5:neither": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        },
+        "5:nine_only": {
+          "n": 10,
+          "made": 8,
+          "made_pct": 80
+        },
+        "6:jack_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        },
+        "6:neither": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:nine_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        }
+      },
+      "attack_leads": {
+        "opportunities": 797,
+        "trump": 315,
+        "side_ace": 129,
+        "jack_opportunities": 330,
+        "jack_led": 113
+      },
+      "trump_lead_pct": 39.5,
+      "side_ace_lead_pct": 16.2,
+      "jack_lead_pct": 34.2
+    },
+    {
+      "bot": "brooklyn_v2",
+      "against": "spark_v3",
+      "games": 100,
+      "wins": 23,
+      "win_pct": 23,
+      "win_ci95_seed_cluster": [
+        15,
+        31
+      ],
+      "played_deals": 613,
+      "cancelled": 18,
+      "takes": 295,
+      "take_pct": 48.1,
+      "made": 188,
+      "made_pct": 63.7,
+      "mean_bid": 104.07,
+      "margin_all": {
+        "n": 295,
+        "mean": 11.93,
+        "median": 9,
+        "sd": 38.28,
+        "buckets": {
+          "below_bid": {
+            "n": 105,
+            "pct": 35.6
+          },
+          "0_to_9": {
+            "n": 47,
+            "pct": 15.9
+          },
+          "10_to_20": {
+            "n": 42,
+            "pct": 14.2
+          },
+          "over_20": {
+            "n": 101,
+            "pct": 34.2
+          }
+        }
+      },
+      "margin_no_capot": {
+        "n": 280,
+        "mean": 5.04,
+        "median": 7.5,
+        "sd": 24.37,
+        "buckets": {
+          "below_bid": {
+            "n": 105,
+            "pct": 37.5
+          },
+          "0_to_9": {
+            "n": 47,
+            "pct": 16.8
+          },
+          "10_to_20": {
+            "n": 42,
+            "pct": 15
+          },
+          "over_20": {
+            "n": 86,
+            "pct": 30.7
+          }
+        }
+      },
+      "mean_failed_net_loss": 281.59,
+      "by_bid": {
+        "80": {
+          "n": 33,
+          "made": 20,
+          "made_pct": 60.6
+        },
+        "90": {
+          "n": 38,
+          "made": 19,
+          "made_pct": 50
+        },
+        "100": {
+          "n": 81,
+          "made": 46,
+          "made_pct": 56.8
+        },
+        "110": {
+          "n": 90,
+          "made": 63,
+          "made_pct": 70
+        },
+        "120": {
+          "n": 36,
+          "made": 26,
+          "made_pct": 72.2
+        },
+        "130": {
+          "n": 8,
+          "made": 5,
+          "made_pct": 62.5
+        },
+        "140": {
+          "n": 7,
+          "made": 7,
+          "made_pct": 100
+        },
+        "150": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        }
+      },
+      "by_opening": {
+        "3:both": {
+          "n": 38,
+          "made": 25,
+          "made_pct": 65.8
+        },
+        "3:jack_only": {
+          "n": 82,
+          "made": 49,
+          "made_pct": 59.8
+        },
+        "3:nine_only": {
+          "n": 61,
+          "made": 26,
+          "made_pct": 42.6
+        },
+        "4:both": {
+          "n": 25,
+          "made": 21,
+          "made_pct": 84
+        },
+        "4:jack_only": {
+          "n": 35,
+          "made": 28,
+          "made_pct": 80
+        },
+        "4:nine_only": {
+          "n": 37,
+          "made": 23,
+          "made_pct": 62.2
+        },
+        "5:both": {
+          "n": 9,
+          "made": 8,
+          "made_pct": 88.9
+        },
+        "5:jack_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        },
+        "5:nine_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        },
+        "6:jack_only": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:nine_only": {
+          "n": 3,
+          "made": 3,
+          "made_pct": 100
+        }
+      },
+      "attack_leads": {
+        "opportunities": 535,
+        "trump": 535,
+        "jack_opportunities": 124,
+        "jack_led": 124
+      },
+      "trump_lead_pct": 100,
+      "side_ace_lead_pct": 0,
+      "jack_lead_pct": 100
+    },
+    {
+      "bot": "spark_v3",
+      "against": "brooklyn_v2",
+      "games": 100,
+      "wins": 77,
+      "win_pct": 77,
+      "win_ci95_seed_cluster": [
+        69,
+        85
+      ],
+      "played_deals": 613,
+      "cancelled": 18,
+      "takes": 318,
+      "take_pct": 51.9,
+      "made": 261,
+      "made_pct": 82.1,
+      "mean_bid": 101.92,
+      "margin_all": {
+        "n": 318,
+        "mean": 25.95,
+        "median": 20,
+        "sd": 37.77,
+        "buckets": {
+          "below_bid": {
+            "n": 55,
+            "pct": 17.3
+          },
+          "0_to_9": {
+            "n": 45,
+            "pct": 14.2
+          },
+          "10_to_20": {
+            "n": 63,
+            "pct": 19.8
+          },
+          "over_20": {
+            "n": 155,
+            "pct": 48.7
+          }
+        }
+      },
+      "margin_no_capot": {
+        "n": 299,
+        "mean": 18.07,
+        "median": 19,
+        "sd": 21.52,
+        "buckets": {
+          "below_bid": {
+            "n": 55,
+            "pct": 18.4
+          },
+          "0_to_9": {
+            "n": 45,
+            "pct": 15.1
+          },
+          "10_to_20": {
+            "n": 63,
+            "pct": 21.1
+          },
+          "over_20": {
+            "n": 136,
+            "pct": 45.5
+          }
+        }
+      },
+      "mean_failed_net_loss": 271.23,
+      "by_bid": {
+        "90": {
+          "n": 122,
+          "made": 101,
+          "made_pct": 82.8
+        },
+        "100": {
+          "n": 62,
+          "made": 51,
+          "made_pct": 82.3
+        },
+        "110": {
+          "n": 85,
+          "made": 68,
+          "made_pct": 80
+        },
+        "120": {
+          "n": 49,
+          "made": 41,
+          "made_pct": 83.7
+        }
+      },
+      "by_opening": {
+        "3:both": {
+          "n": 57,
+          "made": 45,
+          "made_pct": 78.9
+        },
+        "3:jack_only": {
+          "n": 47,
+          "made": 38,
+          "made_pct": 80.9
+        },
+        "3:neither": {
+          "n": 1,
+          "made": 0,
+          "made_pct": 0
+        },
+        "3:nine_only": {
+          "n": 18,
+          "made": 15,
+          "made_pct": 83.3
+        },
+        "4:both": {
+          "n": 50,
+          "made": 41,
+          "made_pct": 82
+        },
+        "4:jack_only": {
+          "n": 48,
+          "made": 41,
+          "made_pct": 85.4
+        },
+        "4:neither": {
+          "n": 11,
+          "made": 9,
+          "made_pct": 81.8
+        },
+        "4:nine_only": {
+          "n": 40,
+          "made": 32,
+          "made_pct": 80
+        },
+        "5:both": {
+          "n": 18,
+          "made": 15,
+          "made_pct": 83.3
+        },
+        "5:jack_only": {
+          "n": 11,
+          "made": 9,
+          "made_pct": 81.8
+        },
+        "5:neither": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        },
+        "5:nine_only": {
+          "n": 10,
+          "made": 9,
+          "made_pct": 90
+        },
+        "6:jack_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        },
+        "6:neither": {
+          "n": 1,
+          "made": 1,
+          "made_pct": 100
+        },
+        "6:nine_only": {
+          "n": 2,
+          "made": 2,
+          "made_pct": 100
+        }
+      },
+      "attack_leads": {
+        "opportunities": 829,
+        "trump": 341,
+        "side_ace": 115,
+        "jack_opportunities": 346,
+        "jack_led": 125
+      },
+      "trump_lead_pct": 41.1,
+      "side_ace_lead_pct": 13.9,
+      "jack_lead_pct": 36.1
+    }
+  ],
+  "changes": [
+    {
+      "opponent": "spark_v2",
+      "v2_minus_v1_win_pp": -22,
+      "ci95_seed_cluster_pp": [
+        -34,
+        -10
+      ]
+    },
+    {
+      "opponent": "spark_v3",
+      "v2_minus_v1_win_pp": -27,
+      "ci95_seed_cluster_pp": [
+        -37,
+        -17
+      ]
+    }
+  ],
+  "seed_pair_game_outcomes": [
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30000,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30000,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30001,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30001,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30002,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30002,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30003,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30003,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30004,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30004,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30005,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30005,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30006,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30006,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30007,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30007,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30008,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30008,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30009,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30009,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30010,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30010,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30011,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30011,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30012,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30012,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30013,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30013,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30014,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30014,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30015,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30015,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30016,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30016,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30017,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30017,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30018,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30018,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30019,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30019,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30020,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30020,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30021,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30021,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30022,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30022,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30023,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30023,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30024,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30024,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30025,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30025,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30026,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30026,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30027,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30027,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30028,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30028,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30029,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30029,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30030,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30030,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30031,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30031,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30032,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30032,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30033,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30033,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30034,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30034,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30035,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30035,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30036,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30036,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30037,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30037,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30038,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30038,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30039,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30039,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30040,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30040,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30041,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30041,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30042,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30042,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30043,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30043,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30044,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30044,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30045,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30045,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30046,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30046,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30047,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30047,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30048,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30048,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30049,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v2",
+      30049,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30000,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30000,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30001,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30001,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30002,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30002,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30003,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30003,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30004,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30004,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30005,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30005,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30006,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30006,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30007,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30007,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30008,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30008,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30009,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30009,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30010,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30010,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30011,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30011,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30012,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30012,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30013,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30013,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30014,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30014,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30015,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30015,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30016,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30016,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30017,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30017,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30018,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30018,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30019,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30019,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30020,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30020,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30021,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30021,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30022,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30022,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30023,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30023,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30024,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30024,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30025,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30025,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30026,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30026,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30027,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30027,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30028,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30028,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30029,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30029,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30030,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30030,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30031,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30031,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30032,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30032,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30033,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30033,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30034,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30034,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30035,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30035,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30036,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30036,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30037,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30037,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30038,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30038,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30039,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30039,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30040,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30040,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30041,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30041,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30042,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30042,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30043,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30043,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30044,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30044,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30045,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30045,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30046,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30046,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30047,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30047,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30048,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30048,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30049,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v1",
+      "spark_v3",
+      30049,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30000,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30000,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30001,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30001,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30002,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30002,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30003,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30003,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30004,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30004,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30005,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30005,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30006,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30006,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30007,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30007,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30008,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30008,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30009,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30009,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30010,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30010,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30011,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30011,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30012,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30012,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30013,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30013,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30014,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30014,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30015,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30015,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30016,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30016,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30017,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30017,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30018,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30018,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30019,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30019,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30020,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30020,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30021,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30021,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30022,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30022,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30023,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30023,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30024,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30024,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30025,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30025,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30026,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30026,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30027,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30027,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30028,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30028,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30029,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30029,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30030,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30030,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30031,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30031,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30032,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30032,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30033,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30033,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30034,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30034,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30035,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30035,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30036,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30036,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30037,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30037,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30038,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30038,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30039,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30039,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30040,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30040,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30041,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30041,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30042,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30042,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30043,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30043,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30044,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30044,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30045,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30045,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30046,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30046,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30047,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30047,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30048,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30048,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30049,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v2",
+      30049,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30000,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30000,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30001,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30001,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30002,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30002,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30003,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30003,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30004,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30004,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30005,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30005,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30006,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30006,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30007,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30007,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30008,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30008,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30009,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30009,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30010,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30010,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30011,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30011,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30012,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30012,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30013,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30013,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30014,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30014,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30015,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30015,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30016,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30016,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30017,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30017,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30018,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30018,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30019,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30019,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30020,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30020,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30021,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30021,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30022,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30022,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30023,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30023,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30024,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30024,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30025,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30025,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30026,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30026,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30027,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30027,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30028,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30028,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30029,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30029,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30030,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30030,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30031,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30031,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30032,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30032,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30033,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30033,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30034,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30034,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30035,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30035,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30036,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30036,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30037,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30037,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30038,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30038,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30039,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30039,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30040,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30040,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30041,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30041,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30042,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30042,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30043,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30043,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30044,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30044,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30045,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30045,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30046,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30046,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30047,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30047,
+      1,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30048,
+      0,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30048,
+      1,
+      1
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30049,
+      0,
+      0
+    ],
+    [
+      "brooklyn_v2",
+      "spark_v3",
+      30049,
+      1,
+      0
+    ]
+  ],
+  "seed_pair_game_outcomes_columns": [
+    "brooklyn",
+    "opponent",
+    "seed",
+    "brooklyn_team",
+    "brooklyn_won"
+  ]
+}

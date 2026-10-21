@@ -132,6 +132,10 @@ bidding 10–20 below the points actually earned. Measure first; tune later.
 
 ### First v2 comparison — 20 October 2026
 
+For the latest corrected policy, see
+[the current-bot benchmark](../../benchmarks/2026-10-20-current.md).
+The older prototype's measurements below are retained for comparison only.
+
 Policy frozen before running: `a01a62b`. Corrected web engine (`GameSession` /
 `NetworkGame`), with display sleeps and broadcasts disabled, not the running
 server. Target 1000; seeds 30000–30049, each replayed with Brooklyn on team 0
