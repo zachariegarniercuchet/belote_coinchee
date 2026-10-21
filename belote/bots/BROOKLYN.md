@@ -80,18 +80,30 @@ respectively, all 80 logs identical (including 17 claims and 8 passed-out
 deals). Existing bot strategies and the
 default selection were not modified; they now receive their missing inputs.
 
-## Brooklyn v2 — initial partnership bidding convention
+## Brooklyn v2 — current partnership bidding convention
 
-V1 is unchanged. V2 inherits the same card play, but opens with at least
-three trumps including J or 9: 80 for one honour, 90 for both, plus belote at
-the opening: 10 with three trumps, 20 with at least four. This is the bidding
-valuation, not a change to the actual +20 belote score. The supporting partner adds 10 per missing trump
-honour held and per non-trump ace. The trump ace is included in the base
-80/90 description and never earns another +10. Opener's later credits include
-10 per non-trump ace, and 10 for a void with at least
-four trumps, or 20 TOTAL for at least two voids with at least four trumps.
-Support and bonuses are credited once, not again on each turn. No capot bid.
-V1's conservative coinche/surcoinche decisions remain in use.
+V1 is unchanged; V2 inherits its exact card play. Every initial entry or
+new-suit proposal needs at least three trumps including J or 9 AND either
+at least one non-trump ace or at least two dix seconds.
+
+- Base 80 for one J/9, 90 for both. The first side ace is INCLUDED in this
+  base; every extra side ace adds 10 immediately. Thus one honour + one ace
+  opens 80, one honour + two aces opens 90, both honours + one ace opens 90,
+  and both honours + two aces opens 100 before belote.
+- Belote adds 10 with three trumps, 20 with at least four, on initial entry
+  AND overcalling. The actual scoring bonus remains +20.
+- Supporting partner adds 10 per missing trump J/9 held and per non-trump ace
+  (the first-ace inclusion applies to the opener, not to partner support).
+- Trump ace earns no separate credit. Opener's later shape credits are 10 for
+  one void with at least four trumps, or 20 TOTAL for at least two voids, plus
+  10 for two dix seconds. Aces/belote already spent on entry cannot be added
+  again on rebidding. No capot bid; v1's cautious doubles remain in use.
+
+A different suit can be proposed if independently eligible and valuable
+enough for a higher legal bid. Select the highest justified legal amount,
+preferring support of the current suit on ties. An alternative suit starts a
+fresh budget: do not transfer old-suit partner raises or spent credits into
+it. Public partner-raise memory resets to the new suit's episode.
 
 Credits are relative to the team's last bid, not the intervening opponents'
 bid. This avoids turning enemy overcalls into fictitious extra hand strength.
@@ -104,11 +116,11 @@ Working parameters following David's clarification (20 October):
 - `SECOND_TENS_REQUIRED = 2`: +10 for at least two dix seconds (ten + exactly
   one other card in a non-trump suit). Three side-suit dix seconds cannot fit
   alongside three trumps. This is an initial parameter to measure, not a
-  claimed optimal valuation. A non-trump ace is credited separately at +10.
-- Initial entry is limited to the 80/90 trump description plus belote, whether
-  opening an empty auction or overcalling opponents. Aces, voids and dix
-  seconds are reserved for rebidding and cannot fund initial entry. Belote
-  already included at the opening is NOT added a second time later.
+  claimed optimal valuation. The two dix seconds may qualify initial entry
+  without an ace, but their extra +10 valuation remains reserved for rebidding.
+- Side aces (beyond the included first) and belote fund initial overcalls;
+  void/tens credits remain reserved for rebidding. The previous stricter
+  entry rule and suit lock were removed following David's clarification.
 
 TODO: use partnership raises to inform leading a new side suit during play.
 Amounts alone do not identify specific aces; opener's raises can also contain

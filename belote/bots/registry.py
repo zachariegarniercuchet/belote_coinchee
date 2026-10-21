@@ -134,7 +134,7 @@ BOT_REGISTRY: dict[str, dict] = {
         "avatars": [None, None, None, None],
         "version": "v2",
         "author": "David",
-        "description": "Ouvre à 80/90 avec trois atouts et valet/neuf, belote incluse ; soutien du partenaire puis as hors atout/distribution/dix seconds au rebid, comptés une seule fois. Jeu de carte Brooklyn.",
+        "description": "Au moins trois atouts avec valet/neuf et un as hors atout ou deux dix seconds. Base 80, +10 pour J+9 et par as supplémentaire ; belote dès l'entrée, changements de couleur et soutien du partenaire. Jeu de carte Brooklyn.",
         "level": 3,
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot_v2(seat, name),

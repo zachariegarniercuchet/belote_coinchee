@@ -23,14 +23,14 @@ class PartnershipRaise:
 
 
 class BrooklynBotV2(BrooklynBot):
-    """80/90 opening, partner support, then one-time distribution bonuses.
+    """Qualified 80/90 base, side aces/belote on entry, then shape credits.
 
     Credits are measured from our TEAM'S last bid, not an intervening enemy
     bid. Opponents cannot manufacture additional hand value by overcalling.
     All accounting is reconstructed from public history, never hidden hands.
     """
 
-    # Initial working convention: +10 for two dix seconds, on rebidding only.
+    # Two dix seconds can qualify an opening; their +10 bonus stays at rebid.
     SECOND_TENS_REQUIRED = 2  # dix seconds: ten + exactly one other side-suit card
 
     def __init__(self, player_id, name=None, rng=None):
@@ -47,10 +47,19 @@ class BrooklynBotV2(BrooklynBot):
         self._reset_bidding_memory()
 
     @staticmethod
-    def _opening_value(hand, suit):
+    def _second_tens(hand, suit):
+        sides = [[c for c in hand if c.suit == s] for s in Suit if s != suit]
+        return sum(len(cards) == 2 and any(c.rank == Rank.DIX for c in cards)
+                   for cards in sides)
+
+    @classmethod
+    def _opening_value(cls, hand, suit):
         trumps = [c for c in hand if c.suit == suit]
         honours = {c.rank for c in trumps} & {Rank.VALET, Rank.NEUF}
         if len(trumps) < 3 or not honours:
+            return None
+        if not any(c.rank == Rank.AS and c.suit != suit for c in hand) and \
+                cls._second_tens(hand, suit) < cls.SECOND_TENS_REQUIRED:
             return None
         return 90 if len(honours) == 2 else 80
 
@@ -61,22 +70,23 @@ class BrooklynBotV2(BrooklynBot):
             return 0
         return 20 if sum(c.suit == suit for c in hand) >= 4 else 10
 
+    def _entry_bonus(self, hand, suit):
+        # Trump ace is already covered by the 80/90 trump description.
+        # The first SIDE ace qualifies the base; only additional aces add +10.
+        aces = sum(c.rank == Rank.AS and c.suit != suit for c in hand)
+        return self._belote_bonus(hand, suit) + 10 * max(0, aces - 1)
+
     def _rebid_bonus(self, hand, suit):
         trumps = [c for c in hand if c.suit == suit]
-        # Total own credits, including belote already used at the opening.
-        # The ceiling calculation subtracts nothing twice or on repeated turns.
-        # Trump ace is already covered by the 80/90 trump description.
-        bonus = self._belote_bonus(hand, suit) + 10 * sum(
-            c.rank == Rank.AS and c.suit != suit for c in hand)
+        # Total own credits, INCLUDING aces/belote already used on entry.
+        bonus = self._entry_bonus(hand, suit)
         sides = [[c for c in hand if c.suit == s] for s in Suit if s != suit]
         voids = sum(not cards for cards in sides)
         if voids >= 2 and len(trumps) >= 4:
             bonus += 20  # total void bonus, not 10 + 20
         elif voids and len(trumps) >= 4:
             bonus += 10
-        seconds = sum(len(cards) == 2 and any(c.rank == Rank.DIX for c in cards)
-                      for cards in sides)
-        if seconds >= self.SECOND_TENS_REQUIRED:
+        if self._second_tens(hand, suit) >= self.SECOND_TENS_REQUIRED:
             bonus += 10
         return bonus
 
@@ -126,6 +136,19 @@ class BrooklynBotV2(BrooklynBot):
         self._full_hand = list(hand)
         bids, spent = self._episode(bidding_state)
         numeric = [a for a in legal_actions if a.type == ActionType.ENCHERE and not a.is_capot]
+        choices = []
+        team_suit = bids[-1][2].suit if bids else None
+
+        def consider(suit, ceiling):
+            candidates = [a for a in numeric if a.suit == suit and a.points <= ceiling]
+            if candidates:
+                action = max(candidates, key=lambda a: a.points)
+                trumps = [c for c in hand if c.suit == suit]
+                # Prefer supporting the current suit on equal value; switch
+                # only to an independently justified, stronger legal proposal.
+                choices.append((action.points, suit == team_suit, len(trumps),
+                                sum(c.points(suit) for c in trumps), action))
+
         if bids:
             _, opener, _ = bids[0]
             latest = bids[-1][2]
@@ -138,25 +161,17 @@ class BrooklynBotV2(BrooklynBot):
                 else:
                     unused = max(0, self._partner_support(hand, suit) - spent[self.player_id])
                     ceiling = latest.points + unused
-                candidates = [a for a in numeric if a.suit == suit and a.points <= ceiling]
-                if candidates:
-                    return max(candidates, key=lambda a: a.points)
-            return self._doubles_or_pass(hand, bidding_state, legal_actions)
+                consider(suit, ceiling)
 
-        openings = []
         for suit in Suit:
+            if suit == team_suit:
+                continue
             base = self._opening_value(hand, suit)
             if base is None:
                 continue
-            opening = base + self._belote_bonus(hand, suit)
-            candidates = [a for a in numeric if a.suit == suit and a.points == opening]
-            if candidates:
-                # Describe trumps + belote only. Shape/aces/tens cannot fund an
-                # initial overcall: those credits are reserved for a later rebid.
-                action = candidates[0]
-                trumps = [c for c in hand if c.suit == suit]
-                openings.append((base, len(trumps), self._rebid_bonus(hand, suit),
-                                 sum(c.points(suit) for c in trumps), action))
-        if openings:
-            return max(openings, key=lambda entry: entry[:4])[-1]
+            # A new suit starts its own budget: never transfer partner credits
+            # from the previous suit, or spend void/tens credits on first entry.
+            consider(suit, base + self._entry_bonus(hand, suit))
+        if choices:
+            return max(choices, key=lambda entry: entry[:4])[-1]
         return self._doubles_or_pass(hand, bidding_state, legal_actions)

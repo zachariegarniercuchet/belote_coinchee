@@ -210,8 +210,13 @@ les versions existantes ni le bot par défaut en ajustant cette famille.
 Ses portraits ne sont pas encore définis : quatre `None` dans `avatars`,
 images masquées par le frontend. Les étoiles restent purement indicatives.
 Brooklyn v2 (`brooklyn_v2`) garde les cartes de v1 mais change les enchères :
-80/90 avec belote possible dès l'ouverture, soutien J/9 manquant et as, puis
-as hors atout/distribution/dix seconds du premier enchérisseur au rebid.
+chaque nouvelle couleur exige au moins trois atouts avec J ou 9, plus au
+moins un as hors atout OU deux dix seconds. Base 80 avec un des J/9, 90
+avec les deux ; le premier as hors atout est inclus dans la base, chaque
+as supplémentaire ajoute +10 dès l'ouverture ou la surenchère d'entrée.
+Le partenaire soutient de +10 par J/9 manquant détenu et par as hors atout.
+La belote compte aussi dès l'entrée. Distribution/dix seconds du premier
+enchérisseur restent des crédits de rebid, comptés une seule fois.
 L'as d'atout est inclus dans la base 80/90, jamais crédité de +10, ni en
 soutien ni au rebid. La belote vaut +10 aux enchères avec trois atouts, +20
 avec au moins quatre (son score réel reste +20). Une coupe franche n'ajoute
@@ -224,8 +229,10 @@ une surenchère adverse comme une force supplémentaire. `partner_raises` et
 suivante. TODO : en tenir compte pour ouvrir une couleur au jeu, sans déduire
 quelles cartes précises se cachent derrière ces montants. Paramètre initial :
 +10 pour deux dix seconds (10 + une seule autre carte dans une couleur
-secondaire). Les bonus autres que la belote ne financent pas une ouverture,
-même après une enchère adverse. Mesurer prise, réussite et marge du contrat
+secondaire). Changer de couleur est permis si sa valeur propre justifie une
+enchère légale supérieure ; à valeur égale, préférer le soutien de la couleur
+actuelle. Ne pas transférer les crédits du partenaire d'une couleur à l'autre ;
+l'épisode de soutien repart à zéro. Mesurer prise, réussite et marge du contrat
 avant de calibrer ces conventions ; voir `BROOKLYN.md`.
 Le sélecteur natif est regroupé par famille et affiche les versions, pas
 des prénoms différents par siège ; l'auteur et la méthode sont visibles sous

@@ -5,7 +5,7 @@ import unittest
 from itertools import product
 from unittest.mock import Mock
 
-from belote.bidding import ActionType, BiddingState, Contract
+from belote.bidding import ActionType, BidAction, BiddingState, Contract
 from belote.bots import create_bot, get_bot_info
 from belote.bots.brooklyn import BrooklynBot
 from belote.bots.brooklyn_v2 import BrooklynBotV2
@@ -31,17 +31,17 @@ class BrooklynTests(unittest.TestCase):
             (cards("V_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "10_TREFLE", "7_TREFLE"),
              cards("9_PIQUE", "A_PIQUE", "A_COEUR", "R_COEUR", "D_COEUR", "D_TREFLE", "V_TREFLE", "9_TREFLE"),
              [100, 120, 140]),
-            (cards("V_PIQUE", "9_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "7_COEUR", "8_COEUR", "10_COEUR"),
-             cards("A_PIQUE", "A_COEUR", "A_TREFLE", "A_CARREAU", "10_TREFLE", "7_TREFLE", "7_CARREAU", "8_CARREAU"),
-             [110, 140, 160]),
+            (cards("V_PIQUE", "9_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "A_COEUR", "8_COEUR", "10_COEUR"),
+             cards("A_PIQUE", "R_COEUR", "A_TREFLE", "A_CARREAU", "10_TREFLE", "7_TREFLE", "7_CARREAU", "8_CARREAU"),
+             [110, 130, 150]),
             # With only three trumps, neither the trump ace nor a void adds credit.
             (cards("V_PIQUE", "9_PIQUE", "A_PIQUE", "A_COEUR", "8_COEUR", "R_TREFLE", "8_TREFLE", "7_COEUR"),
              cards("7_PIQUE", "R_PIQUE", "R_COEUR", "D_COEUR", "A_CARREAU", "R_CARREAU", "A_TREFLE", "V_TREFLE"),
-             [90, 110, 120]),
+             [90, 110]),
             # Three-trump belote is +10, including in the later total ceiling.
             (cards("V_PIQUE", "R_PIQUE", "D_PIQUE", "A_COEUR", "7_COEUR", "10_TREFLE", "7_TREFLE", "7_CARREAU"),
              cards("9_PIQUE", "A_PIQUE", "A_TREFLE", "A_CARREAU", "R_COEUR", "D_COEUR", "8_TREFLE", "8_CARREAU"),
-             [90, 120, 130]),
+             [90, 120]),
         ]:
             bots = {seat: BrooklynBotV2(seat) for seat in (0, 2)}
             state = BiddingState(dealer=1)
@@ -78,17 +78,51 @@ class BrooklynTests(unittest.TestCase):
         for weak_hand in [
             cards("V_PIQUE", "A_PIQUE", "A_COEUR", "10_COEUR", "A_TREFLE", "10_TREFLE", "A_CARREAU", "10_CARREAU"),
             cards("A_PIQUE", "10_PIQUE", "R_PIQUE", "A_COEUR", "R_COEUR", "A_TREFLE", "R_TREFLE", "A_CARREAU"),
+            # Three trumps and J/9 are insufficient without side strength.
+            cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "R_COEUR", "D_COEUR", "V_TREFLE", "8_TREFLE", "7_CARREAU"),
+            cards("9_PIQUE", "8_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "R_TREFLE", "8_TREFLE", "7_CARREAU"),
         ]:
             state = BiddingState(dealer=1)
             self.assertEqual(BrooklynBotV2(0).choose_bid(weak_hand, state, state.legal_actions()).type,
                              ActionType.PASSE)
-        # Aces/voids/tens cannot justify entering above the opening description.
+        # The first side ace qualifies 80; extra aces and J+9 each add 10.
+        for hand, amount in [
+            (cards("V_PIQUE", "A_PIQUE", "7_PIQUE", "A_COEUR", "10_COEUR", "R_TREFLE", "8_TREFLE", "7_CARREAU"), 80),
+            (cards("V_PIQUE", "A_PIQUE", "7_PIQUE", "A_COEUR", "10_COEUR", "A_TREFLE", "8_TREFLE", "7_CARREAU"), 90),
+            (cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "A_COEUR", "10_COEUR", "R_TREFLE", "8_TREFLE", "7_CARREAU"), 90),
+            (cards("9_PIQUE", "8_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "10_TREFLE", "8_TREFLE", "7_CARREAU"), 80),
+        ]:
+            state = BiddingState(dealer=1)
+            self.assertEqual(BrooklynBotV2(0).choose_bid(hand, state, state.legal_actions()),
+                             BidAction.enchere(amount, Suit.PIQUE))
+
+        # Initial overcalls now include extra aces, not just the trump description.
         state = BiddingState(dealer=0)  # seat 3 opens, then Brooklyn at seat 0
         state.apply(next(a for a in state.legal_actions() if a.type == ActionType.ENCHERE
                          and a.suit == Suit.CARREAU and a.points == 90))
         hand = cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "A_COEUR", "8_COEUR", "A_TREFLE", "8_TREFLE", "7_CARREAU")
-        self.assertEqual(BrooklynBotV2(0).choose_bid(hand, state, state.legal_actions()).type,
-                         ActionType.PASSE)
+        self.assertEqual(BrooklynBotV2(0).choose_bid(hand, state, state.legal_actions()),
+                         BidAction.enchere(100, Suit.PIQUE))
+
+        # A stronger independent suit can replace the team's earlier proposal.
+        # Old support must not be carried across the switch or charged twice.
+        state = BiddingState(dealer=3)
+        for action in (BidAction.enchere(80, Suit.COEUR), BidAction.passe(),
+                       BidAction.enchere(90, Suit.COEUR), BidAction.enchere(100, Suit.CARREAU)):
+            state.apply(action)
+        partner = BrooklynBotV2(2)
+        support_hand = cards("A_PIQUE", "R_PIQUE", "V_COEUR", "R_COEUR", "D_COEUR", "7_TREFLE", "9_TREFLE", "7_CARREAU")
+        state.apply(partner.choose_bid(support_hand, state, state.legal_actions()))
+        self.assertEqual(partner.partner_raise_points, 10)
+        state.apply(BidAction.passe())
+        hand = cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "A_COEUR", "8_COEUR", "A_TREFLE", "8_TREFLE", "A_CARREAU")
+        switch = BrooklynBotV2(0).choose_bid(hand, state, state.legal_actions())
+        self.assertEqual(switch, BidAction.enchere(110, Suit.PIQUE))
+        state.apply(switch)
+        state.apply(BidAction.passe())
+        self.assertEqual(partner.choose_bid(support_hand, state, state.legal_actions()), BidAction.passe())
+        self.assertEqual(partner.partner_raise_points, 0)
+        self.assertEqual(partner.partner_raises, [])
 
     def test_trump_hunt_then_bank_points_with_public_information(self):
         bot = BrooklynBot(0)
