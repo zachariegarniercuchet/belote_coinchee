@@ -50,7 +50,9 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [After the shared ace-preservation fix](2026-10-20-ace-preservation.md):
+  both Brooklyn versions rerun at `1fea8bb`, including capots in outcome rates.
 - [Qualified openings and suit switches](2026-10-20-qualified-openings.md):
-  current policy at `865e23a`.
+  bidding amendment at `865e23a`, before the shared card-play fix.
 - [Previous v2 policy](2026-10-20-current.md): frozen at `edbd52e`, retained
   for comparison rather than overwritten with later measurements.

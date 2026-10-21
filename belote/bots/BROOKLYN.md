@@ -152,8 +152,8 @@ bidding 10–20 below the points actually earned. Measure first; tune later.
 
 ### First v2 comparison — 20 October 2026
 
-For the latest available benchmark (frozen before the ace-feeding fix), see
-[the qualified-opening benchmark](../../benchmarks/2026-10-20-qualified-openings.md).
+For the latest available benchmark, including the shared ace-feeding fix, see
+[the ace-preservation benchmark](../../benchmarks/2026-10-20-ace-preservation.md).
 The older prototype's measurements below are retained for comparison only.
 
 Policy frozen before running: `a01a62b`. Corrected web engine (`GameSession` /
