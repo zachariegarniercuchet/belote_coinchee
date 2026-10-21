@@ -98,6 +98,58 @@ class BrooklynBot(SparkBot):
             c.points(trick.atout), self._keep_value(c, hand, trick.atout, trick),
             -self._strength(c, trick.atout)))
 
+    def _feed_partner(self, hand, trick, legal):
+        partner, atout = partner_of(self.player_id), trick.atout
+        safe = [c for c in legal if self._hypo_winner(trick, c) == partner
+                and self._reasonably_safe(hand, trick, c)]
+        side = [c for c in safe if c.suit != atout]
+        aces = {c.suit for c in hand if c.rank == Rank.AS}
+        tens = {c.suit for c in hand if c.rank == Rank.DIX}
+        # Donate points likely to disappear: loose tens, unmastered honours,
+        # especially singletons. A ten guarded by our ace is not a loose ten.
+        def covered_in_this_trick(card):
+            return card.suit == trick.plays[0][1].suit and any(
+                played.suit == card.suit
+                and self._strength(played, atout) < self._strength(card, atout)
+                for _, played in trick.plays)
+
+        losers = [c for c in side if c.rank != Rank.AS and c.points(atout) > 0
+                  and (not self._is_master(c, atout, trick) or covered_in_this_trick(c))
+                  and not (c.rank == Rank.DIX and c.suit in aces)]
+        if losers:
+            return max(losers, key=lambda c: (
+                c.points(atout), sum(h.suit == c.suit for h in hand) == 1,
+                -self._keep_value(c, hand, atout, trick)))
+
+        voids = self._known_voids(trick)
+        unknown_trumps = self._unknown_ranks(atout, hand, trick)
+
+        def save_ace(card):
+            # A short hand alone does NOT make an ace doomed. Require a public
+            # enemy void in its suit and trumps that enemy could still hold.
+            return len(hand) <= 2 and bool(unknown_trumps) and any(
+                team_of(seat) != team_of(self.player_id)
+                and card.suit in voids[seat] and atout not in voids[seat]
+                for seat in range(4))
+
+        expendable_aces = [c for c in side if c.rank == Rank.AS
+                           and (c.suit in tens or save_ace(c))]
+        if expendable_aces:
+            return max(expendable_aces, key=lambda c: (
+                c.suit in tens, -self._keep_value(c, hand, atout, trick)))
+
+        # Preserve side aces even when only zero-point cards or masters remain.
+        # If the only side alternative is an ace, a safe non-ace trump may be
+        # donated instead; forced/all-ace hands still use the normal fallback.
+        non_aces = [c for c in side if c.rank != Rank.AS]
+        if not non_aces:
+            non_aces = [c for c in safe if c.rank != Rank.AS]
+        if non_aces:
+            return min(non_aces, key=lambda c: (
+                self._is_master(c, atout, trick), c.points(atout),
+                self._keep_value(c, hand, atout, trick)))
+        return None
+
     def _lead(self, hand, trick, legal):
         trump = self._draw_trump(hand, trick, legal)
         if trump is not None:
@@ -126,12 +178,9 @@ class BrooklynBot(SparkBot):
         partner = partner_of(self.player_id)
         winning = [c for c in legal_cards if self._hypo_winner(trick, c) == self.player_id]
         if trick_winner(trick.plays, atout) == partner:
-            feed = [c for c in legal_cards if c.suit != atout
-                    and self._hypo_winner(trick, c) == partner
-                    and self._reasonably_safe(hand, trick, c)]
-            if feed:
-                return max(feed, key=lambda c: (
-                    c.points(atout), -self._keep_value(c, hand, atout, trick)))
+            feed = self._feed_partner(hand, trick, legal_cards)
+            if feed is not None:
+                return feed
 
         if winning:
             safe = [c for c in winning if self._reasonably_safe(hand, trick, c)]

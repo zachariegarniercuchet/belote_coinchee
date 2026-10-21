@@ -209,6 +209,15 @@ encaissés plutôt que plus petit gagnant, soutien au partenaire. Ne pas modifie
 les versions existantes ni le bot par défaut en ajustant cette famille.
 Ses portraits ne sont pas encore définis : quatre `None` dans `avatars`,
 images masquées par le frontend. Les étoiles restent purement indicatives.
+Le jeu de carte partagé Brooklyn v1/v2 charge le partenaire avec les points
+susceptibles d'être perdus, pas simplement la carte de plus grande valeur.
+Garder les as hors atout par défaut ; exceptions : A–10 en main, ou as à
+sauver dans les deux dernières cartes face à un risque de coupe adverse étayé
+par les informations publiques. Préférer les dix lâches et honneurs non maîtres,
+notamment singletons, sans sacrifier une carte maîtresse s'il reste un déchet.
+Respecter les coups forcés et ne charger que si le partenaire paraît sûr.
+Toute modification de ce jeu partagé exige de refaire le benchmark v1 aussi :
+les anciens résultats restent attachés à leur révision, pas à un nom de bot.
 Brooklyn v2 (`brooklyn_v2`) garde les cartes de v1 mais change les enchères :
 chaque nouvelle couleur exige au moins trois atouts avec J ou 9, plus au
 moins un as hors atout OU deux dix seconds. Base 80 avec un des J/9, 90

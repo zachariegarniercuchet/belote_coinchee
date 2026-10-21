@@ -181,6 +181,36 @@ class BrooklynTests(unittest.TestCase):
                            plays=list(zip([2, 3], cards("A_COEUR", "R_COEUR"))))
         self.assertEqual(bot.choose_card(hand, trick, trick.legal_cards_for(hand)), hand[0])
 
+        # Charge likely-lost points, not a future ace, onto partner's trump.
+        # A-10 and a publicly endangered late ace are the deliberate exceptions.
+        for bot_class in (BrooklynBot, BrooklynBotV2):
+            for hand, expected, late_cut_risk in [
+                (cards("A_COEUR", "10_TREFLE", "R_CARREAU", "7_CARREAU"), "10_TREFLE", False),
+                (cards("A_COEUR", "R_COEUR", "7_TREFLE"), "R_COEUR", False),
+                (cards("A_COEUR", "7_TREFLE", "8_CARREAU"), "7_TREFLE", False),
+                (cards("A_COEUR", "10_COEUR", "7_CARREAU"), "A_COEUR", False),
+                (cards("A_COEUR", "7_TREFLE"), "7_TREFLE", False),
+                (cards("A_COEUR", "7_TREFLE"), "A_COEUR", True),
+                (cards("A_COEUR", "R_TREFLE", "8_CARREAU"), "R_TREFLE", True),
+                (cards("A_COEUR", "9_PIQUE"), "9_PIQUE", False),
+                (cards("A_COEUR"), "A_COEUR", False),
+            ]:
+                feeder = bot_class(0)
+                feeder.notify_contract(contract())
+                if late_cut_risk:
+                    # Seat 1 discards on partner 3, proving hearts void but NOT
+                    # trump void. Our heart ace may be cut if kept for later.
+                    history = list(zip([3, 0, 1, 2], cards("10_COEUR", "8_COEUR", "7_CARREAU", "D_COEUR")))
+                    feeder.notify_trick_result(history, 3)
+                trick = TrickState(leader=2, atout=Suit.PIQUE,
+                                   plays=list(zip([2, 3], cards("V_PIQUE", "7_PIQUE"))))
+                if any(c.suit == Suit.PIQUE for c in hand):
+                    # Void in diamonds with partner master: both the trump and
+                    # ace are legal, so this really tests the non-ace fallback.
+                    trick = TrickState(leader=1, atout=Suit.PIQUE,
+                                       plays=list(zip([1, 2, 3], cards("8_CARREAU", "V_PIQUE", "9_CARREAU"))))
+                self.assertEqual(feeder.choose_card(hand, trick, trick.legal_cards_for(hand)), cards(expected)[0])
+
     def test_catalog_and_complete_seeded_games(self):
         info = get_bot_info("brooklyn_v1")
         self.assertEqual((info["family"], info["author"]), ("Brooklyn", "David"))

@@ -11,7 +11,15 @@ Monte Carlo search or changes to the existing bots/default bot.
 - Cash valuable winning cards in attack and defence, rather than automatically
   choosing the cheapest winner. An unknown void is not a guaranteed cut, but
   a known impending cut is a reason not to throw away an ace unnecessarily.
-- Feed a reasonably safe winning partner. Discard cheaply when unable to win.
+- Feed a reasonably safe winning partner with points likely to be lost: loose
+  tens and unmastered honours, favouring singletons on equal value and cards
+  below an ace rather than sacrificing that ace. Preserve masters if a cheap
+  discard is available. This shared policy applies to both Brooklyn versions.
+- Keep side aces when feeding, except with A–10 in hand, or with at most two
+  cards left and a publicly known enemy void in the ace's suit plus possible
+  enemy trumps. Being late alone is not enough. Legal forced/all-ace hands
+  remain playable; an endangered ace is donated only onto a safe partner.
+  Discard cheaply when unable to win.
 - Exception: when attacking, last to play, with opponents known to have no
   trumps, a cheaper winner may preserve a future ace.
 - Following a side suit does not prove a lack of trumps; neither does a
@@ -144,7 +152,7 @@ bidding 10–20 below the points actually earned. Measure first; tune later.
 
 ### First v2 comparison — 20 October 2026
 
-For the latest corrected policy, see
+For the latest available benchmark (frozen before the ace-feeding fix), see
 [the qualified-opening benchmark](../../benchmarks/2026-10-20-qualified-openings.md).
 The older prototype's measurements below are retained for comparison only.
 
