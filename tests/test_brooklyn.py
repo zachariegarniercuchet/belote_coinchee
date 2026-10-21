@@ -14,6 +14,7 @@ from belote.game import Game
 from belote.trick import TrickState, trick_winner
 from game_session import GameSession
 from rooms import Room
+from serialize import card_to_dict, sorted_hand
 
 
 def cards(*codes):
@@ -162,7 +163,8 @@ class BrooklynTests(unittest.TestCase):
             session.game.dealer = seed
             session.game.rng = random.Random(seed)
             session.sleep = Mock()
-            session.broadcast = Mock()
+            states = []
+            session.broadcast = Mock(side_effect=lambda: states.append(session._build_common()))
             for bot in session.players.values():
                 bot.notify_contract = Mock(wraps=bot.notify_contract)
                 bot.notify_trick_result = Mock(wraps=bot.notify_trick_result)
@@ -176,6 +178,24 @@ class BrooklynTests(unittest.TestCase):
             self.assertEqual(session.game.donne_logs, game.donne_logs)
             self.assertEqual(session.game.cumulative_scores, game.cumulative_scores)
             self.assertEqual(session.winner_team, game.winner_team)
+            # The recap can review completed hands, never the current hidden deal.
+            for state in states:
+                reviews = state["completed_deals"]
+                if state["phase"] not in ("donne_end", "game_end"):
+                    self.assertEqual(reviews, [])
+                for review in reviews:
+                    completed = session.game.donne_logs[review["number"] - 1]
+                    self.assertIsNotNone(completed.result)
+                    self.assertLessEqual(review["number"], state["donne_number"])
+            reviews = session._build_common()["completed_deals"]
+            self.assertEqual(len(reviews), accepted)
+            for review in reviews:
+                completed = session.game.donne_logs[review["number"] - 1]
+                self.assertEqual(review["contract"]["suit"], completed.contract.suit.name)
+                self.assertEqual(review["hands"], {
+                    str(seat): [card_to_dict(card) for card in sorted_hand(hand, completed.contract.suit)]
+                    for seat, hand in completed.initial_hands.items()
+                })
             for log in game.donne_logs:
                 if log.annulee:
                     continue

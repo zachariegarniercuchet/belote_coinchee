@@ -547,6 +547,29 @@ class GameSession:
             "total_points": {"0": totals.get(0, 0), "1": totals.get(1, 0)},
         }
 
+    def _completed_deals(self):
+        # Reveal initial hands only at a recap, never while a deal is in play.
+        if self.ctx.phase not in ("donne_end", "game_end"):
+            return []
+        return [
+            {
+                "number": number,
+                "contract": {
+                    "player": log.contract.player,
+                    "points": log.contract.points,
+                    "suit": log.contract.suit.name,
+                    "symbol": log.contract.suit.symbol(),
+                    "is_capot": log.contract.is_capot,
+                },
+                "hands": {
+                    str(seat): [card_to_dict(card) for card in sorted_hand(hand, log.contract.suit)]
+                    for seat, hand in log.initial_hands.items()
+                },
+            }
+            for number, log in enumerate(self.game.donne_logs, 1)
+            if log.result is not None and log.contract is not None
+        ]
+
     def _build_common(self):
         ctx = self.ctx
         board_seat = self.room.seats.get("board")
@@ -592,6 +615,7 @@ class GameSession:
             "belote_holder_seat": ctx.belote_holder_seat if belote_visible else None,
             "belote_announcements": list(ctx.belote_announcements),
             "last_donne_result": self._result_dict(),
+            "completed_deals": self._completed_deals(),
             "claim": ctx.claim,
             "score_history": [
                 {
