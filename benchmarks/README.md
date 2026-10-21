@@ -42,3 +42,10 @@ Different bidding policies change subsequent deals/game lengths; matched seeds
 do not guarantee identical hands throughout games. Trump-leading rates depend
 on the contracts won and are NOT causal measurements of that strategy's value.
 Do not tune on results and present the same sample as independent validation.
+
+## Saved comparisons
+
+- [Qualified openings and suit switches](2026-10-20-qualified-openings.md):
+  current policy at `865e23a`.
+- [Previous v2 policy](2026-10-20-current.md): frozen at `edbd52e`, retained
+  for comparison rather than overwritten with later measurements.
