@@ -9,6 +9,7 @@ from belote.bidding import ActionType, BidAction, BiddingState, Contract
 from belote.bots import create_bot, get_bot_info
 from belote.bots.brooklyn import BrooklynBot
 from belote.bots.brooklyn_v2 import BrooklynBotV2
+from belote.bots.brooklyn_v3 import BrooklynBotV3
 from belote.cards import Card, Rank, Suit
 from belote.game import Game
 from belote.trick import TrickState, trick_winner
@@ -26,7 +27,7 @@ def contract(team=0):
 
 
 class BrooklynTests(unittest.TestCase):
-    def test_v2_partnership_auction_counts_each_contribution_once(self):
+    def test_partnership_auction_counts_each_contribution_once(self):
         for opener_hand, support_hand, expected in [
             (cards("V_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "10_TREFLE", "7_TREFLE"),
              cards("9_PIQUE", "A_PIQUE", "A_COEUR", "R_COEUR", "D_COEUR", "D_TREFLE", "V_TREFLE", "9_TREFLE"),
@@ -124,6 +125,39 @@ class BrooklynTests(unittest.TestCase):
         self.assertEqual(partner.partner_raise_points, 0)
         self.assertEqual(partner.partner_raises, [])
 
+        # Hybrid v3 opens on v1's valuation, including a hand v2 rejects.
+        # Then each partner's J/9, side aces and two-trump belote count once.
+        for opener_hand, support_hand, expected in [
+            (cards("A_PIQUE", "10_PIQUE", "R_PIQUE", "A_COEUR", "R_COEUR", "A_TREFLE", "R_TREFLE", "A_CARREAU"),
+             cards("V_PIQUE", "9_PIQUE", "D_PIQUE", "7_PIQUE", "7_COEUR", "8_COEUR", "7_TREFLE", "7_CARREAU"),
+             [90, 110]),
+            (cards("V_PIQUE", "9_PIQUE", "A_PIQUE", "7_PIQUE", "A_COEUR", "R_COEUR", "10_TREFLE", "7_CARREAU"),
+             cards("R_PIQUE", "D_PIQUE", "A_TREFLE", "7_TREFLE", "A_CARREAU", "8_CARREAU", "7_COEUR", "8_COEUR"),
+             [120, 160]),
+        ]:
+            state = BiddingState(dealer=1)
+            bots = {seat: BrooklynBotV3(seat) for seat in (0, 2)}
+            hands = {0: opener_hand, 2: support_hand}
+            self.assertEqual(BrooklynBot(0).choose_bid(opener_hand, state, state.legal_actions()),
+                             BidAction.enchere(expected[0], Suit.PIQUE))
+            while not state.finished:
+                seat = state.current_player
+                legal = state.legal_actions()
+                if seat in bots:
+                    action = bots[seat].choose_bid(hands[seat], state, legal)
+                    self.assertEqual(bots[seat].choose_bid(hands[seat], state, legal), action)
+                elif seat == 1 and len(state.history) == 1:
+                    action = BidAction.enchere(expected[0] + 10, Suit.COEUR)
+                else:
+                    action = BidAction.passe()
+                self.assertIn(action, legal)
+                state.apply(action)
+            self.assertEqual([a.points for seat, a in state.history
+                              if seat % 2 == 0 and a.type == ActionType.ENCHERE], expected)
+            self.assertEqual(bots[0].partner_raise_points, expected[1] - expected[0])
+            bots[0].notify_donne_start()
+            self.assertEqual(bots[0].partner_raises, [])
+
     def test_trump_hunt_then_bank_points_with_public_information(self):
         bot = BrooklynBot(0)
         bot.notify_contract(contract())
@@ -162,7 +196,7 @@ class BrooklynTests(unittest.TestCase):
             self.assertEqual(bot.choose_card(hand, trick, trick.legal_cards_for(hand)),
                              cards("A_COEUR")[0])
 
-        for bot_class in (BrooklynBot, BrooklynBotV2):
+        for bot_class in (BrooklynBot, BrooklynBotV2, BrooklynBotV3):
             for team in (0, 1):
                 for last, ace_out, expected in [
                     (False, False, "R_COEUR"),
@@ -201,7 +235,7 @@ class BrooklynTests(unittest.TestCase):
 
         # Charge likely-lost points, not a future ace, onto partner's trump.
         # A-10 and a publicly endangered late ace are the deliberate exceptions.
-        for bot_class in (BrooklynBot, BrooklynBotV2):
+        for bot_class in (BrooklynBot, BrooklynBotV2, BrooklynBotV3):
             for hand, expected, late_cut_risk in [
                 (cards("A_COEUR", "10_TREFLE", "R_CARREAU", "7_CARREAU"), "10_TREFLE", False),
                 (cards("A_COEUR", "R_COEUR", "7_TREFLE"), "R_COEUR", False),
@@ -233,7 +267,7 @@ class BrooklynTests(unittest.TestCase):
         info = get_bot_info("brooklyn_v1")
         self.assertEqual((info["family"], info["author"]), ("Brooklyn", "David"))
         self.assertEqual(len(set(info["names"])), 4)
-        for bot_id, seed in product(("brooklyn_v1", "brooklyn_v2"), range(4)):
+        for bot_id, seed in product(("brooklyn_v1", "brooklyn_v2", "brooklyn_v3"), range(4)):
             players = {seat: create_bot(bot_id, seat) for seat in range(4)}
             self.assertTrue(all(isinstance(bot, BrooklynBot) for bot in players.values()))
             game = Game(players, target_score=300, first_dealer=seed, rng=random.Random(seed))

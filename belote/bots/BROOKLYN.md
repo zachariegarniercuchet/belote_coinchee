@@ -90,7 +90,32 @@ respectively, all 80 logs identical (including 17 claims and 8 passed-out
 deals). Existing bot strategies and the
 default selection were not modified; they now receive their missing inputs.
 
-## Brooklyn v2 — current partnership bidding convention
+## Brooklyn v3 — hybrid bidding
+
+V3 keeps the shared Brooklyn card play and uses v1's individual hand evaluation
+and bid mapping for each possible entry suit (90–120). Unlike v2, it does not
+require J/9 plus a side ace or two dix seconds. This reuses v1's valuation,
+not every detail of its suit-selection and enemy-overcall restrictions: v3
+uses v2's legal-candidate/suit-switch machinery.
+
+The partner supports the team's suit with +10 for EACH trump J/9 held,
++10 per side ace (never the trump ace), and +20 for trump K+Q, even with only
+two trumps. Both J and 9 can count because a v1-valued opening need not hold
+either. Contributions are spent once, measured from the last TEAM bid, not
+an enemy overcall. Old-suit support does not transfer across suit switches.
+
+The opener's own aces, belote and shape already affect v1's evaluation. V3
+does not add v2's entry/rebid bonuses on top, avoiding double counting; its
+later ceiling is its own original valuation plus public partner raises.
+In particular, the exact +20 belote support rule is for the partner, while an
+opener's belote retains v1's evaluation weight. Numeric bids only, no Capot;
+coinche/surcoinche remain inherited. V1/v2 policies and the default bot stay
+unchanged. Author David; same Brooklyn names and no portraits yet.
+
+This hybrid has representative auction and seeded console/web parity checks,
+but no full win-rate benchmark yet; earlier reports measure v1/v2 only.
+
+## Brooklyn v2 — partnership bidding convention
 
 V1 is unchanged; V2 inherits its exact card play. Every initial entry or
 new-suit proposal needs at least three trumps including J or 9 AND either
