@@ -22,6 +22,11 @@ Metrics:
 - Bid margin is earned trick points + dix de der + belote, minus the numeric
   bid. It excludes awarded contract/coinche bonuses. Calibration is reported
   both with and without capot deals; failed contracts are never omitted.
+  **Capots are included in game wins, taking, contract success and scores.**
+  Only the separate `margin_no_capot` view excludes capot deals, since their
+  special dix-de-der bonus inflates the ordinary bid cushion. `margin_all`
+  retains capots achieved under numeric contracts. An explicit Capot bid has
+  no numeric bid to subtract, but still counts in every outcome rate.
 - Opening diagnostics describe the original opener's trump count and J/9
   holding in its team's final suit episode, not necessarily the final bidder.
 - Trump-drawing opportunities are actual attacking lead decisions with both

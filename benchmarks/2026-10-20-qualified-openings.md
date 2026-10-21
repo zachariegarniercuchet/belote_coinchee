@@ -1,5 +1,9 @@
 # Brooklyn v2 qualified openings — benchmark, 20 October 2026
 
+Frozen before the later shared Brooklyn ace-preservation/partner-feeding fix.
+The results below include capots in wins, taking and contract success; only
+the explicitly labelled ordinary-deal margin table excludes capot deals.
+
 The latest amendment makes accepted contracts safer, but takes far fewer
 contracts and does not improve observed game wins. This is not a card-play
 change: v1 and v2 still share the exact same playing policy.
