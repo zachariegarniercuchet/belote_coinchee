@@ -113,9 +113,11 @@ coinche/surcoinche remain inherited. V1/v2 policies and the default bot stay
 unchanged. Author David; same Brooklyn names and no portraits yet.
 
 This hybrid has representative auction and seeded console/web parity checks,
-plus eight short mixed-bot smoke games against de Belote v2/v3, but no full
-win-rate benchmark yet; earlier reports measure v1/v2 only. The benchmark
-runner accepts `--brooklyn brooklyn_v3` for a dedicated comparison.
+plus a [200-game benchmark](../../benchmarks/2026-10-20-hybrid.md): 42/100 wins
+against each de Belote v2/v3, taking 51.7%, making 68.0%/70.1% of contracts.
+It beats v2's saved results but trails v1 on this sample; mean bids around
+112–113 suggest excessive raising, not a demonstrated upgrade over v1.
+The benchmark runner accepts `--brooklyn brooklyn_v3` for this comparison.
 
 ## Brooklyn v2 — partnership bidding convention
 
