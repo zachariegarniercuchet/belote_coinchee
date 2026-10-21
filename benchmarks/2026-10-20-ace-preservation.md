@@ -1,5 +1,9 @@
 # Brooklyn ace-preservation fix — benchmark, 20 October 2026
 
+Historical snapshot: this run predates risk-aware winning-card selection and
+removal of the last-seat economy exception. Its results measure the frozen
+revision below, not those newer playing changes.
+
 After the shared partner-feeding correction, Brooklyn v2 wins more games on
 this sample and makes about 78% of its contracts, but still declares only
 about 32% of played deals. V1 takes about 50% and remains ahead in these

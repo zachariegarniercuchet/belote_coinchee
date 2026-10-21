@@ -157,10 +157,28 @@ class BrooklynTests(unittest.TestCase):
                           list(zip([1, 2, 3], cards("D_COEUR", "7_COEUR", "8_COEUR")))]:
                 trick = TrickState(leader=plays[0][0], atout=Suit.PIQUE, plays=plays)
                 self.assertEqual(bot.choose_card(hand, trick, trick.legal_cards_for(hand)), hand[0])
-            # Economy is allowed ONLY in attack, last to play, with enemy trumps out.
+            # Last seat still cashes the highest winner with all enemy trumps out.
             bot.played_by_suit[Suit.PIQUE] = set(Rank) - {Rank.SEPT}
             self.assertEqual(bot.choose_card(hand, trick, trick.legal_cards_for(hand)),
-                             cards("R_COEUR" if team == 0 else "A_COEUR")[0])
+                             cards("A_COEUR")[0])
+
+        for bot_class in (BrooklynBot, BrooklynBotV2):
+            for team in (0, 1):
+                for last, ace_out, expected in [
+                    (False, False, "R_COEUR"),
+                    (False, True, "10_COEUR"),
+                    (True, False, "10_COEUR"),
+                    (True, True, "10_COEUR"),
+                ]:
+                    taker = bot_class(0)
+                    taker.notify_contract(contract(team))
+                    hand = cards("10_COEUR", "R_COEUR", "7_PIQUE")
+                    if ace_out:
+                        taker.played_by_suit[Suit.COEUR].add(Rank.AS)
+                    plays = (list(zip([1, 2, 3], cards("D_COEUR", "7_COEUR", "8_COEUR"))) if last
+                             else list(zip([2, 3], cards("7_COEUR", "D_COEUR"))))
+                    trick = TrickState(leader=plays[0][0], atout=Suit.PIQUE, plays=plays)
+                    self.assertEqual(taker.choose_card(hand, trick, trick.legal_cards_for(hand)), cards(expected)[0])
 
         bot.notify_contract(contract(1))  # Defence cashes side aces, not a trump hunt.
         hand = cards("V_PIQUE", "9_PIQUE", "A_COEUR", "R_COEUR")

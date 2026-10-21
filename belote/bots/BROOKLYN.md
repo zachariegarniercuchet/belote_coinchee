@@ -8,9 +8,13 @@ Monte Carlo search or changes to the existing bots/default bot.
 - Both attacking partners draw enemy trumps: jack first, then a master nine
   (or the next master); otherwise lead small. Do not sacrifice the nine under
   an unseen jack. Stop when public card counts/voids prove opponents are out.
-- Cash valuable winning cards in attack and defence, rather than automatically
-  choosing the cheapest winner. An unknown void is not a guaranteed cut, but
-  a known impending cut is a reason not to throw away an ace unnecessarily.
+- Before last seat, cash the highest-point reasonably safe winner; otherwise
+  use the weakest card that currently wins (K before 10 with A unaccounted for).
+  In last seat, cash the highest-point winner, even with enemy trumps gone.
+  This applies in attack and defence to both versions. Safety uses public
+  higher-card counts and known cutting threats, not hidden hands: an unknown
+  void is not treated as a guaranteed cut. Duck a known impending cut when a
+  losing legal alternative avoids wasting a winner.
 - Feed a reasonably safe winning partner with points likely to be lost: loose
   tens and unmastered honours, favouring singletons on equal value and cards
   below an ace rather than sacrificing that ace. Preserve masters if a cheap
@@ -20,8 +24,6 @@ Monte Carlo search or changes to the existing bots/default bot.
   enemy trumps. Being late alone is not enough. Legal forced/all-ace hands
   remain playable; an endangered ace is donated only onto a safe partner.
   Discard cheaply when unable to win.
-- Exception: when attacking, last to play, with opponents known to have no
-  trumps, a cheaper winner may preserve a future ace.
 - Following a side suit does not prove a lack of trumps; neither does a
   discard on a winning partner or a refusal to make an impossible overcut.
 
@@ -154,6 +156,8 @@ bidding 10–20 below the points actually earned. Measure first; tune later.
 
 For the latest available benchmark, including the shared ace-feeding fix, see
 [the ace-preservation benchmark](../../benchmarks/2026-10-20-ace-preservation.md).
+It predates the risk-aware winning-card selection above and removal of the
+last-seat economy exception; these results do not measure that newer change.
 The older prototype's measurements below are retained for comparison only.
 
 Policy frozen before running: `a01a62b`. Corrected web engine (`GameSession` /

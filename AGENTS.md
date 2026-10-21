@@ -205,12 +205,16 @@ et `spark`/`spark_v1` à `spark_v3` de Belote v0 à v3 (aristos).
 Les bots historiques ont Zach pour auteur ; la famille Brooklyn (`brooklyn_v1`)
 est de David (Miles, Nora, Eli, Maya). Brooklyn hérite des enchères de Spark,
 mais son jeu de carte est indépendant : chasse à l'atout en attaque, points
-encaissés plutôt que plus petit gagnant, soutien au partenaire. Ne pas modifier
+encaissés quand le pli paraît sûr, soutien au partenaire. Ne pas modifier
 les versions existantes ni le bot par défaut en ajustant cette famille.
 Ses portraits ne sont pas encore définis : quatre `None` dans `avatars`,
 images masquées par le frontend. Les étoiles restent purement indicatives.
 Le jeu de carte partagé Brooklyn v1/v2 charge le partenaire avec les points
 susceptibles d'être perdus, pas simplement la carte de plus grande valeur.
+Pour prendre soi-même : plus gros gagnant en dernière position ; avant cela,
+plus gros gagnant jugé sûr sur informations publiques, sinon plus petit gagnant
+actuel (R avant 10 si l'as n'est pas sorti). Garder la protection contre une
+coupe adverse connue ; cette estimation n'utilise jamais les mains cachées.
 Garder les as hors atout par défaut ; exceptions : A–10 en main, ou as à
 sauver dans les deux dernières cartes face à un risque de coupe adverse étayé
 par les informations publiques. Préférer les dix lâches et honneurs non maîtres,

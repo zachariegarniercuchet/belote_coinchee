@@ -183,21 +183,22 @@ class BrooklynBot(SparkBot):
                 return feed
 
         if winning:
+            if len(trick.plays) == 3:
+                # Last seat: no opponent can overtake, even with trumps gone.
+                return max(winning, key=lambda c: (c.points(atout), -self._strength(c, atout)))
             safe = [c for c in winning if self._reasonably_safe(hand, trick, c)]
-            if (self.is_attacking and len(trick.plays) == 3
-                    and not self._opponents_have_trumps(hand, trick)):
-                # Rare economy exception: last to play, no enemy trumps remain.
-                return min(winning, key=lambda c: (c.points(atout), -self._strength(c, atout)))
-            if not safe:
-                # Do not cash an ace into a KNOWN impending cut when we can duck.
-                voids = self._known_voids(trick)
-                later = [(self.player_id + n) % 4 for n in range(1, 4 - len(trick.plays))]
-                cut_risk = any(team_of(p) != team_of(self.player_id)
-                               and trick.plays[0][1].suit in voids[p]
-                               and atout not in voids[p] for p in later)
-                losers = [c for c in legal_cards if c not in winning]
-                if cut_risk and self._opponents_have_trumps(hand, trick) and losers:
-                    return self._discard(hand, trick, losers)
-            # Point-first, not bridge-style cheapest winner (in attack AND defence).
-            return max(safe or winning, key=lambda c: (c.points(atout), -self._strength(c, atout)))
+            if safe:
+                return max(safe, key=lambda c: (c.points(atout), -self._strength(c, atout)))
+            # Do not cash an ace into a KNOWN impending cut when we can duck.
+            voids = self._known_voids(trick)
+            later = [(self.player_id + n) % 4 for n in range(1, 4 - len(trick.plays))]
+            cut_risk = any(team_of(p) != team_of(self.player_id)
+                           and trick.plays[0][1].suit in voids[p]
+                           and atout not in voids[p] for p in later)
+            losers = [c for c in legal_cards if c not in winning]
+            if cut_risk and self._opponents_have_trumps(hand, trick) and losers:
+                return self._discard(hand, trick, losers)
+            # No secure winner: risk the weakest card that currently wins.
+            # E.g. third seat, K/10 versus Q with A unseen -> K, not 10.
+            return max(winning, key=lambda c: self._strength(c, atout))
         return self._discard(hand, trick, legal_cards)
