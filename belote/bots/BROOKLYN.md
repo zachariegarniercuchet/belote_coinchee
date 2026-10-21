@@ -154,10 +154,9 @@ bidding 10–20 below the points actually earned. Measure first; tune later.
 
 ### First v2 comparison — 20 October 2026
 
-For the latest available benchmark, including the shared ace-feeding fix, see
-[the ace-preservation benchmark](../../benchmarks/2026-10-20-ace-preservation.md).
-It predates the risk-aware winning-card selection above and removal of the
-last-seat economy exception; these results do not measure that newer change.
+For the latest available benchmark, including the shared ace-feeding fix,
+risk-aware winning-card selection and removal of last-seat economy, see
+[the risk-aware winner benchmark](../../benchmarks/2026-10-20-risk-aware-winners.md).
 The older prototype's measurements below are retained for comparison only.
 
 Policy frozen before running: `a01a62b`. Corrected web engine (`GameSession` /

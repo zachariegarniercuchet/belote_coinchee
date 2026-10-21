@@ -50,6 +50,8 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [After risk-aware winning-card selection](2026-10-20-risk-aware-winners.md):
+  both Brooklyn versions rerun at `7fc077f`, with paired before/after results.
 - [After the shared ace-preservation fix](2026-10-20-ace-preservation.md):
   both Brooklyn versions rerun at `1fea8bb`, including capots in outcome rates.
 - [Qualified openings and suit switches](2026-10-20-qualified-openings.md):
