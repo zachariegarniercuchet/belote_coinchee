@@ -129,7 +129,10 @@ Card play stays shared except that v3 no longer hunts with its last trump
 while a side-suit lead is available (forced trump plays remain legal).
 The [original hybrid benchmark](../../benchmarks/2026-10-20-hybrid.md) predates
 both this evaluator and last-trump change; its 42% win rates do not measure
-the new policy. Representative auctions and seeded console/web parity are
+the new policy. The [recoverable-card benchmark](../../benchmarks/2026-10-21-recoverable.md)
+at `75720f0` gives 46%/42% wins, 39.7%/39.2% taking and 85.2%/83.9% contract
+success against de Belote v2/v3: safer but more selective, not a demonstrated
+overall win improvement. Representative auctions and seeded console/web parity are
 checked in the existing three test functions. Run with `--brooklyn brooklyn_v3`.
 
 ## Brooklyn v2 — partnership bidding convention

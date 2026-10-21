@@ -98,7 +98,7 @@ class BrooklynBotV3(BrooklynBotV2):
     @staticmethod
     def _partner_support(hand, suit):
         ranks = {c.rank for c in hand if c.suit == suit}
-        # V1 can open without J/9, so BOTH honours may be new information.
+        # Long trump suits can open without J/9: both may be new information.
         honours = len(ranks & {Rank.VALET, Rank.NEUF})
         aces = sum(c.rank == Rank.AS and c.suit != suit for c in hand)
         belote = 20 if {Rank.ROI, Rank.DAME} <= ranks else 0

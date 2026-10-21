@@ -55,6 +55,8 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [Brooklyn v3 recoverable cards](2026-10-21-recoverable.md): revised evaluator
+  and last-trump preservation at `75720f0`, 200 games and saved paired baselines.
 - [Brooklyn v3 hybrid](2026-10-20-hybrid.md): v3 at `7b3c7d2` versus both
   de Belote opponents, paired with unchanged saved v1/v2 baselines.
 - [After risk-aware winning-card selection](2026-10-20-risk-aware-winners.md):
