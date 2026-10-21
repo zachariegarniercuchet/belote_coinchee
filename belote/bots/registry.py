@@ -146,7 +146,7 @@ BOT_REGISTRY: dict[str, dict] = {
         "avatars": [None, None, None, None],
         "version": "v3",
         "author": "David",
-        "description": "Ouvertures évaluées comme v1 ; soutien du partenaire : +10 par valet/neuf d'atout et as hors atout, +20 pour la belote, comptés une fois. Jeu de carte Brooklyn.",
+        "description": "Évalue les cartes récupérables après sacrifices, contrôle de l'atout et entrées ; ouvre dès 80. Soutien : +10 par valet/neuf et as hors atout, +20 de belote, une seule fois. Ne chasse pas avec son dernier atout.",
         "level": 3,
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot_v3(seat, name),

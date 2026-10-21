@@ -125,20 +125,32 @@ class BrooklynTests(unittest.TestCase):
         self.assertEqual(partner.partner_raise_points, 0)
         self.assertEqual(partner.partner_raises, [])
 
-        # Hybrid v3 opens on v1's valuation, including a hand v2 rejects.
-        # Then each partner's J/9, side aces and two-trump belote count once.
+        # Recoverable-card v3 rejects unsupported strength, then each partner's
+        # J/9, side aces and two-trump belote count once.
+        risky = cards("9_PIQUE", "A_PIQUE", "10_PIQUE", "10_COEUR", "R_COEUR", "D_COEUR", "R_TREFLE", "D_TREFLE")
+        value, detail = BrooklynBotV3(0)._recoverable_value(risky, Suit.PIQUE)
+        self.assertEqual(detail["suits"]["COEUR"]["survivors"], ["10", "R"])
+        self.assertEqual(detail["suits"]["TREFLE"]["survivors"], [])
+        self.assertEqual(detail["cut_credit"], 0)
+        self.assertEqual(value, 26.1)
+        state = BiddingState(dealer=1)
+        self.assertEqual(BrooklynBotV3(0).choose_bid(risky, state, state.legal_actions()), BidAction.passe())
+        # A missing ten does not discount an immediately cashable side ace.
+        _, detail = BrooklynBotV3(0)._recoverable_value(
+            cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "A_COEUR", "R_COEUR", "7_TREFLE", "8_TREFLE", "7_CARREAU"), Suit.PIQUE)
+        self.assertEqual(detail["suits"]["COEUR"]["credited_points"], 9.9)
         for opener_hand, support_hand, expected in [
-            (cards("A_PIQUE", "10_PIQUE", "R_PIQUE", "A_COEUR", "R_COEUR", "A_TREFLE", "R_TREFLE", "A_CARREAU"),
-             cards("V_PIQUE", "9_PIQUE", "D_PIQUE", "7_PIQUE", "7_COEUR", "8_COEUR", "7_TREFLE", "7_CARREAU"),
-             [90, 110]),
+            (cards("V_PIQUE", "A_PIQUE", "7_PIQUE", "A_COEUR", "10_COEUR", "A_TREFLE", "7_TREFLE", "7_CARREAU"),
+             cards("9_PIQUE", "8_PIQUE", "A_CARREAU", "8_CARREAU", "R_COEUR", "D_COEUR", "R_TREFLE", "D_TREFLE"),
+             [100, 120]),
             (cards("V_PIQUE", "9_PIQUE", "A_PIQUE", "7_PIQUE", "A_COEUR", "R_COEUR", "10_TREFLE", "7_CARREAU"),
              cards("R_PIQUE", "D_PIQUE", "A_TREFLE", "7_TREFLE", "A_CARREAU", "8_CARREAU", "7_COEUR", "8_COEUR"),
-             [120, 160]),
+             [100, 140]),
         ]:
             state = BiddingState(dealer=1)
             bots = {seat: BrooklynBotV3(seat) for seat in (0, 2)}
             hands = {0: opener_hand, 2: support_hand}
-            self.assertEqual(BrooklynBot(0).choose_bid(opener_hand, state, state.legal_actions()),
+            self.assertEqual(bots[0].choose_bid(opener_hand, state, state.legal_actions()),
                              BidAction.enchere(expected[0], Suit.PIQUE))
             while not state.finished:
                 seat = state.current_player
@@ -183,6 +195,12 @@ class BrooklynTests(unittest.TestCase):
         # A singleton trump is not automatically hoarded by the attacking team.
         short = cards("7_PIQUE", "A_COEUR")
         self.assertEqual(bot.choose_card(short, lead, short), short[0])
+        conservative = BrooklynBotV3(0)
+        conservative.notify_contract(contract())
+        for trump in ("7_PIQUE", "V_PIQUE"):
+            short = cards(trump, "A_COEUR")
+            self.assertEqual(conservative.choose_card(short, lead, short), short[1])
+        self.assertEqual(conservative.choose_card(cards("V_PIQUE"), lead, cards("V_PIQUE")), cards("V_PIQUE")[0])
 
         for team in (0, 1):
             bot.notify_contract(contract(team))

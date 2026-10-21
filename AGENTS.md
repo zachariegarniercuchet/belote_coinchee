@@ -247,12 +247,21 @@ enchère légale supérieure ; à valeur égale, préférer le soutien de la cou
 actuelle. Ne pas transférer les crédits du partenaire d'une couleur à l'autre ;
 l'épisode de soutien repart à zéro. Mesurer prise, réussite et marge du contrat
 avant de calibrer ces conventions ; voir `BROOKLYN.md`.
-Brooklyn v3 (`brooklyn_v3`) combine la valorisation individuelle de v1
-(`_evaluate` / `_score_to_bid`, ouvertures 90–120) et la comptabilité publique
-de soutien de v2. Pas de filtre J/9 + as/dix seconds propre à v2. Le partenaire
+Brooklyn v3 (`brooklyn_v3`) utilise maintenant `_recoverable_value`, pas la
+valorisation v1 : sacrifier les petites cartes aux honneurs absents, compter
+les survivantes avec décote de contrôle/entrée. Hors atout, 10/R/D récupère
+10/R après sacrifice de D ; R/D ne récupère rien. Un as immédiatement maître
+n'est pas décoté d'établissement à cause d'une carte inférieure perdante.
+Au moins trois atouts, avec J ou 9 si seulement trois. Seuils initiaux figés
+avant benchmark : 30/40/50/60/70 points estimés donnent 80/90/100/110/120.
+Ce ne sont ni des probabilités calibrées ni les anciens scores Spark.
+Belote propre +20 une fois. Coupe : +3 par couleur vide, limitée aux atouts
+restant après réserve de chasse, avec J ; aucun crédit à trois/quatre atouts.
+V3 ne chasse pas avec son dernier atout s'il peut entamer une couleur annexe.
+V1/v2 restent inchangés. V3 garde la comptabilité publique de soutien de v2. Le partenaire
 ajoute +10 par J/9 d'atout détenu, +10 par as hors atout et +20 pour la belote
 même avec deux atouts. L'as d'atout ne compte pas en soutien. Les bonus propres
-de l'ouvreur sont déjà inclus dans sa valorisation v1 : ne pas les ajouter
+de l'ouvreur sont déjà inclus dans sa valorisation : ne pas les ajouter
 encore à l'entrée/au rebid. Pas de nouveaux crédits distribution/dix seconds.
 Les crédits de soutien ne se dépensent qu'une fois, restent attachés à leur
 couleur, et les versions v1/v2 ainsi que le bot par défaut restent inchangés.

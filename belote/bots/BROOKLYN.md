@@ -92,11 +92,24 @@ default selection were not modified; they now receive their missing inputs.
 
 ## Brooklyn v3 — hybrid bidding
 
-V3 keeps the shared Brooklyn card play and uses v1's individual hand evaluation
-and bid mapping for each possible entry suit (90–120). Unlike v2, it does not
-require J/9 plus a side ace or two dix seconds. This reuses v1's valuation,
-not every detail of its suit-selection and enemy-overcall restrictions: v3
-uses v2's legal-candidate/suit-switch machinery.
+V3 now uses recoverable-card estimates rather than v1's face-point/strength
+bonuses. For each absent higher card, sacrifice the weakest available lower
+card before valuing survivors: side 10/K/Q retains 10/K, while K/Q retains
+nothing. Credit survivors' actual face points, discounted for trump control;
+established side winners additionally get a 0.7 entry factor, but an already
+master ace is not discounted merely because a lower card is lost.
+
+Trump confidence: 0.95 with J+9, 0.85 with J, 0.75 with 9, 0.55 with neither.
+Side confidence: 0.90 with J+9, 0.85 with J and four-plus trumps, 0.80 with J,
+0.75 with 9, 0.65 with neither. Own belote adds 20 once. Voids add only 3 per
+possible cut, limited to spare trumps after reserving max(3, 8 - trump count)
+for drawing, and only with J. Three/four-trump voids therefore add nothing.
+These are explicit initial heuristics, not guaranteed points or fitted odds.
+
+At least three trumps are needed; exactly three require J or 9. Initial frozen
+thresholds 30/40/50/60/70 map to 80/90/100/110/120. These use a NEW score scale:
+retained own-card points are not the team's eventual trick score. No hidden
+hands enter the estimate. V2's legal-candidate/suit-switch machinery remains.
 
 The partner supports the team's suit with +10 for EACH trump J/9 held,
 +10 per side ace (never the trump ace), and +20 for trump K+Q, even with only
@@ -104,20 +117,20 @@ two trumps. Both J and 9 can count because a v1-valued opening need not hold
 either. Contributions are spent once, measured from the last TEAM bid, not
 an enemy overcall. Old-suit support does not transfer across suit switches.
 
-The opener's own aces, belote and shape already affect v1's evaluation. V3
+The opener's own aces and belote already affect its recovery estimate. V3
 does not add v2's entry/rebid bonuses on top, avoiding double counting; its
 later ceiling is its own original valuation plus public partner raises.
-In particular, the exact +20 belote support rule is for the partner, while an
-opener's belote retains v1's evaluation weight. Numeric bids only, no Capot;
-coinche/surcoinche remain inherited. V1/v2 policies and the default bot stay
+Belote counts as +20 for either opener or partner, never twice for one hand.
+Numeric bids only, no Capot; coinche/surcoinche keep their old independent
+Spark evaluator and thresholds. V1/v2 policies and the default bot stay
 unchanged. Author David; same Brooklyn names and no portraits yet.
 
-This hybrid has representative auction and seeded console/web parity checks,
-plus a [200-game benchmark](../../benchmarks/2026-10-20-hybrid.md): 42/100 wins
-against each de Belote v2/v3, taking 51.7%, making 68.0%/70.1% of contracts.
-It beats v2's saved results but trails v1 on this sample; mean bids around
-112–113 suggest excessive raising, not a demonstrated upgrade over v1.
-The benchmark runner accepts `--brooklyn brooklyn_v3` for this comparison.
+Card play stays shared except that v3 no longer hunts with its last trump
+while a side-suit lead is available (forced trump plays remain legal).
+The [original hybrid benchmark](../../benchmarks/2026-10-20-hybrid.md) predates
+both this evaluator and last-trump change; its 42% win rates do not measure
+the new policy. Representative auctions and seeded console/web parity are
+checked in the existing three test functions. Run with `--brooklyn brooklyn_v3`.
 
 ## Brooklyn v2 — partnership bidding convention
 
