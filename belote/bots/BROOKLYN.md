@@ -20,14 +20,14 @@ CUT is now isolated in v4 below, not retrofitted into the old versions.
 - For non-trump winners, before last seat cash the highest-point reasonably safe winner; otherwise
   use the weakest card that currently wins (K before 10 with A unaccounted for).
   In last seat, cash the highest-point non-trump winner, even with enemy trumps gone.
-  This applies in attack and defence to all three versions. Safety uses public
+  This applies in attack and defence to all four versions. Safety uses public
   higher-card counts and known cutting threats, not hidden hands: an unknown
   void is not treated as a guaranteed cut. Duck a known impending cut when a
   losing legal alternative avoids wasting a winner.
 - Feed a reasonably safe winning partner with points likely to be lost: loose
   tens and unmastered honours, favouring singletons on equal value and cards
   below an ace rather than sacrificing that ace. Preserve masters if a cheap
-  discard is available. This shared policy applies to both Brooklyn versions.
+  discard is available. This shared policy applies to all Brooklyn versions.
 - Keep side aces when feeding, except with A–10 in hand, or with at most two
   cards left and a publicly known enemy void in the ace's suit plus possible
   enemy trumps. Being late alone is not enough. Legal forced/all-ace hands
@@ -117,6 +117,10 @@ Do not publish a placeholder bot or claim a v5 benchmark.
 The existing three journey tests cover all four versions and full seeded
 console/web parity. No frontend code changes are needed: the catalogue exposes
 v4 through the same lazy factory. No browser verification was performed.
+The [400-game comparison](../../benchmarks/2026-10-26-v4.md) at `09e0bf9`
+gives v4 49%/43% wins versus de Belote v2/v3, compared with v3's 46%/46%.
+V3's rerun exactly matches its previous outcomes and metrics. No clear overall
+v4 win improvement is established; v1/v2/v3 runtime modules remain frozen.
 
 ## Brooklyn v3 — hybrid bidding
 

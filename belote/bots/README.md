@@ -9,6 +9,8 @@
 | `spark_v3.py`  | `SparkBotV3` — + finales exactes et mondes contraints (le plus fort) |
 | `brooklyn.py`  | `BrooklynBot` — règles de David : chasse à l'atout et encaissement des points |
 | `brooklyn_v2.py` | `BrooklynBotV2` — enchères de partenariat 80/90, crédits et mémoire des soutiens |
+| `brooklyn_v3.py` | `BrooklynBotV3` — estimation des cartes récupérables et retour d'atout au partenaire |
+| `brooklyn_v4.py` | `BrooklynBotV4` — v3, plus gros gagnant sur atout demandé et petite coupe en attaque |
 | `registry.py`  | `BOT_REGISTRY` : le catalogue officiel + fabriques                   |
 | `weights/`     | **n'existe pas encore** — créé le jour où un bot a des poids (voir §3) |
 
@@ -69,7 +71,7 @@ un niveau estimé, pas un classement mesuré. Les bots historiques sont de Zach 
 l'ancienne entrée `spark` est présentée comme de Belote v0, sans modifier son code.
 Les familles actuelles sont West (cowboys, `random`), Bohème (bonnets,
 `heuristic`), de Belote (aristos, `spark` et `spark_v1` à `spark_v3`) et
-Brooklyn (`brooklyn_v1` et `brooklyn_v2`, auteur David, Miles/Nora/Eli/Maya).
+Brooklyn (`brooklyn_v1` à `brooklyn_v4`, auteur David, Miles/Nora/Eli/Maya).
 Les noms des personnages de Belote et Brooklyn n'affichent pas de suffixe de version
 (« Charles de Belote ») ; le sélecteur et les métadonnées distinguent toujours
 les moteurs. Les noms des autres familles restent inchangés.

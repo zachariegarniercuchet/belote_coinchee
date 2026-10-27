@@ -268,6 +268,16 @@ class BrooklynTests(unittest.TestCase):
             self.assertEqual(leader_bot.choose_card(lead_hand, lead, lead_hand), cards("9_PIQUE")[0])
             # V4 follows with the strongest winner; old versions stay frozen.
             for team in (0, 1):
+                ace_bot = bot_class(0)
+                ace_bot.notify_contract(contract(team))
+                ace_hand = cards("A_COEUR", "R_COEUR", "7_PIQUE")
+                for plays, expected in (
+                    ([(3, cards("D_COEUR")[0])], "A_COEUR"),
+                    (list(zip([2, 3], cards("10_COEUR", "7_COEUR"))), "R_COEUR"),
+                ):
+                    ace_trick = TrickState(leader=plays[0][0], atout=Suit.PIQUE, plays=plays)
+                    self.assertEqual(ace_bot.choose_card(ace_hand, ace_trick, ace_trick.legal_cards_for(ace_hand)),
+                                     cards(expected)[0])
                 for plays in (
                     [(3, cards("D_PIQUE")[0])],
                     list(zip([2, 3], cards("D_PIQUE", "7_PIQUE"))),

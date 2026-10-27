@@ -57,6 +57,8 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [Versioned Brooklyn v4](2026-10-26-v4.md): 400 games at `09e0bf9`, newly
+  rerunning v3 as an unchanged control; defensive v5 remains deferred.
 - [V3 first trump lead and return to partner](2026-10-26-first-trump.md):
   v3 at `feb956d`, 200 games; v1/v2 remain unchanged saved baselines.
 - [Weakest winning trump in attack](2026-10-26-trump-control.md): all three
