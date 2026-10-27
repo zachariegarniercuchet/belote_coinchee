@@ -10,7 +10,7 @@
 | `brooklyn.py`  | `BrooklynBot` — règles de David : chasse à l'atout et encaissement des points |
 | `brooklyn_v2.py` | `BrooklynBotV2` — enchères de partenariat 80/90, crédits et mémoire des soutiens |
 | `brooklyn_v3.py` | `BrooklynBotV3` — estimation des cartes récupérables et retour d'atout au partenaire |
-| `brooklyn_v4.py` | `BrooklynBotV4` — v3, plus gros gagnant sur atout demandé et petite coupe en attaque |
+| `brooklyn_v4.py` | `BrooklynBotV4` — enchères v3, gros gagnant à l'atout, petite coupe en attaque, dernier atout gardé après la chasse |
 | `registry.py`  | `BOT_REGISTRY` : le catalogue officiel + fabriques                   |
 | `weights/`     | **n'existe pas encore** — créé le jour où un bot a des poids (voir §3) |
 

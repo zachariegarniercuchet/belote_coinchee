@@ -158,7 +158,7 @@ BOT_REGISTRY: dict[str, dict] = {
         "avatars": [None, None, None, None],
         "version": "v4",
         "author": "David",
-        "description": "Enchères et entames de v3. En attaque : plus gros gagnant sur atout demandé, plus petit gagnant en coupe. Défense inchangée.",
+        "description": "Enchères de v3. Lance l'atout même singleton, puis garde le dernier après un tour d'atout. En attaque : gros gagnant sur atout demandé, petite coupe. Défense inchangée.",
         "level": 3,
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot_v4(seat, name),

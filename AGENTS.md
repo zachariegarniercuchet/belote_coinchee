@@ -233,14 +233,21 @@ susceptibles d'être perdus, pas simplement la carte de plus grande valeur.
 V1/v2/v3 gardent le jeu publié : en attaque, plus petit atout légal gagnant
 pour prendre, sur atout demandé comme en coupe. Ne pas les modifier pour
 tester les variantes suivantes.
-Brooklyn v4 (`brooklyn_v4`) hérite des enchères et entames de v3 ; seule la
-prise en fournissant l'atout change. En attaque, distinguer les trois cas :
+Brooklyn v4 (`brooklyn_v4`) hérite des enchères de v3, distingue la prise
+à l'atout de la coupe et protège le dernier atout après le premier tour.
+En attaque, distinguer les trois cas :
 à l'entame, garder la chasse existante (J, sinon atout maître, sinon petit ;
 ne pas sacrifier le 9 sous un J inconnu s'il reste un atout inférieur).
 Sur atout demandé, prendre du plus gros atout légal gagnant ; en coupe ou
 surcoupe d'une couleur annexe, du plus petit atout légal gagnant, même en
 dernier (R avant J si R suffit). La défense reste inchangée. Conserver
 la priorité de charger un partenaire déjà maître quand cela reste légal.
+Dans v4, distinguer le seul atout avant le premier tour d'atout et le dernier
+atout après ce tour : avant, chasser normalement ; après, à l'entame, garder
+le dernier atout si une couleur annexe est jouable. Le fait que le partenaire
+ait ouvert ne doit JAMAIS court-circuiter cette conservation après le premier
+tour. Fourniture, coupe obligatoire et surcoupe restent imposées par les
+cartes légales. Le marqueur est public et réinitialisé à chaque donne.
 Hors atout, pour prendre soi-même : plus gros gagnant en dernière position ; avant cela,
 plus gros gagnant jugé sûr sur informations publiques, sinon plus petit gagnant
 actuel (R avant 10 si l'as n'est pas sorti). Garder la protection contre une

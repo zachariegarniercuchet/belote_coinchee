@@ -101,9 +101,13 @@ default selection were not modified; they now receive their missing inputs.
 
 ## Brooklyn v4 — distinguish trump follow from cut
 
-V4 inherits v3's recoverable-card bidding, public partnership support, trump
-lead policy and first-trump/partner-return correction. Only following a trump
-lead while attacking changes: take with the strongest legal winner. When
+V4 inherits v3's recoverable-card bidding and public partnership support.
+Before the first trump lead it may lead its singleton to start drawing.
+AFTER a trump round, it keeps its last trump on its own lead when a side suit
+is available, EVEN when partner opened. The partner-return exception must not
+override this. Forced following/cutting/overcutting remains legal and required;
+the public first-trump marker resets each deal. No late-deal threshold.
+When following a trump lead while attacking, take the strongest legal winner. When
 cutting/overcutting a side suit in attack, keep the smallest sufficient legal
 trump. Do not apply the following rule to leads: lead J first, a master next,
 otherwise small (do not sacrifice 9 under an unseen J if a lower trump exists).
@@ -121,6 +125,10 @@ The [400-game comparison](../../benchmarks/2026-10-26-v4.md) at `09e0bf9`
 gives v4 49%/43% wins versus de Belote v2/v3, compared with v3's 46%/46%.
 V3's rerun exactly matches its previous outcomes and metrics. No clear overall
 v4 win improvement is established; v1/v2/v3 runtime modules remain frozen.
+That snapshot predates the later fix retaining the last trump even when
+partner opened; the new fix has journey checks, not a fresh full benchmark.
+Eight short mixed-bot control games also completed; this is an integration
+check, not a new win-rate estimate. No browser verification was performed.
 
 ## Brooklyn v3 — hybrid bidding
 
