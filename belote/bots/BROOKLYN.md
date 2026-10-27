@@ -6,22 +6,17 @@ Monte Carlo search or changes to the existing bots/default bot.
 ## Playing style
 
 Latest shared-policy benchmark: [weakest winning trump in attack](../../benchmarks/2026-10-26-trump-control.md),
-all three versions rerun at `8f02342`. That snapshot predates the clarification
-separating strongest trump FOLLOW from cheapest CUT; its results do not measure
-the newly clarified policy. Lead selection and defence are unchanged.
-The clarified scope passes the existing Brooklyn/autoplay/claim suites and
-24 mixed-bot games at target 1000, including v1/v2/v3 versus both opponents.
-That small run is a legality/integration check, not a new win-rate estimate.
-No browser verification was performed.
+all three versions rerun at `8f02342`. V1/v2/v3 retain their published playing
+policies; the clarification separating strongest trump FOLLOW from cheapest
+CUT is now isolated in v4 below, not retrofitted into the old versions.
 
 - Both attacking partners draw enemy trumps: jack first, then a master nine
   (or the next master); otherwise lead small. Do not sacrifice the nine under
   an unseen jack. Stop when public card counts/voids prove opponents are out.
-- When attacking and FOLLOWING trump, take with the strongest legal winner.
-  When CUTTING/OVERCUTTING a side suit, take with the weakest sufficient legal
-  trump, including last: R before J if R suffices. These do NOT change lead
-  selection above. Compulsory overtrumps still apply; feeding a safe winning
-  partner remains higher priority. Defence keeps its previous policy.
+- In v1/v2/v3 attack, take with the weakest sufficient legal trump, whether
+  following trump or cutting. V4 changes following only (see below). Legal
+  compulsory overtrumps and the safe-partner feeding priority remain.
+  Defence keeps its previous policy in all four versions.
 - For non-trump winners, before last seat cash the highest-point reasonably safe winner; otherwise
   use the weakest card that currently wins (K before 10 with A unaccounted for).
   In last seat, cash the highest-point non-trump winner, even with enemy trumps gone.
@@ -103,6 +98,25 @@ v2, v3 on identical hands and bot RNG seeds: 32, 32, 8 and 8 deal pairs
 respectively, all 80 logs identical (including 17 claims and 8 passed-out
 deals). Existing bot strategies and the
 default selection were not modified; they now receive their missing inputs.
+
+## Brooklyn v4 — distinguish trump follow from cut
+
+V4 inherits v3's recoverable-card bidding, public partnership support, trump
+lead policy and first-trump/partner-return correction. Only following a trump
+lead while attacking changes: take with the strongest legal winner. When
+cutting/overcutting a side suit in attack, keep the smallest sufficient legal
+trump. Do not apply the following rule to leads: lead J first, a master next,
+otherwise small (do not sacrifice 9 under an unseen J if a lower trump exists).
+Defence remains unchanged. V1/v2/v3 are byte-for-byte identical to the
+published runtime modules; their metadata and default selection are retained.
+
+The possible context-sensitive defensive-cut version previously called v4
+is now the deferred v5 TODO in AGENTS.md. It is NOT implemented or selectable.
+Do not publish a placeholder bot or claim a v5 benchmark.
+
+The existing three journey tests cover all four versions and full seeded
+console/web parity. No frontend code changes are needed: the catalogue exposes
+v4 through the same lazy factory. No browser verification was performed.
 
 ## Brooklyn v3 — hybrid bidding
 

@@ -199,7 +199,7 @@ def main():
     parser.add_argument("--seed", type=int, default=30000)
     parser.add_argument("--target", type=int, default=1000)
     parser.add_argument("--workers", type=int, default=4)
-    parser.add_argument("--brooklyn", nargs="+", choices=("brooklyn_v1", "brooklyn_v2", "brooklyn_v3"),
+    parser.add_argument("--brooklyn", nargs="+", choices=("brooklyn_v1", "brooklyn_v2", "brooklyn_v3", "brooklyn_v4"),
                         default=("brooklyn_v1", "brooklyn_v2"),
                         help="Brooklyn versions to run; defaults preserve the v1/v2 comparison")
     parser.add_argument("--output", type=Path, help="write full reproducible analysis records as JSON")

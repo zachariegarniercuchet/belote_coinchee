@@ -16,6 +16,8 @@ To include it alongside both baselines, use
 `--brooklyn brooklyn_v1 brooklyn_v2 brooklyn_v3` (600 games). The legacy
 `changes` field still compares v2 minus v1 only when both are present;
 all selected versions have full metric rows and per-game records.
+Use `--brooklyn brooklyn_v3 brooklyn_v4` for a 400-game paired comparison of
+the new v4 with its unchanged v3 control. V5 is a deferred idea, not a bot.
 Progress is printed to stderr; the summary goes to stdout. Optional JSON
 output also contains every game's deal outcomes and lead counts, plus the
 source revision, so reported metrics can be audited.

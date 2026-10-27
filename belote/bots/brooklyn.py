@@ -185,11 +185,9 @@ class BrooklynBot(SparkBot):
         if winning:
             trump_winners = [c for c in winning if c.suit == atout]
             if self.is_attacking and trump_winners:
-                # Following trump: cash the strongest winner. Cutting a side
-                # suit: use only the smallest sufficient trump, preserving J.
-                # Lead selection is separate and unchanged in _draw_trump.
-                order = min if trick.plays[0][1].suit == atout else max
-                return order(trump_winners, key=lambda c: c.atout_strength_index())
+                # Preserve trump control: R takes if R already wins, keeping J
+                # for a later trick. Applies in every seat, including last.
+                return max(trump_winners, key=lambda c: c.atout_strength_index())
             if len(trick.plays) == 3:
                 # Last seat: no opponent can overtake, even with trumps gone.
                 return max(winning, key=lambda c: (c.points(atout), -self._strength(c, atout)))

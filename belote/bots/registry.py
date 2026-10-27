@@ -122,7 +122,7 @@ BOT_REGISTRY: dict[str, dict] = {
         "avatars": [None, None, None, None],
         "version": "v1",
         "author": "David",
-        "description": "Règles de David : chasse en attaque ; sur atout demandé, plus gros gagnant ; en coupe, plus petit gagnant. Enchères héritées de Spark.",
+        "description": "Règles de David : chasse en attaque, prend du plus petit atout gagnant et encaisse les cartes de valeur hors atout. Enchères héritées de Spark.",
         "level": 3,
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot(seat, name),
@@ -150,6 +150,18 @@ BOT_REGISTRY: dict[str, dict] = {
         "level": 3,
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot_v3(seat, name),
+    },
+    "brooklyn_v4": {
+        "label": "Brooklyn v4",
+        "family": "Brooklyn",
+        "theme": "New-Yorkais",
+        "avatars": [None, None, None, None],
+        "version": "v4",
+        "author": "David",
+        "description": "Enchères et entames de v3. En attaque : plus gros gagnant sur atout demandé, plus petit gagnant en coupe. Défense inchangée.",
+        "level": 3,
+        "names": ["Miles", "Nora", "Eli", "Maya"],
+        "factory": lambda seat, name: _brooklyn_bot_v4(seat, name),
     },
 }
 
@@ -199,6 +211,11 @@ def _brooklyn_bot_v2(seat: int, name: str) -> Player:
 def _brooklyn_bot_v3(seat: int, name: str) -> Player:
     from .brooklyn_v3 import BrooklynBotV3
     return BrooklynBotV3(seat, name=name)
+
+
+def _brooklyn_bot_v4(seat: int, name: str) -> Player:
+    from .brooklyn_v4 import BrooklynBotV4
+    return BrooklynBotV4(seat, name=name)
 
 
 # --- API publique ------------------------------------------------------------

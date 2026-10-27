@@ -10,6 +10,7 @@ from belote.bots import create_bot, get_bot_info
 from belote.bots.brooklyn import BrooklynBot
 from belote.bots.brooklyn_v2 import BrooklynBotV2
 from belote.bots.brooklyn_v3 import BrooklynBotV3
+from belote.bots.brooklyn_v4 import BrooklynBotV4
 from belote.cards import Card, Rank, Suit
 from belote.game import Game
 from belote.trick import TrickState, trick_winner
@@ -243,29 +244,29 @@ class BrooklynTests(unittest.TestCase):
             self.assertEqual(bot.choose_card(hand, trick, trick.legal_cards_for(hand)),
                              cards("A_COEUR")[0])
 
-        for bot_class in (BrooklynBot, BrooklynBotV2, BrooklynBotV3):
-            # Following trump is not a cut: Nora takes J, then leads small
-            # from 10/Q while the enemy 9/A remain, preserving the lead rule.
+        for bot_class in (BrooklynBot, BrooklynBotV2, BrooklynBotV3, BrooklynBotV4):
+            # V4 follows trump with J, then leads small from 10/Q. Published
+            # v1/v2/v3 keep their old Q winner, followed by a J lead.
             nora = bot_class(1)
             nora.notify_contract(Contract(player=1, team=1, points=80, suit=Suit.COEUR, is_capot=False))
             nora_hand = cards("A_PIQUE", "V_COEUR", "10_COEUR", "D_COEUR", "R_TREFLE", "9_TREFLE", "10_CARREAU", "V_CARREAU")
             reported = TrickState(leader=2, atout=Suit.COEUR,
                                   plays=list(zip([2, 3, 0], cards("7_COEUR", "8_COEUR", "7_TREFLE"))))
-            jack = nora.choose_card(nora_hand, reported, reported.legal_cards_for(nora_hand))
-            self.assertEqual(jack, cards("V_COEUR")[0])
-            reported.play(1, jack)
-            nora_hand.remove(jack)
+            winner_card = nora.choose_card(nora_hand, reported, reported.legal_cards_for(nora_hand))
+            self.assertEqual(winner_card, cards("V_COEUR" if bot_class is BrooklynBotV4 else "D_COEUR")[0])
+            reported.play(1, winner_card)
+            nora_hand.remove(winner_card)
             nora.notify_trick_result(reported.plays, reported.winner())
             next_trick = TrickState(leader=1, atout=Suit.COEUR)
             self.assertEqual(nora.choose_card(nora_hand, next_trick, next_trick.legal_cards_for(nora_hand)),
-                             cards("D_COEUR")[0])
+                             cards("D_COEUR" if bot_class is BrooklynBotV4 else "V_COEUR")[0])
             leader_bot = bot_class(0)
             leader_bot.notify_contract(contract())
             lead_hand = cards("9_PIQUE", "A_PIQUE", "7_PIQUE", "A_COEUR")
             self.assertEqual(leader_bot.choose_card(lead_hand, lead, lead_hand), cards("7_PIQUE")[0])
             leader_bot.played_by_suit[Suit.PIQUE].add(Rank.VALET)
             self.assertEqual(leader_bot.choose_card(lead_hand, lead, lead_hand), cards("9_PIQUE")[0])
-            # On a trump round, take with the strongest winner in every seat.
+            # V4 follows with the strongest winner; old versions stay frozen.
             for team in (0, 1):
                 for plays in (
                     [(3, cards("D_PIQUE")[0])],
@@ -277,7 +278,7 @@ class BrooklynTests(unittest.TestCase):
                     hand = cards("V_PIQUE", "R_PIQUE", "A_COEUR")
                     trick = TrickState(leader=plays[0][0], atout=Suit.PIQUE, plays=plays)
                     self.assertEqual(taker.choose_card(hand, trick, trick.legal_cards_for(hand)),
-                                     cards("V_PIQUE")[0])
+                                     cards("R_PIQUE" if team == 0 and bot_class is not BrooklynBotV4 else "V_PIQUE")[0])
                 # Cutting differs from following trump. Defence stays unchanged.
                 for plays, attack_card in (
                     ([(3, cards("A_COEUR")[0])], "7_PIQUE"),
@@ -330,7 +331,7 @@ class BrooklynTests(unittest.TestCase):
 
         # Charge likely-lost points, not a future ace, onto partner's trump.
         # A-10 and a publicly endangered late ace are the deliberate exceptions.
-        for bot_class in (BrooklynBot, BrooklynBotV2, BrooklynBotV3):
+        for bot_class in (BrooklynBot, BrooklynBotV2, BrooklynBotV3, BrooklynBotV4):
             for hand, expected, late_cut_risk in [
                 (cards("A_COEUR", "10_TREFLE", "R_CARREAU", "7_CARREAU"), "10_TREFLE", False),
                 (cards("A_COEUR", "R_COEUR", "7_TREFLE"), "R_COEUR", False),
@@ -362,7 +363,7 @@ class BrooklynTests(unittest.TestCase):
         info = get_bot_info("brooklyn_v1")
         self.assertEqual((info["family"], info["author"]), ("Brooklyn", "David"))
         self.assertEqual(len(set(info["names"])), 4)
-        for bot_id, seed in product(("brooklyn_v1", "brooklyn_v2", "brooklyn_v3"), range(4)):
+        for bot_id, seed in product(("brooklyn_v1", "brooklyn_v2", "brooklyn_v3", "brooklyn_v4"), range(4)):
             players = {seat: create_bot(bot_id, seat) for seat in range(4)}
             self.assertTrue(all(isinstance(bot, BrooklynBot) for bot in players.values()))
             game = Game(players, target_score=300, first_dealer=seed, rng=random.Random(seed))

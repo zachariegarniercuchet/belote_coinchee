@@ -31,11 +31,11 @@
   cases only where their risk warrants it. Do this audit later; do not expand
   or reorganize the suite preemptively.
 
-## TODO — Brooklyn v4 defensive play (deferred)
+## TODO — Brooklyn v5 defensive play (deferred)
 
-- Explore a possible Brooklyn v4 defensive cutting policy: preserve trump
+- Explore a possible Brooklyn v5 defensive cutting policy: preserve trump
   control when there is spare length, but cash vulnerable 9/ace points when
-  they are likely to be lost. Specify and benchmark before changing v1/v2/v3;
+  they are likely to be lost. Implement separately, preserving v1/v2/v3/v4;
   do not apply a blanket cheapest-cut rule in defence.
 
 ## TODO — bidding variants (deferred)
@@ -216,9 +216,13 @@ encaissés quand le pli paraît sûr, soutien au partenaire. Ne pas modifier
 les versions existantes ni le bot par défaut en ajustant cette famille.
 Ses portraits ne sont pas encore définis : quatre `None` dans `avatars`,
 images masquées par le frontend. Les étoiles restent purement indicatives.
-Le jeu de carte partagé Brooklyn v1/v2/v3 charge le partenaire avec les points
+Le jeu de carte partagé Brooklyn v1/v2/v3/v4 charge le partenaire avec les points
 susceptibles d'être perdus, pas simplement la carte de plus grande valeur.
-En attaque, distinguer l'entame, la fourniture à l'atout et la coupe :
+V1/v2/v3 gardent le jeu publié : en attaque, plus petit atout légal gagnant
+pour prendre, sur atout demandé comme en coupe. Ne pas les modifier pour
+tester les variantes suivantes.
+Brooklyn v4 (`brooklyn_v4`) hérite des enchères et entames de v3 ; seule la
+prise en fournissant l'atout change. En attaque, distinguer les trois cas :
 à l'entame, garder la chasse existante (J, sinon atout maître, sinon petit ;
 ne pas sacrifier le 9 sous un J inconnu s'il reste un atout inférieur).
 Sur atout demandé, prendre du plus gros atout légal gagnant ; en coupe ou
