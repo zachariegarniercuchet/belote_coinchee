@@ -211,7 +211,10 @@ Ses portraits ne sont pas encore définis : quatre `None` dans `avatars`,
 images masquées par le frontend. Les étoiles restent purement indicatives.
 Le jeu de carte partagé Brooklyn v1/v2/v3 charge le partenaire avec les points
 susceptibles d'être perdus, pas simplement la carte de plus grande valeur.
-Pour prendre soi-même : plus gros gagnant en dernière position ; avant cela,
+En attaque, pour prendre avec un atout : plus petit atout légal gagnant à
+toutes les positions, y compris en dernier (R avant J si R suffit). Conserver
+la priorité de charger un partenaire déjà maître quand cela reste légal.
+Hors atout, pour prendre soi-même : plus gros gagnant en dernière position ; avant cela,
 plus gros gagnant jugé sûr sur informations publiques, sinon plus petit gagnant
 actuel (R avant 10 si l'as n'est pas sorti). Garder la protection contre une
 coupe adverse connue ; cette estimation n'utilise jamais les mains cachées.

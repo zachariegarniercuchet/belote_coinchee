@@ -8,10 +8,15 @@ Monte Carlo search or changes to the existing bots/default bot.
 - Both attacking partners draw enemy trumps: jack first, then a master nine
   (or the next master); otherwise lead small. Do not sacrifice the nine under
   an unseen jack. Stop when public card counts/voids prove opponents are out.
-- Before last seat, cash the highest-point reasonably safe winner; otherwise
+- When attacking, take with the weakest legal winning trump in every seat,
+  including last: R before J if R suffices, preserving J to control the next
+  trick. This covers both following trumps and cutting a side suit. Legal
+  compulsory overtrumps still apply; feeding a safe winning partner remains
+  higher priority. Defence keeps the previous point-first winner policy.
+- For non-trump winners, before last seat cash the highest-point reasonably safe winner; otherwise
   use the weakest card that currently wins (K before 10 with A unaccounted for).
-  In last seat, cash the highest-point winner, even with enemy trumps gone.
-  This applies in attack and defence to both versions. Safety uses public
+  In last seat, cash the highest-point non-trump winner, even with enemy trumps gone.
+  This applies in attack and defence to all three versions. Safety uses public
   higher-card counts and known cutting threats, not hidden hands: an unknown
   void is not treated as a guaranteed cut. Duck a known impending cut when a
   losing legal alternative avoids wasting a winner.

@@ -215,6 +215,35 @@ class BrooklynTests(unittest.TestCase):
                              cards("A_COEUR")[0])
 
         for bot_class in (BrooklynBot, BrooklynBotV2, BrooklynBotV3):
+            # Reported 80-heart deal: Octave leads 7, human partner must play 8,
+            # Charles discards. Nora takes Q (not J), then draws with J.
+            nora = bot_class(1)
+            nora.notify_contract(Contract(player=1, team=1, points=80, suit=Suit.COEUR, is_capot=False))
+            nora_hand = cards("A_PIQUE", "V_COEUR", "10_COEUR", "D_COEUR", "R_TREFLE", "9_TREFLE", "10_CARREAU", "V_CARREAU")
+            reported = TrickState(leader=2, atout=Suit.COEUR,
+                                  plays=list(zip([2, 3, 0], cards("7_COEUR", "8_COEUR", "7_TREFLE"))))
+            queen = nora.choose_card(nora_hand, reported, reported.legal_cards_for(nora_hand))
+            self.assertEqual(queen, cards("D_COEUR")[0])
+            reported.play(1, queen)
+            nora_hand.remove(queen)
+            nora.notify_trick_result(reported.plays, reported.winner())
+            next_trick = TrickState(leader=1, atout=Suit.COEUR)
+            self.assertEqual(nora.choose_card(nora_hand, next_trick, next_trick.legal_cards_for(nora_hand)),
+                             cards("V_COEUR")[0])
+            # In attack, preserve J when R is already a legal winning trump;
+            # same rule in second/third/last seat, not just last-seat economy.
+            for team in (0, 1):
+                for plays in (
+                    [(3, cards("D_PIQUE")[0])],
+                    list(zip([2, 3], cards("D_PIQUE", "7_PIQUE"))),
+                    list(zip([1, 2, 3], cards("D_PIQUE", "7_PIQUE", "8_PIQUE"))),
+                ):
+                    taker = bot_class(0)
+                    taker.notify_contract(contract(team))
+                    hand = cards("V_PIQUE", "R_PIQUE", "A_COEUR")
+                    trick = TrickState(leader=plays[0][0], atout=Suit.PIQUE, plays=plays)
+                    self.assertEqual(taker.choose_card(hand, trick, trick.legal_cards_for(hand)),
+                                     cards("R_PIQUE" if team == 0 else "V_PIQUE")[0])
             for team in (0, 1):
                 for last, ace_out, expected in [
                     (False, False, "R_COEUR"),
