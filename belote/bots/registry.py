@@ -122,7 +122,7 @@ BOT_REGISTRY: dict[str, dict] = {
         "avatars": [None, None, None, None],
         "version": "v1",
         "author": "David",
-        "description": "Règles de David : chasse en attaque, prend du plus petit atout gagnant et encaisse les cartes de valeur hors atout. Enchères héritées de Spark.",
+        "description": "Règles de David : chasse en attaque ; sur atout demandé, plus gros gagnant ; en coupe, plus petit gagnant. Enchères héritées de Spark.",
         "level": 3,
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot(seat, name),

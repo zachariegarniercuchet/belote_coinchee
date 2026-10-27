@@ -6,17 +6,22 @@ Monte Carlo search or changes to the existing bots/default bot.
 ## Playing style
 
 Latest shared-policy benchmark: [weakest winning trump in attack](../../benchmarks/2026-10-26-trump-control.md),
-all three versions rerun at `8f02342`. Earlier measurements retain their frozen
-revisions and do not measure this correction.
+all three versions rerun at `8f02342`. That snapshot predates the clarification
+separating strongest trump FOLLOW from cheapest CUT; its results do not measure
+the newly clarified policy. Lead selection and defence are unchanged.
+The clarified scope passes the existing Brooklyn/autoplay/claim suites and
+24 mixed-bot games at target 1000, including v1/v2/v3 versus both opponents.
+That small run is a legality/integration check, not a new win-rate estimate.
+No browser verification was performed.
 
 - Both attacking partners draw enemy trumps: jack first, then a master nine
   (or the next master); otherwise lead small. Do not sacrifice the nine under
   an unseen jack. Stop when public card counts/voids prove opponents are out.
-- When attacking, take with the weakest legal winning trump in every seat,
-  including last: R before J if R suffices, preserving J to control the next
-  trick. This covers both following trumps and cutting a side suit. Legal
-  compulsory overtrumps still apply; feeding a safe winning partner remains
-  higher priority. Defence keeps the previous point-first winner policy.
+- When attacking and FOLLOWING trump, take with the strongest legal winner.
+  When CUTTING/OVERCUTTING a side suit, take with the weakest sufficient legal
+  trump, including last: R before J if R suffices. These do NOT change lead
+  selection above. Compulsory overtrumps still apply; feeding a safe winning
+  partner remains higher priority. Defence keeps its previous policy.
 - For non-trump winners, before last seat cash the highest-point reasonably safe winner; otherwise
   use the weakest card that currently wins (K before 10 with A unaccounted for).
   In last seat, cash the highest-point non-trump winner, even with enemy trumps gone.

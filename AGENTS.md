@@ -218,8 +218,12 @@ Ses portraits ne sont pas encore définis : quatre `None` dans `avatars`,
 images masquées par le frontend. Les étoiles restent purement indicatives.
 Le jeu de carte partagé Brooklyn v1/v2/v3 charge le partenaire avec les points
 susceptibles d'être perdus, pas simplement la carte de plus grande valeur.
-En attaque, pour prendre avec un atout : plus petit atout légal gagnant à
-toutes les positions, y compris en dernier (R avant J si R suffit). Conserver
+En attaque, distinguer l'entame, la fourniture à l'atout et la coupe :
+à l'entame, garder la chasse existante (J, sinon atout maître, sinon petit ;
+ne pas sacrifier le 9 sous un J inconnu s'il reste un atout inférieur).
+Sur atout demandé, prendre du plus gros atout légal gagnant ; en coupe ou
+surcoupe d'une couleur annexe, du plus petit atout légal gagnant, même en
+dernier (R avant J si R suffit). La défense reste inchangée. Conserver
 la priorité de charger un partenaire déjà maître quand cela reste légal.
 Hors atout, pour prendre soi-même : plus gros gagnant en dernière position ; avant cela,
 plus gros gagnant jugé sûr sur informations publiques, sinon plus petit gagnant
