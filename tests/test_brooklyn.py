@@ -167,7 +167,19 @@ class BrooklynTests(unittest.TestCase):
             self.assertEqual([a.points for seat, a in state.history
                               if seat % 2 == 0 and a.type == ActionType.ENCHERE], expected)
             self.assertEqual(bots[0].partner_raise_points, expected[1] - expected[0])
+            for player in bots.values():
+                player.notify_contract(state.contract)
+                self.assertEqual(player._trump_opener, 0)
+            supporter = bots[2]
+            supporter.played_by_suit[Suit.PIQUE].add(Rank.HUIT)
+            supporter._trump_led = True
+            remaining = [next(c for c in support_hand if c.suit == Suit.PIQUE),
+                         next(c for c in support_hand if c.suit != Suit.PIQUE and c.rank == Rank.AS)]
+            returning = TrickState(leader=2, atout=Suit.PIQUE)
+            self.assertEqual(supporter.choose_card(remaining, returning, remaining), remaining[0])
             bots[0].notify_donne_start()
+            self.assertIsNone(bots[0]._trump_opener)
+            self.assertFalse(bots[0]._trump_led)
             self.assertEqual(bots[0].partner_raises, [])
 
     def test_trump_hunt_then_bank_points_with_public_information(self):
@@ -199,8 +211,25 @@ class BrooklynTests(unittest.TestCase):
         conservative.notify_contract(contract())
         for trump in ("7_PIQUE", "V_PIQUE"):
             short = cards(trump, "A_COEUR")
+            self.assertEqual(conservative.choose_card(short, lead, short), short[0])
+            # A cut is not a round of trump drawing: still return trump.
+            conservative.notify_trick_result(list(zip([3, 0, 1, 2],
+                cards("7_TREFLE", "R_TREFLE", "8_PIQUE", "9_TREFLE"))), 1)
+            self.assertEqual(conservative.choose_card(short, lead, short), short[0])
+            conservative.notify_trick_result(list(zip([1, 2, 3, 0],
+                cards("8_PIQUE", "D_PIQUE", "R_PIQUE", "A_PIQUE"))), 0)
             self.assertEqual(conservative.choose_card(short, lead, short), short[1])
+            conservative.notify_donne_start()
+            conservative.notify_contract(contract())
         self.assertEqual(conservative.choose_card(cards("V_PIQUE"), lead, cards("V_PIQUE")), cards("V_PIQUE")[0])
+        for trump_suit, hand in [
+            (Suit.COEUR, cards("A_PIQUE", "R_PIQUE", "V_PIQUE", "7_PIQUE", "7_COEUR", "A_TREFLE", "9_TREFLE", "8_CARREAU")),
+            (Suit.CARREAU, cards("R_PIQUE", "V_PIQUE", "8_PIQUE", "A_COEUR", "10_COEUR", "V_COEUR", "8_TREFLE", "A_CARREAU")),
+        ]:
+            nora = BrooklynBotV3(1)
+            nora.notify_contract(Contract(player=1, team=1, points=90, suit=trump_suit, is_capot=False))
+            first_lead = TrickState(leader=1, atout=trump_suit)
+            self.assertEqual(nora.choose_card(hand, first_lead, hand).suit, trump_suit)
 
         for team in (0, 1):
             bot.notify_contract(contract(team))

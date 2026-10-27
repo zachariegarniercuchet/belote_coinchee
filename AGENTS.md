@@ -260,7 +260,14 @@ avant benchmark : 30/40/50/60/70 points estimés donnent 80/90/100/110/120.
 Ce ne sont ni des probabilités calibrées ni les anciens scores Spark.
 Belote propre +20 une fois. Coupe : +3 par couleur vide, limitée aux atouts
 restant après réserve de chasse, avec J ; aucun crédit à trois/quatre atouts.
-V3 ne chasse pas avec son dernier atout s'il peut entamer une couleur annexe.
+V3 entame atout même avec un seul atout si personne n'a encore entamé atout,
+ou si le partenaire a annoncé cette couleur en premier dans l'équipe.
+Une coupe ne suffit pas à compter comme un tour d'atout. La conservation
+du dernier atout exige donc une chasse déjà commencée et
+l'absence de ce retour au partenaire ; aucune condition de fin de donne.
+Le premier annonceur est relu dans l'historique public lors de l'acceptation
+du contrat, y compris avant d'éventuels changements de couleur, et oublié
+à la donne suivante. Ne pas le confondre avec le dernier enchérisseur.
 V1/v2 restent inchangés. V3 garde la comptabilité publique de soutien de v2. Le partenaire
 ajoute +10 par J/9 d'atout détenu, +10 par as hors atout et +20 pour la belote
 même avec deux atouts. L'as d'atout ne compte pas en soutien. Les bonus propres

@@ -134,8 +134,16 @@ Numeric bids only, no Capot; coinche/surcoinche keep their old independent
 Spark evaluator and thresholds. V1/v2 policies and the default bot stay
 unchanged. Author David; same Brooklyn names and no portraits yet.
 
-Card play stays shared except that v3 no longer hunts with its last trump
-while a side-suit lead is available (forced trump plays remain legal).
+Card play stays shared except for v3's last-trump preservation: NEVER apply
+it before the first trump lead, or when partner was the first team
+bidder in the final trump suit. Otherwise, after trump play has started,
+v3 may keep its single trump while a side lead is available. A cut alone
+does not count as a round of trump drawing. No late-deal
+threshold. The first bidder is read from public auction history at contract
+acceptance and reset each deal; unknown history does not block a first trump
+lead. Forced plays remain legal. The old blanket singleton rule was too broad.
+The saved v3 measurements below predate this correction; it has representative
+journey tests but has not yet had a fresh full-game benchmark.
 The [original hybrid benchmark](../../benchmarks/2026-10-20-hybrid.md) predates
 both this evaluator and last-trump change; its 42% win rates do not measure
 the new policy. The [recoverable-card benchmark](../../benchmarks/2026-10-21-recoverable.md)

@@ -1,6 +1,8 @@
 """Recoverable-card bidding plus explicit partnership support credits."""
 
+from ..bidding import ActionType
 from ..cards import ATOUT_ORDER, NONATOUT_ORDER, Rank, Suit
+from ..trick import partner_of, team_of
 from .brooklyn_v2 import BrooklynBotV2
 
 
@@ -14,6 +16,26 @@ class BrooklynBotV3(BrooklynBotV2):
     # Recoverable-own-point scale, NOT Spark's old strength scale. Partner and
     # captured enemy points are deliberately not assumed on first entry.
     OPENING_THRESHOLDS = ((70, 120), (60, 110), (50, 100), (40, 90), (30, 80))
+
+    def _reset_bidding_memory(self):
+        super()._reset_bidding_memory()
+        self._trump_opener = None
+        self._trump_led = False
+
+    def notify_contract(self, contract):
+        super().notify_contract(contract)
+        self._trump_led = False
+        # The final bidder may only have supported the long-trump partner.
+        # Keep the FIRST team announcement in this suit, even across switches.
+        self._trump_opener = next((seat for seat, action in self._auction.history
+                                   if action.type == ActionType.ENCHERE
+                                   and action.suit == contract.suit
+                                   and team_of(seat) == contract.team), None) if self._auction else None
+
+    def notify_trick_result(self, plays, winner):
+        super().notify_trick_result(plays, winner)
+        if plays and plays[0][1].suit == self.atout:
+            self._trump_led = True
 
     @staticmethod
     def _survivors(cards, atout):
@@ -90,8 +112,16 @@ class BrooklynBotV3(BrooklynBotV2):
         return 0
 
     def _draw_trump(self, hand, trick, legal):
-        if (sum(c.suit == trick.atout for c in hand) == 1
-                and any(c.suit != trick.atout for c in legal)):
+        partner_opened = self._trump_opener == partner_of(self.player_id)
+        reserve_last = (
+            self.is_attacking
+            and not partner_opened
+            and self._trump_led
+            and sum(c.suit == trick.atout for c in hand) == 1
+            and any(c.suit != trick.atout for c in legal)
+        )
+        if reserve_last:
+            # Never hoard the first trump lead or a return to partner's suit.
             return None
         return super()._draw_trump(hand, trick, legal)
 
