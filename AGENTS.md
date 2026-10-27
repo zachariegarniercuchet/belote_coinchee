@@ -31,6 +31,13 @@
   cases only where their risk warrants it. Do this audit later; do not expand
   or reorganize the suite preemptively.
 
+## TODO — Brooklyn v4 defensive play (deferred)
+
+- Explore a possible Brooklyn v4 defensive cutting policy: preserve trump
+  control when there is spare length, but cash vulnerable 9/ace points when
+  they are likely to be lost. Specify and benchmark before changing v1/v2/v3;
+  do not apply a blanket cheapest-cut rule in defence.
+
 ## TODO — bidding variants (deferred)
 
 - Add Tout Atout (TA) and Sans Atout (SA): define contract modes, card strength
