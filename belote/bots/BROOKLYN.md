@@ -5,6 +5,10 @@ Monte Carlo search or changes to the existing bots/default bot.
 
 ## Playing style
 
+Latest shared-policy benchmark: [weakest winning trump in attack](../../benchmarks/2026-10-26-trump-control.md),
+all three versions rerun at `8f02342`. Earlier measurements retain their frozen
+revisions and do not measure this correction.
+
 - Both attacking partners draw enemy trumps: jack first, then a master nine
   (or the next master); otherwise lead small. Do not sacrifice the nine under
   an unseen jack. Stop when public card counts/voids prove opponents are out.

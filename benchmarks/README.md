@@ -55,6 +55,8 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [Weakest winning trump in attack](2026-10-26-trump-control.md): all three
+  Brooklyn versions rerun at `8f02342`, plus the supplied 80-heart deal replay.
 - [Brooklyn v3 recoverable cards](2026-10-21-recoverable.md): revised evaluator
   and last-trump preservation at `75720f0`, 200 games and saved paired baselines.
 - [Brooklyn v3 hybrid](2026-10-20-hybrid.md): v3 at `7b3c7d2` versus both

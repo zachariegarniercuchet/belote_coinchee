@@ -1,0 +1,2138 @@
+{
+  "hands": {
+    "0": "R_PIQUE D_PIQUE 9_PIQUE R_CARREAU 9_CARREAU D_TREFLE V_TREFLE 7_TREFLE",
+    "1": "A_PIQUE V_COEUR 10_COEUR D_COEUR R_TREFLE 9_TREFLE 10_CARREAU V_CARREAU",
+    "2": "10_PIQUE V_PIQUE 9_COEUR A_COEUR R_COEUR 7_COEUR A_TREFLE D_CARREAU",
+    "3": "8_PIQUE 7_PIQUE 8_COEUR 10_TREFLE 8_TREFLE A_CARREAU 8_CARREAU 7_CARREAU"
+  },
+  "assumption": "Human seat 3 replaced by same Brooklyn version; all four possible opening leaders; defenders de Belote v3; not a reconstruction of user moves or an optimal-play proof.",
+  "seed": 20261026,
+  "results": [
+    {
+      "brooklyn": "brooklyn_v1",
+      "leader": 0,
+      "attack_points": 57,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              0,
+              "9_PIQUE"
+            ],
+            [
+              1,
+              "A_PIQUE"
+            ],
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "D_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ],
+            [
+              1,
+              "9_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "9_COEUR"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "V_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v1",
+      "leader": 1,
+      "attack_points": 52,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "D_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "9_COEUR"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ],
+            [
+              1,
+              "9_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ],
+            [
+              0,
+              "9_PIQUE"
+            ],
+            [
+              1,
+              "A_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_CARREAU"
+            ],
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v1",
+      "leader": 2,
+      "attack_points": 78,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ],
+            [
+              1,
+              "D_COEUR"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "10_COEUR"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ],
+            [
+              0,
+              "9_PIQUE"
+            ],
+            [
+              1,
+              "A_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "9_TREFLE"
+            ],
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ],
+            [
+              1,
+              "V_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "9_COEUR"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v1",
+      "leader": 3,
+      "attack_points": 83,
+      "made": true,
+      "tricks": [
+        {
+          "plays": [
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ],
+            [
+              1,
+              "D_COEUR"
+            ],
+            [
+              2,
+              "9_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "A_PIQUE"
+            ],
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ],
+            [
+              0,
+              "9_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "9_TREFLE"
+            ],
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ],
+            [
+              1,
+              "V_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v2",
+      "leader": 0,
+      "attack_points": 57,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              0,
+              "9_PIQUE"
+            ],
+            [
+              1,
+              "A_PIQUE"
+            ],
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "D_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ],
+            [
+              1,
+              "9_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "9_COEUR"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "V_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v2",
+      "leader": 1,
+      "attack_points": 52,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "D_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "9_COEUR"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ],
+            [
+              1,
+              "9_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ],
+            [
+              0,
+              "9_PIQUE"
+            ],
+            [
+              1,
+              "A_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_CARREAU"
+            ],
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v2",
+      "leader": 2,
+      "attack_points": 78,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ],
+            [
+              1,
+              "D_COEUR"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "10_COEUR"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ],
+            [
+              0,
+              "9_PIQUE"
+            ],
+            [
+              1,
+              "A_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "9_TREFLE"
+            ],
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ],
+            [
+              1,
+              "V_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "9_COEUR"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v2",
+      "leader": 3,
+      "attack_points": 83,
+      "made": true,
+      "tricks": [
+        {
+          "plays": [
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ],
+            [
+              1,
+              "D_COEUR"
+            ],
+            [
+              2,
+              "9_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "A_PIQUE"
+            ],
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ],
+            [
+              0,
+              "9_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "9_TREFLE"
+            ],
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ],
+            [
+              1,
+              "V_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v3",
+      "leader": 0,
+      "attack_points": 57,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              0,
+              "9_PIQUE"
+            ],
+            [
+              1,
+              "A_PIQUE"
+            ],
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "D_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ],
+            [
+              1,
+              "9_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "9_COEUR"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "V_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v3",
+      "leader": 1,
+      "attack_points": 52,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "D_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "9_COEUR"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ],
+            [
+              1,
+              "9_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ],
+            [
+              0,
+              "9_PIQUE"
+            ],
+            [
+              1,
+              "A_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_CARREAU"
+            ],
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v3",
+      "leader": 2,
+      "attack_points": 78,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ],
+            [
+              1,
+              "D_COEUR"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "A_PIQUE"
+            ],
+            [
+              2,
+              "V_PIQUE"
+            ],
+            [
+              3,
+              "8_PIQUE"
+            ],
+            [
+              0,
+              "9_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "9_TREFLE"
+            ],
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "9_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ],
+            [
+              1,
+              "V_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "D_CARREAU"
+            ],
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ],
+            [
+              2,
+              "A_COEUR"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    },
+    {
+      "brooklyn": "brooklyn_v3",
+      "leader": 3,
+      "attack_points": 61,
+      "made": false,
+      "tricks": [
+        {
+          "plays": [
+            [
+              3,
+              "A_CARREAU"
+            ],
+            [
+              0,
+              "9_CARREAU"
+            ],
+            [
+              1,
+              "10_CARREAU"
+            ],
+            [
+              2,
+              "D_CARREAU"
+            ]
+          ],
+          "winner": 3
+        },
+        {
+          "plays": [
+            [
+              3,
+              "8_PIQUE"
+            ],
+            [
+              0,
+              "R_PIQUE"
+            ],
+            [
+              1,
+              "A_PIQUE"
+            ],
+            [
+              2,
+              "V_PIQUE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "V_COEUR"
+            ],
+            [
+              2,
+              "7_COEUR"
+            ],
+            [
+              3,
+              "8_COEUR"
+            ],
+            [
+              0,
+              "7_TREFLE"
+            ]
+          ],
+          "winner": 1
+        },
+        {
+          "plays": [
+            [
+              1,
+              "D_COEUR"
+            ],
+            [
+              2,
+              "R_COEUR"
+            ],
+            [
+              3,
+              "7_PIQUE"
+            ],
+            [
+              0,
+              "D_PIQUE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "9_COEUR"
+            ],
+            [
+              3,
+              "7_CARREAU"
+            ],
+            [
+              0,
+              "D_TREFLE"
+            ],
+            [
+              1,
+              "10_COEUR"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "A_TREFLE"
+            ],
+            [
+              3,
+              "8_TREFLE"
+            ],
+            [
+              0,
+              "V_TREFLE"
+            ],
+            [
+              1,
+              "9_TREFLE"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "10_PIQUE"
+            ],
+            [
+              3,
+              "8_CARREAU"
+            ],
+            [
+              0,
+              "9_PIQUE"
+            ],
+            [
+              1,
+              "V_CARREAU"
+            ]
+          ],
+          "winner": 2
+        },
+        {
+          "plays": [
+            [
+              2,
+              "A_COEUR"
+            ],
+            [
+              3,
+              "10_TREFLE"
+            ],
+            [
+              0,
+              "R_CARREAU"
+            ],
+            [
+              1,
+              "R_TREFLE"
+            ]
+          ],
+          "winner": 2
+        }
+      ]
+    }
+  ],
+  "contract": {
+    "player": 1,
+    "team": 1,
+    "points": 80,
+    "suit": "COEUR",
+    "belote": null
+  },
+  "seat_names": {
+    "0": "Charles de Belote",
+    "1": "Nora Brooklyn",
+    "2": "Octave de Belote",
+    "3": "D (human, simulated proxy)"
+  },
+  "policy_revision": "8f023422da6c26a4e671b839c5baa02846fe0201"
+}
