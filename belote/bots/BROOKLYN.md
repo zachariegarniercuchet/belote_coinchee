@@ -142,8 +142,10 @@ does not count as a round of trump drawing. No late-deal
 threshold. The first bidder is read from public auction history at contract
 acceptance and reset each deal; unknown history does not block a first trump
 lead. Forced plays remain legal. The old blanket singleton rule was too broad.
-The saved v3 measurements below predate this correction; it has representative
-journey tests but has not yet had a fresh full-game benchmark.
+The [first-trump benchmark](../../benchmarks/2026-10-26-first-trump.md)
+at `feb956d` measures this correction: 46% wins against both de Belote v2/v3,
+39.6%/39.5% taking and 85.4%/84.5% contract success. No clear before/after
+win gain on this sample. Older v3 measurements below retain their revisions.
 The [original hybrid benchmark](../../benchmarks/2026-10-20-hybrid.md) predates
 both this evaluator and last-trump change; its 42% win rates do not measure
 the new policy. The [recoverable-card benchmark](../../benchmarks/2026-10-21-recoverable.md)

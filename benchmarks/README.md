@@ -55,6 +55,8 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [V3 first trump lead and return to partner](2026-10-26-first-trump.md):
+  v3 at `feb956d`, 200 games; v1/v2 remain unchanged saved baselines.
 - [Weakest winning trump in attack](2026-10-26-trump-control.md): all three
   Brooklyn versions rerun at `8f02342`, plus the supplied 80-heart deal replay.
 - [Brooklyn v3 recoverable cards](2026-10-21-recoverable.md): revised evaluator
