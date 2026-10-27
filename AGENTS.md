@@ -15,7 +15,19 @@
 - Make frequent, small commits after each completed and verified logical step.
   Keep each commit focused on one change, include its relevant tests and docs,
   use a clear commit message, and never include unrelated local changes.
-  Commit locally as work progresses; do not push unless the user requests it.
+  Commit locally as work progresses. Before EVERY push/publication, show the
+  target commits and warn that deployment may interrupt games, then STOP and
+  obtain a fresh, separate confirmation for publishing NOW. This applies at
+  all times, not only during rule discussions. An earlier push request, a
+  request to implement/benchmark, or approval of code is not continuing consent
+  to publish later. Do not push while awaiting that final timing confirmation.
+- Keep the local pre-push gate enabled (`core.hooksPath=.githooks`). Verify it
+  before any publication. Never use `--no-verify`, disable/change the hook path,
+  invoke a different publication route, or auto-answer the gate to evade it.
+  Supply its exact commit confirmation only after the user's fresh approval
+  for that push. Git hooks are local: on a fresh clone, inspect existing hooks
+  before enabling this path; preserve any existing checks rather than replacing
+  them silently. See README.md. Do not push merely to publish the gate itself.
 - Keep the test suite small and intentional. Prefer nominal, representative
   user journeys that catch several regressions over one atomic test per branch
   or implementation detail. Reuse or extend existing coverage before adding

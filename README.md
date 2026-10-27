@@ -4,6 +4,26 @@ Implémentation en Python des règles officielles de la Belote Coinchée
 (4 joueurs, 2 équipes), d'après le document *"Règles officielles de la
 belote coinchée"* de la Fédération Française de Belote.
 
+## Gate de publication
+
+Chaque push qui modifie une référence demande une confirmation explicite du
+commit dans un terminal interactif. Il peut déclencher un redéploiement Render,
+qui redémarre le serveur et perd les parties stockées en mémoire. Entrée vide,
+confirmation incorrecte ou commande non interactive : **push refusé**.
+
+Activation locale (déjà faite dans le clone de travail actuel) :
+
+```powershell
+git config --local core.hooksPath .githooks
+```
+
+Les hooks Git ne s'activent pas automatiquement dans un nouveau clone.
+Vérifier les hooks existants avant cette configuration pour conserver leurs
+contrôles. Cette gate est un garde-fou local, pas une protection GitHub contre
+un contournement volontaire. Ne pas la désactiver ni utiliser `--no-verify`.
+Un assistant doit en plus demander un feu vert **juste avant chaque push** ;
+une demande antérieure ou une validation du code ne vaut pas accord permanent.
+
 ## Ce qui est implémenté
 
 - Distribution complète (mélange, coupe, distribution 3-2-3) — §3
