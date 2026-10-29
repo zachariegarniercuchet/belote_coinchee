@@ -40,6 +40,19 @@ class Rank(Enum):
     AS = "A"
 
 
+class ContractMode(Enum):
+    """Contrats sans couleur d'atout unique ; jamais des couleurs du paquet."""
+    SANS_ATOUT = "Sans Atout"
+    TOUT_ATOUT = "Tout Atout"
+
+    def symbol(self) -> str:
+        return "SA" if self is ContractMode.SANS_ATOUT else "TA"
+
+
+Trump = Suit | ContractMode
+CONTRACT_SUITS = (*Suit, *ContractMode)
+
+
 # Ordre décroissant de force (index 0 = carte la plus forte) et valeur en points.
 ATOUT_ORDER = [Rank.VALET, Rank.NEUF, Rank.AS, Rank.DIX, Rank.ROI, Rank.DAME, Rank.HUIT, Rank.SEPT]
 ATOUT_POINTS = {Rank.VALET: 20, Rank.NEUF: 14, Rank.AS: 11, Rank.DIX: 10,
@@ -48,6 +61,9 @@ ATOUT_POINTS = {Rank.VALET: 20, Rank.NEUF: 14, Rank.AS: 11, Rank.DIX: 10,
 NONATOUT_ORDER = [Rank.AS, Rank.DIX, Rank.ROI, Rank.DAME, Rank.VALET, Rank.NEUF, Rank.HUIT, Rank.SEPT]
 NONATOUT_POINTS = {Rank.AS: 11, Rank.DIX: 10, Rank.ROI: 4, Rank.DAME: 3,
                    Rank.VALET: 2, Rank.NEUF: 0, Rank.HUIT: 0, Rank.SEPT: 0}
+SANS_ATOUT_POINTS = {**NONATOUT_POINTS, Rank.AS: 19}
+TOUT_ATOUT_POINTS = {Rank.VALET: 13, Rank.NEUF: 9, Rank.AS: 6, Rank.DIX: 5,
+                     Rank.ROI: 3, Rank.DAME: 2, Rank.HUIT: 0, Rank.SEPT: 0}
 
 TOTAL_POINTS_SANS_DIX_DE_DER = 152  # 90 (3 couleurs non-atout) + 62 (atout)
 
@@ -60,11 +76,21 @@ class Card:
     def __repr__(self) -> str:
         return f"{self.rank.value}{self.suit.symbol()}"
 
-    def points(self, atout: Suit) -> int:
+    def points(self, atout: Trump) -> int:
         """Valeur en points de la carte, selon qu'elle est atout ou non."""
+        if atout is ContractMode.SANS_ATOUT:
+            return SANS_ATOUT_POINTS[self.rank]
+        if atout is ContractMode.TOUT_ATOUT:
+            return TOUT_ATOUT_POINTS[self.rank]
         if self.suit == atout:
             return ATOUT_POINTS[self.rank]
         return NONATOUT_POINTS[self.rank]
+
+    def strength_index(self, atout: Trump | None) -> int:
+        """Force dans sa propre couleur ; ne détermine pas le droit de couper."""
+        if atout is ContractMode.TOUT_ATOUT or self.suit == atout:
+            return self.atout_strength_index()
+        return self.nonatout_strength_index()
 
     def atout_strength_index(self) -> int:
         """Plus petit index = carte d'atout plus forte. À n'utiliser que sur une carte d'atout."""

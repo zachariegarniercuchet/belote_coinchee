@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from .cards import Card, Suit
+from .cards import Card, Suit, Trump
 from .trick import TrickState
 
 
@@ -12,7 +12,7 @@ class Claim:
     reason: str  # "trumps" : seuls atouts ; "masters" : toutes les cartes maîtresses
 
 
-def find_claim(hands: dict[int, list[Card]], leader: int, atout: Suit) -> Claim | None:
+def find_claim(hands: dict[int, list[Card]], leader: int, atout: Trump) -> Claim | None:
     """Trouve un joueur assuré de gagner tous les plis, quel que soit son ordre de jeu.
 
     Les mains doivent avoir la même taille : ne jamais tabler au milieu d'un pli.
@@ -37,14 +37,14 @@ def find_claim(hands: dict[int, list[Card]], leader: int, atout: Suit) -> Claim 
         return None
     others = [card for seat, hand in hands.items() if seat != leader for card in hand]
     if all(
-        card.nonatout_strength_index() < other.nonatout_strength_index()
+        card.strength_index(atout) < other.strength_index(atout)
         for card in hands[leader] for other in others if card.suit == other.suit
     ):
         return Claim(leader, "masters")
     return None
 
 
-def play_claim(hands: dict[int, list[Card]], leader: int, atout: Suit,
+def play_claim(hands: dict[int, list[Card]], leader: int, atout: Trump,
                claim: Claim) -> list[TrickState]:
     """Résout les plis réclamés avec des cartes légales, sans modifier les mains.
 

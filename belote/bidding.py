@@ -1,6 +1,6 @@
 """
-Les enchères (section 4 des règles officielles), hors variante Sans Atout /
-Tout Atout et sans gestion des annonces (qui sont indépendantes des enchères
+Les enchères (sections 4 et 11 des règles officielles), Sans Atout /
+Tout Atout compris, sans gestion des annonces (qui sont indépendantes des enchères
 de toute façon).
 """
 
@@ -9,10 +9,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
-from .cards import Suit
+from .cards import CONTRACT_SUITS, ContractMode, Trump
 
 MIN_BID = 80
 CAPOT_VALUE_FOR_COMPARISON = 10_000  # le capot est plus fort que toute enchère chiffrée
+
+
+def bid_points(suit: Trump) -> range:
+    # 162 points de jeu, et au plus 0 / 1 / 4 belotes (§11).
+    maximum = 240 if suit is ContractMode.TOUT_ATOUT else 160 if suit is ContractMode.SANS_ATOUT else 180
+    return range(MIN_BID, maximum + 1, 10)
 
 
 class ActionType(Enum):
@@ -26,7 +32,7 @@ class ActionType(Enum):
 class BidAction:
     type: ActionType
     points: int | None = None          # None si capot, sinon multiple de 10 >= 80
-    suit: Suit | None = None
+    suit: Trump | None = None
     is_capot: bool = False
 
     @staticmethod
@@ -34,11 +40,11 @@ class BidAction:
         return BidAction(ActionType.PASSE)
 
     @staticmethod
-    def enchere(points: int, suit: Suit) -> "BidAction":
+    def enchere(points: int, suit: Trump) -> "BidAction":
         return BidAction(ActionType.ENCHERE, points=points, suit=suit, is_capot=False)
 
     @staticmethod
-    def capot(suit: Suit) -> "BidAction":
+    def capot(suit: Trump) -> "BidAction":
         return BidAction(ActionType.ENCHERE, points=None, suit=suit, is_capot=True)
 
     @staticmethod
@@ -75,7 +81,7 @@ class Contract:
     player: int
     team: int
     points: int | None
-    suit: Suit
+    suit: Trump
     is_capot: bool
     coinche_state: CoincheState = CoincheState.NONE
     coinche_by_team: int | None = None
@@ -121,8 +127,8 @@ class BiddingState:
         actions: list[BidAction] = [BidAction.passe()]
 
         if self.contract is None:
-            for suit in Suit:
-                for pts in range(MIN_BID, 181, 10):
+            for suit in CONTRACT_SUITS:
+                for pts in bid_points(suit):
                     actions.append(BidAction.enchere(pts, suit))
                 actions.append(BidAction.capot(suit))
             return actions
@@ -131,15 +137,15 @@ class BiddingState:
         if c.coinche_state == CoincheState.NONE:
             if self.team_of(p) == c.team:
                 # son propre camp : ne peut que surenchérir ou passer
-                for suit in Suit:
-                    for pts in range(MIN_BID, 181, 10):
+                for suit in CONTRACT_SUITS:
+                    for pts in bid_points(suit):
                         if pts > c.comparison_value():
                             actions.append(BidAction.enchere(pts, suit))
                     if not c.is_capot:
                         actions.append(BidAction.capot(suit))
             else:
-                for suit in Suit:
-                    for pts in range(MIN_BID, 181, 10):
+                for suit in CONTRACT_SUITS:
+                    for pts in bid_points(suit):
                         if pts > c.comparison_value():
                             actions.append(BidAction.enchere(pts, suit))
                     if not c.is_capot:
