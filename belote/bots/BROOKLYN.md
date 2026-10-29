@@ -23,15 +23,26 @@ Rules and values follow §11 of the repository's FFB PDF.
   belote again at rebid. Prefer the existing suited choice on equal value.
 - Bid a mode capot only when all eight own cards are immediate controls.
   Do not coinche SA/TA using the old single-trump-suit evaluator.
-- Play without cutting/hunting: cash public-information masters, otherwise
-  establish a long suit. Feed a safe partner with non-master points while
-  preserving SA aces/TA jacks if waste is available. Before last seat, use
-  the weakest current winner when stronger cards could still overtake it.
-  TA legal play enforces climbing even on a winning partner.
+- On lead, retain short masters. Start a purge with at least three cards
+  and the top two remaining cards (initially A/10 at SA, J/9 at TA), or four
+  cards and the top remaining card. Retain this intent across losses and
+  side-suit re-entries even when the remaining length drops.
+- During a purge, lead the highest card if publicly master; otherwise force
+  the missing honours with a small card, then resume cashing when master.
+  Also continue if both opponents are publicly void in the suit and partner
+  may still follow. One enemy void is insufficient. All inference uses
+  public plays only. Reset purge intent at every new deal/accepted contract.
+- Otherwise establish a suit with waste instead of automatically cashing a
+  short SA ace / TA jack. Following-suit play is unchanged: feed a safe
+  partner with non-master points; take with a safe winner or the weakest
+  current winner when overtaking remains possible. TA still requires climbing.
 
-Other non-random families can play SA/TA using the same public-information
-card policy; their bidding remains suited. Spark's single-trump simulations
-are not used for mode contracts.
+The [800-game snapshot](../../benchmarks/2026-10-29-sa-ta.md) predates this
+follow-up purge policy and does not measure its performance.
+
+Other non-random families retain the initial SA/TA master-cashing fallback;
+their bidding remains suited. Spark's single-trump simulations are not used
+for mode contracts. The follow-up purge policy is Brooklyn-only.
 
 ## Playing style
 

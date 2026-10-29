@@ -102,6 +102,88 @@ class ContractModeTests(unittest.TestCase):
                 only_mode = [a for a in fresh.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
                 self.assertEqual(bot.choose_bid(certain, fresh, only_mode), BidAction.capot(mode))
 
+        # Follow a purge across losses and re-entries; short masters stay in hand.
+        for version in range(1, 5):
+            for mode, top, middle, missing, first_followers in (
+                (SA, 'A', 'R', '10', ('8', 'D', 'V')),
+                (TA, 'V', 'A', '9', ('8', 'D', '10')),
+            ):
+                def ready(hand):
+                    bot = create_bot('brooklyn_v' + str(version), 0)
+                    auction = BiddingState(dealer=1)
+                    bot.choose_bid(hand, auction, auction.legal_actions())
+                    bot.notify_contract(Contract(0, 0, 80, mode, False))
+                    return bot
+                def lead(bot, hand):
+                    trick = TrickState(0, mode)
+                    return bot.choose_card(hand, trick, trick.legal_cards_for(hand))
+                def complete(bot, plays, winner):
+                    self.assertEqual(trick_winner(plays, mode), winner)
+                    self.assertEqual(len({card for _, card in plays}), 4)
+                    for _, card in plays:
+                        self.assertNotIn(card.rank, bot.played_by_suit[card.suit])
+                    bot.notify_trick_result(plays, winner)
+                hand = cards(top+'_PIQUE', middle+'_PIQUE', 'R_PIQUE' if mode is TA else '9_PIQUE',
+                             '7_PIQUE', top+'_COEUR', '10_TREFLE', 'R_TREFLE', '7_CARREAU')
+                bot = ready(hand)
+                first = cards(top+'_PIQUE')[0]
+                self.assertEqual(lead(bot, hand), first)
+                hand.remove(first)
+                complete(bot, [(0, first)] + [(p, cards(r+'_PIQUE')[0])
+                                              for p, r in enumerate(first_followers, 1)], 0)
+                # The 10 (SA) / 9 (TA) is unseen: force it with the 7, retaining
+                # the next honour and the short-suit master.
+                low = cards('7_PIQUE')[0]
+                self.assertEqual(lead(bot, hand), low)
+                hand.remove(low)
+                complete(bot, [(0, low), (1, cards(missing+'_PIQUE')[0]),
+                               (2, cards('8_CARREAU')[0]), (3, cards('7_COEUR')[0])], 1)
+                # After a side-suit re-entry, the next spade is now master.
+                side = cards('R_TREFLE')[0]
+                hand.remove(side)
+                complete(bot, [(1, cards('7_TREFLE')[0]), (2, cards('8_TREFLE')[0]),
+                               (3, cards('D_TREFLE')[0]), (0, side)], 0)
+                self.assertEqual(lead(bot, hand), cards(middle+'_PIQUE')[0])
+                # A three-card suit needs its top TWO; a short lone master
+                # must not be cashed just because it is currently unbeatable.
+                short = cards(top+'_COEUR', '8_COEUR', '7_COEUR', '10_CARREAU',
+                              '8_CARREAU', '7_CARREAU', '8_TREFLE', '7_TREFLE')
+                bot = ready(short)
+                self.assertNotEqual(lead(bot, short), cards(top+'_COEUR')[0])
+                second = '10' if mode is SA else '9'
+                long = cards(top+'_COEUR', second+'_COEUR', '7_COEUR', '10_CARREAU',
+                             '8_CARREAU', '7_CARREAU', '8_TREFLE', '7_TREFLE')
+                bot = ready(long)
+                first = lead(bot, long)
+                self.assertEqual(first, cards(top+'_COEUR')[0])
+                long.remove(first)
+                complete(bot, [(0, first), (1, cards('R_COEUR')[0]),
+                               (2, cards('D_COEUR')[0]), (3, cards('V_COEUR' if mode is SA else 'A_COEUR')[0])], 0)
+                self.assertEqual(lead(bot, long), cards(second+'_COEUR')[0])
+                self.assertIn(Suit.COEUR, bot.mode_purge_suits)
+                bot.notify_donne_start()
+                self.assertEqual(bot.mode_purge_suits, set())
+                auction = BiddingState(dealer=1)
+                bot.choose_bid(short, auction, auction.legal_actions())
+                bot.notify_contract(Contract(0, 0, 80, mode, False))
+                self.assertEqual(bot.mode_purge_suits, set())
+                for both_void in (False, True):
+                    # Both enemy discards prove only partner can hold the
+                    # missing master. One enemy void alone is insufficient.
+                    spent = '9' if mode is SA else '8'
+                    hand = cards(top+'_COEUR', '8_COEUR', '7_COEUR', 'R_PIQUE',
+                                 '7_PIQUE', spent+'_PIQUE', top+'_TREFLE', '7_CARREAU')
+                    bot = ready(hand)
+                    own = cards(spent+'_PIQUE')[0]
+                    hand.remove(own)
+                    complete(bot, [(2, cards(missing+'_PIQUE')[0]), (3, cards('8_CARREAU')[0]),
+                                   (0, own), (1, cards('8_TREFLE' if both_void else ('8_PIQUE' if mode is SA else '10_PIQUE'))[0])], 2)
+                    own = cards(top+'_COEUR')[0]
+                    hand.remove(own)
+                    complete(bot, [(2, cards('9_COEUR')[0]), (3, cards('D_COEUR')[0]),
+                                   (0, own), (1, cards('10_COEUR')[0])], 0)
+                    self.assertEqual(lead(bot, hand), cards('7_PIQUE' if both_void else '7_COEUR')[0])
+
     def test_complete_deals_scores_announcements_and_review(self):
         # Each of the four players owns one K/Q pair; other cards are shared.
         hands = {p: [Card(r, s) for r in (Rank.ROI, Rank.DAME)] for p, s in enumerate(Suit)}

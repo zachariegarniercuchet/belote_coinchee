@@ -106,11 +106,13 @@ python -m venv .venv
 ```
 
 Ouvrir `http://localhost:5000`. Le serveur écoute sur `0.0.0.0` ; le port est
-configurable avec `PORT`. Pour la console :
+configurable avec `PORT`.
 Le lancement direct local active `app.jinja_env.auto_reload` : les modèles
 HTML sont relus à l'actualisation, sans interrompre les parties pour une
 simple modification d'interface. Le code Python des bots/moteurs nécessite
 toujours un redémarrage ; les imports en production gardent le cache Flask.
+
+Pour la console :
 
 ```powershell
 python -B cli.py
@@ -422,9 +424,18 @@ historique ; une coinche évaluée pour une couleur n'est pas utilisée pour
 SA/TA. Un capot SA/TA n'est annoncé que si les huit cartes sont maîtresses.
 Les historiques de benchmark antérieurs à SA/TA ne mesurent pas ce choix
 de six contrats ; conserver leur révision et ne pas les présenter comme
-les performances actuelles. Au jeu SA/TA, encaisser les maîtresses,
-établir une couleur longue sinon ; charger un partenaire jugé sûr avec
-les points non maîtres, sans offrir un as SA/valet TA s'il reste un déchet.
+les performances actuelles. Au jeu SA/TA, Brooklyn conserve les maîtresses
+courtes à l'entame. Il lance une purge avec trois cartes et les deux plus
+fortes restantes, ou quatre cartes et la plus forte (A/10 en SA, J/9 en TA
+au départ). Il mémorise la couleur à travers les pertes et reprises de main :
+rejouer sa plus forte si elle est maîtresse, sinon une petite pour faire
+tomber les honneurs absents et établir le reste. Continuer aussi une couleur
+où les DEUX adversaires sont publiquement sans carte et le partenaire peut
+encore fournir ; une seule coupe franche adverse ne suffit pas. La mémoire
+`mode_purge_suits` est réinitialisée à chaque donne/contrat. Sinon, entamer
+un déchet pour établir une couleur, sans encaisser systématiquement un
+as SA/valet TA court. Le jeu en fourniture et les obligations TA restent
+inchangés. Les autres familles gardent leur jeu SA/TA initial.
 La belote/rebelote est attribuée
 automatiquement au détenteur du roi et de la dame d'atout en main initiale.
 Cette détection reste privée : envoyer `belote_team` et `belote_holder_seat`

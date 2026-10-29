@@ -3,11 +3,25 @@
 Kept separate from every bot's historical suited-contract policy.
 """
 
-from ..cards import Card, Rank
+from ..cards import Card, Rank, Suit, ContractMode, ATOUT_ORDER, NONATOUT_ORDER
 from ..trick import partner_of, team_of, trick_winner
 
 
-def choose_mode_card(bot, hand, trick, legal):
+def qualified_purges(hand, mode, played=None):
+    """Three cards with the top two, or four with the top remaining card."""
+    order = ATOUT_ORDER if mode is ContractMode.TOUT_ATOUT else NONATOUT_ORDER
+    played = played or {}
+    suits = set()
+    for suit in Suit:
+        held = {c.rank for c in hand if c.suit == suit}
+        remaining = [r for r in order if r not in played.get(suit, ())]
+        if remaining and ((len(held) >= 4 and remaining[0] in held) or
+                          (len(held) >= 3 and len(remaining) >= 2 and set(remaining[:2]) <= held)):
+            suits.add(suit)
+    return suits
+
+
+def choose_mode_card(bot, hand, trick, legal, purge_suits=None):
     mode = trick.atout
     played = getattr(bot, "played_by_suit", {})
     known_voids = getattr(bot, "void_suits", {})
@@ -36,6 +50,30 @@ def choose_mode_card(bot, hand, trick, legal):
         return min(pool, key=lambda c: (master(c), c.points(mode), -c.strength_index(mode)))
 
     if not trick.plays:
+        if purge_suits is not None:
+            # Brooklyn: retain short-suit masters; only cash them to purge
+            # a supported long suit, or when no waste remains anywhere.
+            purge_suits.update(qualified_purges(hand, mode, played))
+            opponents = [p for p in range(4) if team_of(p) != team_of(bot.player_id)]
+            partner = partner_of(bot.player_id)
+            candidates = []
+            for suit in Suit:
+                cards = [c for c in legal if c.suit == suit]
+                partner_only = (all(suit in known_voids.get(p, ()) for p in opponents)
+                                and suit not in known_voids.get(partner, ()))
+                if not cards or (suit not in purge_suits and not partner_only):
+                    continue
+                top = min(cards, key=lambda c: c.strength_index(mode))
+                is_master = master(top)
+                # No master: force the absent honours with a low card.
+                pick = top if is_master else max(cards, key=lambda c: c.strength_index(mode))
+                candidates.append((is_master, len(cards), pick.points(mode) if is_master else -pick.points(mode), pick))
+            if candidates:
+                return max(candidates, key=lambda item: item[:3])[-1]
+            waste = [c for c in legal if not master(c)]
+            if waste:
+                return min(waste, key=lambda c: (-sum(h.suit == c.suit for h in hand),
+                                                c.points(mode), -c.strength_index(mode)))
         masters = [c for c in legal if master(c)]
         if masters:
             return max(masters, key=lambda c: (c.points(mode), sum(h.suit == c.suit for h in hand)))
