@@ -494,6 +494,10 @@ que des logs avec résultat et contrat, et n'est envoyé qu'en `donne_end` ou
 `game_end` (liste vide pendant le jeu). Ne jamais y inclure la donne courante
 inachevée. Fermer la consultation ne valide pas le récapitulatif ; conserver
 les contrôles clavier, les couleurs d'équipe et les deux frontends.
+Le récapitulatif capture ses interactions et son défilement vertical
+(souris/tactile), même entre deux donnes. Un clic dans son contenu ou sa
+barre de défilement ne valide jamais la donne ; utiliser « Donne suivante »
+ou le fond extérieur. La fin de partie garde uniquement le retour au salon.
 L'option « Revoir les plis » parcourt l'historique carte par carte, dans
 l'ordre réel des joueurs : précédent/suivant et curseur de 0 à 32 cartes.
 Les mains restantes conservent leur tri initial ; les quatre cartes du pli

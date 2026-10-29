@@ -1394,7 +1394,8 @@
           ? '<p class="recap-hint">Touchez les points pour voir le détail de la dernière donne.</p>' +
             '<button id="btn-new-game" class="btn btn-primary"' +
             (recapState.game_over ? "" : " disabled") + ">Retour au salon</button>"
-          : '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote) — cliquez n’importe où pour continuer</p>');
+          : '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote).</p>' +
+            '<button id="btn-continue-donne" class="btn btn-primary" type="button">Donne suivante</button>');
       content.querySelectorAll(".pts-toggle").forEach(el => {
         el.addEventListener("click", ev => {
           ev.stopPropagation();
@@ -1415,7 +1416,11 @@
     }
   }
 
-  document.addEventListener("click", () => {
+  document.addEventListener("click", event => {
+    const recap = document.getElementById("donne-recap");
+    if (recap.classList.contains("hidden")) return;
+    // Native scrollbar clicks and scrolling inside the recap must not dismiss it.
+    if (event.target.closest("#donne-recap-content") && !event.target.closest("#btn-continue-donne")) return;
     const canDismiss = lastRenderedState &&
       (!lastRenderedState.board_present || lastRenderedState.your_seat === "board");
     if (canDismiss && (recapState || (lastRenderedState.phase === "donne_annulee"))) {

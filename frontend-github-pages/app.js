@@ -1393,7 +1393,8 @@
           ? '<p class="recap-hint">Touchez les points pour voir le détail de la dernière donne.</p>' +
             '<button id="btn-new-game" class="btn btn-primary"' +
             (recapState.game_over ? "" : " disabled") + ">Retour au salon</button>"
-          : '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote) — cliquez sur le plateau pour continuer</p>');
+          : '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote).</p>' +
+            '<button id="btn-continue-donne" class="btn btn-primary" type="button">Donne suivante</button>');
       content.querySelectorAll(".pts-toggle").forEach(el => {
         el.addEventListener("click", ev => {
           ev.stopPropagation();
@@ -1414,8 +1415,13 @@
     }
   }
 
-  document.getElementById("board-panel").addEventListener("click", () => {
-    if (recapState || (lastRenderedState && lastRenderedState.phase === "donne_annulee")) {
+  document.addEventListener("click", event => {
+    const recap = document.getElementById("donne-recap");
+    if (recap.classList.contains("hidden")) return;
+    if (event.target.closest("#donne-recap-content") && !event.target.closest("#btn-continue-donne")) return;
+    const canDismiss = lastRenderedState &&
+      (!lastRenderedState.board_present || lastRenderedState.your_seat === "board");
+    if (canDismiss && recapState) {
       if (isFinalRecap(recapState)) return;
       if (claimVisible(lastRenderedState)) return;
       dismissedDonneNumber = recapDonneNumber;

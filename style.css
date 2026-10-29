@@ -883,8 +883,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 .overlay-box h2 { margin-top: 0; color: var(--gold-light); }
 
-/* Modales de compte et d'historique : cliquables, contrairement au
-   récapitulatif qui laisse passer les clics. */
+/* Les modales interactives et le récapitulatif capturent leurs interactions. */
 .overlay.interactive, .overlay.interactive .overlay-box { pointer-events: auto; }
 #auth-overlay .overlay-box, #history-overlay .overlay-box { max-height: calc(100dvh - 40px); overflow-y: auto; }
 .auth-tabs { display: flex; gap: 8px; margin-bottom: 4px; }
@@ -937,7 +936,9 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .history-item .hist-meta.history-loss { color: #f08b8b; }
 .history-item .hist-score { font-size: 15px; font-weight: 800; white-space: nowrap; }
 .history-empty { font-size: 13px; opacity: .7; line-height: 1.5; margin: 6px 0; }
-#donne-recap .overlay-box { max-height: calc(100dvh - 40px); overflow-y: auto; }
+#donne-recap, #donne-recap .overlay-box { pointer-events: auto; }
+#donne-recap .overlay-box { max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; scrollbar-gutter: stable; }
+#btn-continue-donne { margin-top: 12px; width: 100%; }
 .recap-final, .recap-final .overlay-box { pointer-events: auto; }
 .recap-final .overlay-box { max-width: 440px; }
 .final-winner { color: var(--gold-light); font-size: 19px; font-weight: 800; }
