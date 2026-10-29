@@ -68,6 +68,8 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [SA/TA across Brooklyn v1–v4](2026-10-29-sa-ta.md): 800 games at
+  `dc31e65`, with per-mode success/calibration and all capots included.
 - [Versioned Brooklyn v4](2026-10-26-v4.md): 400 games at `09e0bf9`, newly
   rerunning v3 as an unchanged control; defensive v5 remains deferred.
 - [V3 first trump lead and return to partner](2026-10-26-first-trump.md):
