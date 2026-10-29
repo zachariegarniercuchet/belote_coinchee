@@ -407,6 +407,9 @@ def on_disconnect():
 
 
 if __name__ == "__main__":
+    # Local UI edits should appear on refresh without restarting an active game.
+    # Production imports keep Flask's usual template caching.
+    app.jinja_env.auto_reload = True
     port = int(os.environ.get("PORT", 5000))
     print("=" * 60)
     print("  Belote Coinchée — serveur local")

@@ -107,6 +107,10 @@ python -m venv .venv
 
 Ouvrir `http://localhost:5000`. Le serveur écoute sur `0.0.0.0` ; le port est
 configurable avec `PORT`. Pour la console :
+Le lancement direct local active `app.jinja_env.auto_reload` : les modèles
+HTML sont relus à l'actualisation, sans interrompre les parties pour une
+simple modification d'interface. Le code Python des bots/moteurs nécessite
+toujours un redémarrage ; les imports en production gardent le cache Flask.
 
 ```powershell
 python -B cli.py
