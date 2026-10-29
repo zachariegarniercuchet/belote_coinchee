@@ -565,6 +565,13 @@ class GameSession:
                     str(seat): [card_to_dict(card) for card in sorted_hand(hand, log.contract.suit)]
                     for seat, hand in log.initial_hands.items()
                 },
+                "tricks": [
+                    {
+                        "plays": [{"seat": seat, "card": card_to_dict(card)} for seat, card in plays],
+                        "winner": winner,
+                    }
+                    for plays, winner in zip(log.tricks, log.trick_winners)
+                ],
             }
             for number, log in enumerate(self.game.donne_logs, 1)
             if log.result is not None and log.contract is not None
