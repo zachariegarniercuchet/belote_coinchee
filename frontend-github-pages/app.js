@@ -19,6 +19,7 @@
   let recapState = null;
   let recapDonneNumber = null;
   let handReviewState = null;
+  let handReviewStep = 0;
   let lastTrickAnimationKey = null;
   let dismissedClaimDonneNumber = null;
 
@@ -1121,14 +1122,37 @@
     const deal = state?.completed_deals?.find(item => item.number === number);
     if (!deal) return;
     const c = deal.contract;
+    const replay = document.getElementById("hand-review-replay").checked;
+    const plays = (deal.tricks || []).flatMap(trick => trick.plays);
+    handReviewStep = Math.max(0, Math.min(handReviewStep, plays.length));
+    const trickIndex = Math.max(0, Math.ceil(handReviewStep / 4) - 1);
+    const currentTrick = deal.tricks?.[trickIndex];
+    const tablePlays = replay && handReviewStep ? plays.slice(trickIndex * 4, handReviewStep) : [];
+    const playedIds = new Set(replay ? plays.slice(0, handReviewStep).map(play => play.card.id) : []);
+    document.getElementById("hand-review-title").textContent = replay ? "Revoir les plis" : "Mains de départ";
+    document.getElementById("hand-review-controls").classList.toggle("hidden", !replay);
+    document.getElementById("hand-review-prev").disabled = handReviewStep === 0;
+    document.getElementById("hand-review-next").disabled = handReviewStep === plays.length;
+    const progress = document.getElementById("hand-review-progress");
+    progress.max = plays.length;
+    progress.value = handReviewStep;
+    const complete = tablePlays.length === 4;
+    const status = handReviewStep === 0 ? "Mains de départ" :
+      "Pli " + (trickIndex + 1) + " / " + deal.tricks.length + " · " +
+      (complete ? "Remporté par " + nameOf(state, currentTrick.winner) +
+        " · Équipe " + (currentTrick.winner % 2 === 0 ? "A" : "B") : "Carte " + tablePlays.length + " / 4");
+    document.getElementById("hand-review-status").textContent = status;
+    progress.setAttribute("aria-valuetext", status);
     document.getElementById("hand-review-contract").textContent =
-      "Contrat : " + (c.is_capot ? "Capot" : c.points) + " " + c.symbol + " · " + nameOf(state, c.player);
+      "Contrat : " + (c.is_capot ? "Capot" : c.points) + " " + c.symbol + " · " + nameOf(state, c.player) +
+      (replay && deal.claimed ? " · Fin tablée : les derniers plis sont résolus automatiquement." : "");
     const viewer = Number.isInteger(state.your_seat) ? state.your_seat : 0;
     const symbols = { PIQUE: "♠", COEUR: "♥", TREFLE: "♣", CARREAU: "♦" };
     const ranks = { V: "J", D: "Q", R: "K" };
     const panels = [0, 1, 2, 3].map(seat => {
-      const hand = deal.hands[String(seat)] || [];
-      const suits = [...new Set([...hand.map(card => card.suit), ...Object.keys(symbols)])];
+      const initialHand = deal.hands[String(seat)] || [];
+      const hand = initialHand.filter(card => !playedIds.has(card.id));
+      const suits = [...new Set([...initialHand.map(card => card.suit), ...Object.keys(symbols)])];
       const rows = suits.map(suit => {
         const cards = hand.filter(card => card.suit === suit);
         const red = suit === "COEUR" || suit === "CARREAU";
@@ -1143,11 +1167,37 @@
         '" data-team="' + (seat % 2) + '"><h3>' +
         escapeHtml(nameOf(state, seat) + (seat === state.your_seat ? " (toi)" : "")) + '</h3>' + rows + '</section>';
     }).join("");
-    document.getElementById("hand-review-table").innerHTML = panels +
-      '<div class="review-centre"><small>Atout</small><strong>' + c.symbol + '</strong></div>';
+    const centre = replay ? '<div class="review-trick" aria-label="Cartes du pli">' +
+      tablePlays.map(({ seat, card }, index) =>
+        '<div class="review-play' + (card.color === "red" ? ' review-red' : '') +
+        '" data-position="' + ((seat - viewer + 4) % 4) +
+        '" title="' + escapeHtml(nameOf(state, seat)) + '"><small>' + (index + 1) +
+        '</small><b>' + escapeHtml(ranks[card.rank] || card.rank) + '</b><span>' + card.symbol + '</span></div>'
+      ).join("") + (tablePlays.length ? '' : '<small>Avancer pour voir<br>les cartes jouées</small>') + '</div>' :
+      '<small>Atout</small><strong>' + c.symbol + '</strong>';
+    const table = document.getElementById("hand-review-table");
+    table.classList.toggle("review-replaying", replay);
+    table.innerHTML = panels + '<div class="review-centre">' + centre + '</div>';
   }
 
-  document.getElementById("hand-review-deal").addEventListener("change", renderHandReview);
+  function resetHandReview() {
+    handReviewStep = 0;
+    renderHandReview();
+  }
+  document.getElementById("hand-review-deal").addEventListener("change", resetHandReview);
+  document.getElementById("hand-review-replay").addEventListener("change", resetHandReview);
+  document.getElementById("hand-review-prev").addEventListener("click", () => {
+    handReviewStep--;
+    renderHandReview();
+  });
+  document.getElementById("hand-review-next").addEventListener("click", () => {
+    handReviewStep++;
+    renderHandReview();
+  });
+  document.getElementById("hand-review-progress").addEventListener("input", event => {
+    handReviewStep = Number(event.target.value);
+    renderHandReview();
+  });
   document.getElementById("hand-review").addEventListener("click", event => {
     event.stopPropagation(); // Reviewing must not dismiss the underlying recap.
     if (event.target.id === "hand-review" || event.target.closest("#hand-review-close")) closeHandReview();
@@ -1161,7 +1211,8 @@
     select.innerHTML = handReviewState.completed_deals.map(deal =>
       '<option value="' + deal.number + '">Donne n°' + deal.number + '</option>').join("");
     select.value = String(handReviewState.completed_deals.at(-1).number);
-    renderHandReview();
+    document.getElementById("hand-review-replay").checked = false;
+    resetHandReview();
     document.getElementById("hand-review").classList.remove("hidden");
     select.focus();
   });
@@ -1171,8 +1222,10 @@
       event.preventDefault();
       closeHandReview();
     } else if (event.key === "Tab") {
-      const first = document.getElementById("hand-review-close");
-      const last = document.getElementById("hand-review-deal");
+      const controls = [...document.getElementById("hand-review").querySelectorAll("button, select, input")]
+        .filter(control => !control.disabled && !control.closest(".hidden"));
+      const first = controls[0];
+      const last = controls.at(-1);
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();

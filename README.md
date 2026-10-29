@@ -132,6 +132,10 @@ initiales autour d'un carré, couleur par couleur et triées selon le contrat.
 Le joueur reste en bas. Le sélecteur permet de revoir les donnes terminées
 de cette partie, y compris depuis le bilan final ; **Retour aux scores**
 ferme cette vue sans continuer la partie. Aucune main inachevée n'est révélée.
+Cocher **Revoir les plis, carte par carte** permet de parcourir la donne avec
+**Précédent / Suivant** ou le curseur : les mains se vident au fil des cartes
+jouées, le pli reste au centre et son gagnant est indiqué. Les fins tablées
+sont signalées, car leurs derniers plis sont résolus automatiquement.
 
 Si l'environnement `.venv` a déjà été préparé, double-cliquer sur
 **`start-server.cmd`**, ou lancer cette commande PowerShell depuis la racine :

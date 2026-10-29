@@ -572,6 +572,7 @@ class GameSession:
                     }
                     for plays, winner in zip(log.tricks, log.trick_winners)
                 ],
+                "claimed": log.claim is not None,
             }
             for number, log in enumerate(self.game.donne_logs, 1)
             if log.result is not None and log.contract is not None

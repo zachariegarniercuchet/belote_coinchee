@@ -446,6 +446,14 @@ que des logs avec résultat et contrat, et n'est envoyé qu'en `donne_end` ou
 `game_end` (liste vide pendant le jeu). Ne jamais y inclure la donne courante
 inachevée. Fermer la consultation ne valide pas le récapitulatif ; conserver
 les contrôles clavier, les couleurs d'équipe et les deux frontends.
+L'option « Revoir les plis » parcourt l'historique carte par carte, dans
+l'ordre réel des joueurs : précédent/suivant et curseur de 0 à 32 cartes.
+Les mains restantes conservent leur tri initial ; les quatre cartes du pli
+restent au centre jusqu'à l'étape suivante, avec le gagnant indiqué. Changer
+de donne ou de mode revient aux mains initiales. `completed_deals.tricks`
+contient les cartes et gagnants, uniquement au récapitulatif comme les mains.
+Le champ `claimed` signale les fins tablées dont les derniers plis ont été
+résolus automatiquement, afin de distinguer cette résolution du jeu effectif.
 
 Les salons et parties sont stockés en mémoire : un redémarrage perd leur
 état ; l'architecture actuelle suppose un seul processus serveur. Variables

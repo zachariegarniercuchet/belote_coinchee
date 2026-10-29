@@ -448,6 +448,7 @@ class BrooklynTests(unittest.TestCase):
                     for plays, winner in zip(completed.tricks, completed.trick_winners)
                 ])
                 self.assertEqual(len(review["tricks"]), 8)
+                self.assertEqual(review["claimed"], completed.claim is not None)
             for log in game.donne_logs:
                 if log.annulee:
                     continue
