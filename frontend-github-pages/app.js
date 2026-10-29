@@ -417,7 +417,9 @@
     const count = claim.remaining_tricks;
     const reason = claim.reason === "trumps"
       ? "Il ne lui reste que des atouts, et personne d’autre n’en a."
-      : "Il n’y a plus d’atouts et toutes ses cartes sont maîtresses.";
+      : ["SANS_ATOUT", "TOUT_ATOUT"].includes(state.contract?.suit)
+        ? "Toutes ses cartes sont maîtresses dans leur couleur ; aucune coupe n’est possible."
+        : "Il n’y a plus d’atouts et toutes ses cartes sont maîtresses.";
     document.getElementById("claim-detail").textContent =
       reason + (count === 1 ? " Le dernier pli est" : " Les " + count + " derniers plis sont") +
       " pour l’équipe " + (claim.seat % 2 === 0 ? "A" : "B") + ".";

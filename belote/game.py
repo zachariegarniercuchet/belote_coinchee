@@ -173,8 +173,8 @@ class Game:
         # Cas particulier (10.4) : une équipe capot/chute qui ne franchit le score
         # cible que grâce aux 20 points « imprenables » de la belote n'a pas
         # encore gagné : il lui faut un pli supplémentaire pour valider la partie.
-        # Simplification : on détecte ce cas quand le seul point marqué par
-        # l'équipe sur cette donne provient de la belote (score brut == 20).
+        # Le seul montant marqué sur cette donne provient alors des belotes
+        # (20 à une couleur, potentiellement plusieurs paires en TA).
         blocked = any(result.score_before_rounding[t] > 0 and
                       result.score_before_rounding[t] == (result.belote_points[t] if result.belote_points is not None
                                                           else BELOTE_BONUS if result.belote_team == t else 0)

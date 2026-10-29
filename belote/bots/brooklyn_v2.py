@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ..bidding import ActionType
-from ..cards import Rank, Suit
+from ..cards import Rank, Suit, ContractMode
+from .brooklyn_modes import choose_mode_bid
 from ..trick import partner_of, team_of
 from .brooklyn import BrooklynBot
 
@@ -149,7 +150,7 @@ class BrooklynBotV2(BrooklynBot):
                 choices.append((action.points, suit == team_suit, len(trumps),
                                 sum(c.points(suit) for c in trumps), action))
 
-        if bids:
+        if bids and not isinstance(bids[-1][2].suit, ContractMode):
             _, opener, _ = bids[0]
             latest = bids[-1][2]
             if not latest.is_capot:
@@ -173,5 +174,7 @@ class BrooklynBotV2(BrooklynBot):
             # from the previous suit, or spend void/tens credits on first entry.
             consider(suit, base + self._entry_bonus(hand, suit))
         if choices:
-            return max(choices, key=lambda entry: entry[:4])[-1]
-        return self._doubles_or_pass(hand, bidding_state, legal_actions)
+            action = max(choices, key=lambda entry: entry[:4])[-1]
+        else:
+            action = self._doubles_or_pass(hand, bidding_state, legal_actions)
+        return choose_mode_bid(self, hand, bidding_state, legal_actions, action)

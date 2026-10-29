@@ -3,7 +3,7 @@
 import random
 import unittest
 from itertools import product
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from belote.bidding import ActionType, BidAction, BiddingState, Contract
 from belote.bots import create_bot, get_bot_info
@@ -28,6 +28,9 @@ def contract(team=0):
 
 
 class BrooklynTests(unittest.TestCase):
+    # This regression journey isolates the historical suited-bidding policy;
+    # ace-rich "weak trump" hands may now legitimately open SA instead.
+    @patch("belote.bidding.CONTRACT_SUITS", tuple(Suit))
     def test_partnership_auction_counts_each_contribution_once(self):
         for opener_hand, support_hand, expected in [
             (cards("V_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "10_TREFLE", "7_TREFLE"),

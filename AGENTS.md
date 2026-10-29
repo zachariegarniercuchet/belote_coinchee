@@ -393,6 +393,24 @@ pour une couleur d'atout unique. Les règles des contrats à une couleur
 restent inchangées. `tests/test_contract_modes.py` couvre deux parcours :
 règles/enchères et donnes complètes console/web avec tous les bots,
 confidentialité des belotes et historique consultable.
+Brooklyn v1/v2/v3/v4 peuvent aussi ouvrir et soutenir SA/TA via
+`brooklyn_modes.py`. Ce module ne remplace pas leurs évaluations à une
+couleur. Il exige deux cartes immédiatement maîtresses (séquences depuis
+l'as en SA, depuis le valet en TA), estime les survivantes après sacrifice
+aux honneurs absents (85 % immédiates, 55 % à établir), ajoute les belotes
+TA, sans crédit de coupe. 30 points estimés donnent 80, puis +10 d'enchère
+par tranche de 10 estimés ; ce sont des paramètres initiaux non calibrés.
+Soutien : +10 par carte d'une séquence immédiatement maîtresse, +20 par
+belote TA ; crédits dépensés une seule fois depuis la dernière enchère
+de l'équipe, remis à zéro sur changement de mode/couleur. L'ouvreur ne
+recompte pas sa propre belote au rebid. À montant égal garder son choix
+historique ; une coinche évaluée pour une couleur n'est pas utilisée pour
+SA/TA. Un capot SA/TA n'est annoncé que si les huit cartes sont maîtresses.
+Les historiques de benchmark antérieurs à SA/TA ne mesurent pas ce choix
+de six contrats ; conserver leur révision et ne pas les présenter comme
+les performances actuelles. Au jeu SA/TA, encaisser les maîtresses,
+établir une couleur longue sinon ; charger un partenaire jugé sûr avec
+les points non maîtres, sans offrir un as SA/valet TA s'il reste un déchet.
 La belote/rebelote est attribuée
 automatiquement au détenteur du roi et de la dame d'atout en main initiale.
 Cette détection reste privée : envoyer `belote_team` et `belote_holder_seat`

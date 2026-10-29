@@ -144,10 +144,15 @@ est obligatoire, même sur le partenaire. En SA : ordre A–10–R–D–V–9�
 as à 19 points, aucune belote. En TA : ordre V–9–A–10–R–D–8–7,
 valeurs 13–9–6–5–3–2–0–0, jusqu'à quatre belotes (20 points par paire).
 Les deux modes totalisent 152 points de cartes, puis le dix de der habituel.
+Le calcul existant des primes de contrat, coinche et surcoinche est conservé.
 Les montants proposés vont jusqu'à 160 en SA, 180 à une couleur et 240 en
 TA (belotes comprises), puis Capot ; coinche et surcoinche restent possibles.
 Chaque belote TA est révélée séparément à sa première carte annoncée.
 Les autres annonces (tierce, cinquante, cent, carré) restent hors périmètre.
+Brooklyn v1 à v4 savent ouvrir et soutenir SA/TA : contrôles et cartes
+récupérables, belotes TA, crédits du partenaire dépensés une seule fois.
+Ces nouvelles heuristiques restent à calibrer ; les anciens résultats de
+benchmark concernent uniquement le jeu antérieur à quatre contrats.
 
 Si l'environnement `.venv` a déjà été préparé, double-cliquer sur
 **`start-server.cmd`**, ou lancer cette commande PowerShell depuis la racine :

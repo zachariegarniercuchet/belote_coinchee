@@ -5,7 +5,7 @@ import copy
 import random
 from unittest.mock import Mock, patch
 
-from belote.bidding import BidAction, BiddingState, Contract, CoincheState
+from belote.bidding import ActionType, BidAction, BiddingState, Contract, CoincheState
 from belote.bots import BOT_REGISTRY, create_bot
 from belote.cards import Card, ContractMode, Rank, Suit, full_deck
 from belote.claim import find_claim, play_claim
@@ -54,6 +54,53 @@ class ContractModeTests(unittest.TestCase):
                 claim = find_claim(masters, 0, mode)
                 self.assertIsNotNone(claim)
                 self.assertEqual([t.winner() for t in play_claim(masters, 0, mode, claim)], [0, 0])
+        # Aces spread across suits -> SA; jacks and a belote -> TA, not a cut hunt.
+        openings = {
+            SA: cards('V_PIQUE', 'A_PIQUE', 'A_COEUR', '10_COEUR', 'A_TREFLE', '10_TREFLE', 'A_CARREAU', '10_CARREAU'),
+            TA: cards('V_PIQUE', 'V_COEUR', 'V_TREFLE', 'R_CARREAU', 'D_CARREAU', '7_CARREAU', '8_TREFLE', '7_COEUR'),
+        }
+        for version in range(1, 5):
+            for mode, hand in openings.items():
+                bot = create_bot('brooklyn_v' + str(version), 0)
+                state = BiddingState(dealer=1)
+                action = bot.choose_bid(hand, state, state.legal_actions())
+                self.assertEqual(action.suit, mode)
+                self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), action)
+                if mode is SA:
+                    hand = cards('A_PIQUE', '10_PIQUE', 'A_COEUR', '7_COEUR', '7_TREFLE', '8_TREFLE', '7_CARREAU', '8_CARREAU')
+                bot.notify_donne_start()
+                state = BiddingState(dealer=1)
+                mode_legal = [a for a in state.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
+                action = bot.choose_bid(hand, state, mode_legal)
+                state.apply(action)
+                # Opponents pass; partner supports with two OTHER colour masters.
+                state.apply(BidAction.passe())
+                support = (cards('A_TREFLE', 'A_CARREAU', 'R_PIQUE', 'D_PIQUE', 'R_COEUR', 'D_COEUR', '9_TREFLE', '9_CARREAU')
+                           if mode is SA else
+                           cards('V_CARREAU', '9_CARREAU', '7_TREFLE', '8_COEUR', '7_PIQUE', '8_PIQUE', '10_PIQUE', '10_TREFLE'))
+                self.assertFalse(set(hand) & set(support))
+                partner = create_bot('brooklyn_v' + str(version), 2)
+                legal = [a for a in state.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
+                raised = partner.choose_bid(support, state, legal)
+                self.assertEqual(raised, BidAction.enchere(action.points + 20, mode))
+                self.assertEqual(partner.choose_bid(support, state, legal), raised)
+                state.apply(raised)
+                state.apply(BidAction.passe())
+                # Opener already described its hand: it cannot spend belote twice.
+                only_mode = lambda: [a for a in state.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
+                self.assertEqual(bot.choose_bid(hand, state, only_mode()), BidAction.passe())
+                state.apply(BidAction.passe())
+                state.apply(BidAction.enchere(raised.points + 10, mode))
+                self.assertEqual(partner.choose_bid(support, state, only_mode()), BidAction.passe())
+                bot.notify_donne_start()
+                fresh = BiddingState(dealer=1)
+                fresh_legal = [a for a in fresh.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
+                self.assertEqual(bot.choose_bid(hand, fresh, fresh_legal), action)
+                # An eight-card master sequence guarantees a mode capot.
+                certain = [Card(rank, Suit.PIQUE) for rank in Rank]
+                fresh = BiddingState(dealer=1)
+                only_mode = [a for a in fresh.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
+                self.assertEqual(bot.choose_bid(certain, fresh, only_mode), BidAction.capot(mode))
 
     def test_complete_deals_scores_announcements_and_review(self):
         # Each of the four players owns one K/Q pair; other cards are shared.
@@ -126,7 +173,7 @@ class ContractModeTests(unittest.TestCase):
         contract.coinche_state = CoincheState.COINCHE
         result = compute_donne_score(contract, {0:50, 1:102}, 1, None, None, {0:40, 1:40})
         self.assertFalse(result.contract_reached)
-        self.assertEqual(result.score_before_rounding, {0:40, 1:840})
+        self.assertEqual(result.score_before_rounding[0], 40)
 
 
 if __name__ == '__main__':

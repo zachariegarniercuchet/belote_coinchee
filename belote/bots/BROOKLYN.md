@@ -3,6 +3,36 @@
 Rule-based card play, with Spark's existing bidding policy. No hidden hands,
 Monte Carlo search or changes to the existing bots/default bot.
 
+## Sans Atout / Tout Atout
+
+All four Brooklyn versions now also consider SA/TA, without replacing their
+historical suited bidding/playing policies. This changes the auction space:
+older benchmark snapshots do not measure the current six-contract game.
+Rules and values follow §11 of the repository's FFB PDF.
+
+- Open with at least two immediate controls, counted as uninterrupted
+  sequences from A at SA or J at TA. Value plausible survivors after
+  sacrificing small cards to absent honours: 85% for immediate controls,
+  55% for cards requiring establishment, plus 20 per TA belote.
+- A recoverable value of 30 opens 80, then each further 10 funds another 10.
+  These initial thresholds are not calibrated success probabilities.
+  SA has no belote and neither mode receives void/cutting credits.
+- Support with +10 per immediate control, +20 per TA belote. Spend each
+  contribution once, measured from the last team bid, ignoring enemy
+  overcalls. Suit/mode switches start a fresh budget. Do not add opener's
+  belote again at rebid. Prefer the existing suited choice on equal value.
+- Bid a mode capot only when all eight own cards are immediate controls.
+  Do not coinche SA/TA using the old single-trump-suit evaluator.
+- Play without cutting/hunting: cash public-information masters, otherwise
+  establish a long suit. Feed a safe partner with non-master points while
+  preserving SA aces/TA jacks if waste is available. Before last seat, use
+  the weakest current winner when stronger cards could still overtake it.
+  TA legal play enforces climbing even on a winning partner.
+
+Other non-random families can play SA/TA using the same public-information
+card policy; their bidding remains suited. Spark's single-trump simulations
+are not used for mode contracts.
+
 ## Playing style
 
 Latest shared-policy benchmark: [weakest winning trump in attack](../../benchmarks/2026-10-26-trump-control.md),
