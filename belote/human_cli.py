@@ -10,14 +10,14 @@ from .player import Player
 from .trick import TrickState
 
 
-def format_hand(hand: list[Card]) -> str:
+def format_hand(hand: list[Card], atout=None) -> str:
     by_suit: dict[Suit, list[Card]] = {}
     for c in hand:
         by_suit.setdefault(c.suit, []).append(c)
     parts = []
     for suit, cards in by_suit.items():
         parts.append(f"{suit.symbol()}: " + " ".join(str(c) for c in sorted(
-            cards, key=lambda c: c.nonatout_strength_index())))
+            cards, key=lambda c: c.strength_index(atout))))
     return "   |   ".join(parts)
 
 
@@ -80,7 +80,7 @@ class HumanCLIPlayer(Player):
             print("Pli en cours :", "  ".join(f"J{p}:{c}" for p, c in trick_state.plays))
         else:
             print("C'est toi qui entames ce pli.")
-        print("Ta main :", format_hand(hand))
+        print("Ta main :", format_hand(hand, trick_state.atout))
         print("Cartes jouables :")
         for i, c in enumerate(legal_cards):
             print(f"  [{i}] {c}")

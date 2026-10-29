@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .bidding import Contract, CoincheState
-from .cards import Card, Rank, Suit
+from .cards import Card, Rank, Suit, ContractMode, Trump
 
 BELOTE_BONUS = 20
 DIX_DE_DER_NORMAL = 10
@@ -22,13 +22,23 @@ DIX_DE_DER_CAPOT = 100
 CHUTE_BASE = 160
 
 
-def find_belote_holder(initial_hands: dict[int, list[Card]], atout: Suit) -> int | None:
+def find_belotes(initial_hands: dict[int, list[Card]], atout: Trump) -> dict[Suit, int]:
+    """Paires couleur -> détenteur : aucune en SA, jusqu'à quatre en TA (§11)."""
+    if atout is ContractMode.SANS_ATOUT:
+        return {}
+    suits = tuple(Suit) if atout is ContractMode.TOUT_ATOUT else (atout,)
+    return {suit: seat for suit in suits for seat, hand in initial_hands.items()
+            if {Rank.ROI, Rank.DAME} <= {c.rank for c in hand if c.suit == suit}}
+
+
+def belote_points_by_team(belotes: dict[Suit, int]) -> dict[int, int]:
+    return {team: BELOTE_BONUS * sum(seat % 2 == team for seat in belotes.values()) for team in (0, 1)}
+
+
+def find_belote_holder(initial_hands: dict[int, list[Card]], atout: Trump) -> int | None:
     """Retourne le joueur qui avait Roi+Dame d'atout en main au départ, sinon None."""
-    for player, hand in initial_hands.items():
-        ranks = {c.rank for c in hand if c.suit == atout}
-        if Rank.ROI in ranks and Rank.DAME in ranks:
-            return player
-    return None
+    holders = list(find_belotes(initial_hands, atout).values())
+    return holders[0] if len(holders) == 1 else None
 
 
 def round_to_nearest_ten(score: int) -> int:
@@ -48,6 +58,7 @@ class DonneResult:
     score_before_rounding: dict[int, int]
     final_scores: dict[int, int]        # arrondis à la dizaine
     total_points: dict[int, int] | None = None  # plis + dix de der + belote (base de comparaison du contrat)
+    belote_points: dict[int, int] | None = None  # Plusieurs paires possibles en TA.
 
     def __repr__(self) -> str:
         return (f"Résultat: preneurs(équipe {self.preneur_team})="
@@ -61,6 +72,7 @@ def compute_donne_score(
     last_trick_winner: int,
     capot_team: int | None,
     belote_team: int | None,
+    belote_points: dict[int, int] | None = None,
 ) -> DonneResult:
     """
     Calcule le score d'une donne terminée, conformément à la section 10.1.
@@ -72,12 +84,18 @@ def compute_donne_score(
     """
     preneur_team = contract.team
     defense_team = 1 - preneur_team
+    bonuses = ({t: belote_points.get(t, 0) for t in (0, 1)} if belote_points is not None else
+               {t: BELOTE_BONUS if belote_team == t else 0 for t in (0, 1)})
+    if contract.suit is ContractMode.SANS_ATOUT:
+        bonuses = {0: 0, 1: 0}
+    bonus_teams = [t for t in (0, 1) if bonuses[t]]
+    belote_team = bonus_teams[0] if len(bonus_teams) == 1 else None
 
     dix_der_value = DIX_DE_DER_CAPOT if capot_team is not None else DIX_DE_DER_NORMAL
     dix_der_team = capot_team if capot_team is not None else (last_trick_winner % 2)
 
     def belote_bonus(team: int) -> int:
-        return BELOTE_BONUS if belote_team == team else 0
+        return bonuses[team]
 
     raw_total = {}
     for team in (0, 1):
@@ -135,4 +153,5 @@ def compute_donne_score(
         score_before_rounding=score,
         final_scores=final_scores,
         total_points=dict(raw_total),
+        belote_points=bonuses,
     )

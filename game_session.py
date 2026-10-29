@@ -26,7 +26,7 @@ from belote.cards import Rank, cut_deck, deal, new_shuffled_deck
 from belote.claim import find_claim, play_claim
 from belote.game import DonneLog, Game
 from belote.player import Player
-from belote.scoring import compute_donne_score, find_belote_holder
+from belote.scoring import compute_donne_score, find_belotes, belote_points_by_team
 from belote.trick import TrickState, team_of
 
 from extensions import socketio
@@ -62,6 +62,7 @@ class GameContext:
         self.claim = None              # mains révélées uniquement lorsqu'un tablage est certain
         self.belote_team = None          # équipe détenant la belote (connue dès la fin des enchères)
         self.belote_holder_seat = None   # siège du détenteur Roi+Dame d'atout
+        self.belotes = {}               # paires privées couleur -> siège (TA : jusqu'à quatre)
         self.belote_announcements = []  # annonces émises à la pose réelle du roi/de la dame
         self.waiting_seat = None
         self.waiting_kind = None       # "bid" | "card" | None
@@ -153,6 +154,7 @@ class NetworkGame(Game):
         ctx.bidding_state = bidding_state
         ctx.belote_team = None
         ctx.belote_holder_seat = None
+        ctx.belotes = {}
         ctx.belote_announcements = []
         self.session.broadcast()
         if redealing:
@@ -204,8 +206,12 @@ class NetworkGame(Game):
         leader = (dealer - 1) % 4
         # Connue du moteur dès la fin des enchères pour calculer le score,
         # mais privée jusqu'à la première annonce réelle (ou au bilan final).
-        belote_holder = find_belote_holder(initial_hands, atout)
-        belote_team = team_of(belote_holder) if belote_holder is not None else None
+        ctx.belotes = find_belotes(initial_hands, atout)
+        bonuses = belote_points_by_team(ctx.belotes)
+        holders = list(ctx.belotes.values())
+        belote_holder = holders[0] if len(holders) == 1 else None
+        teams = [t for t in (0, 1) if bonuses[t]]
+        belote_team = teams[0] if len(teams) == 1 else None
         ctx.belote_holder_seat = belote_holder
         ctx.belote_team = belote_team
         trick_points = {0: 0, 1: 0}
@@ -272,10 +278,12 @@ class NetworkGame(Game):
                 trick.play(p, card)
                 hands[p].remove(card)
                 ctx.hands[p] = list(hands[p])
-                if p == belote_holder and card.suit == atout and card.rank in (Rank.ROI, Rank.DAME):
+                if ctx.belotes.get(card.suit) == p and card.rank in (Rank.ROI, Rank.DAME):
                     ctx.belote_announcements.append({
                         "seat": p,
-                        "label": "Rebelote !" if ctx.belote_announcements else "Belote !",
+                        "suit": card.suit.name,
+                        "label": "Rebelote !" if any(entry["suit"] == card.suit.name
+                                                      for entry in ctx.belote_announcements) else "Belote !",
                         "card_id": card_id(card),
                     })
 
@@ -314,7 +322,8 @@ class NetworkGame(Game):
             trick_points=trick_points,
             last_trick_winner=last_trick_winner,
             capot_team=capot_team,
-            belote_team=belote_team,
+            belote_team=None,
+            belote_points=bonuses,
         )
         log.result = result
 
@@ -541,6 +550,8 @@ class GameSession:
             "raw_points": {"0": r.raw_points.get(0, 0), "1": r.raw_points.get(1, 0)},
             "capot_team": r.capot_team,
             "belote_team": r.belote_team,
+            "belote_points": {str(t): (r.belote_points.get(t, 0) if r.belote_points is not None else
+                                      BELOTE_BONUS if r.belote_team == t else 0) for t in (0, 1)},
             "dix_de_der_team": r.dix_de_der_team,
             "dix_de_der_value": dix_value,
             "belote_bonus": BELOTE_BONUS,
@@ -581,7 +592,13 @@ class GameSession:
     def _build_common(self):
         ctx = self.ctx
         board_seat = self.room.seats.get("board")
-        belote_visible = bool(ctx.belote_announcements) or ctx.last_donne_result is not None
+        # Each pair has its OWN disclosure boundary: announcing hearts must
+        # not leak a still-hidden spade pair in TA.
+        announced_suits = {entry.get("suit") for entry in ctx.belote_announcements}
+        visible_belotes = {s: p for s, p in ctx.belotes.items()
+                           if s.name in announced_suits or ctx.last_donne_result is not None}
+        visible_bonuses = belote_points_by_team(visible_belotes)
+        visible_teams = [t for t in (0, 1) if visible_bonuses[t]]
         return {
             "code": self.room.code,
             "game_id": self.game_id,
@@ -619,8 +636,9 @@ class GameSession:
                 "0": ctx.tricks_won_this_donne.get(0, 0),
                 "1": ctx.tricks_won_this_donne.get(1, 0),
             },
-            "belote_team": ctx.belote_team if belote_visible else None,
-            "belote_holder_seat": ctx.belote_holder_seat if belote_visible else None,
+            "belote_team": visible_teams[0] if len(visible_teams) == 1 else None,
+            "belote_holder_seat": next(iter(visible_belotes.values())) if len(visible_belotes) == 1 else None,
+            "belote_points": {str(t): visible_bonuses[t] for t in (0, 1)},
             "belote_announcements": list(ctx.belote_announcements),
             "last_donne_result": self._result_dict(),
             "completed_deals": self._completed_deals(),

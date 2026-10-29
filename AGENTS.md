@@ -52,8 +52,6 @@
 
 ## TODO — bidding variants (deferred)
 
-- Add Tout Atout (TA) and Sans Atout (SA): define contract modes, card strength
-  and values, legal play, scoring, bot behavior and UI together.
 - Générale means all eight tricks won by the bidder alone, rather than by
   their team. Keep its selector entry commented out after Capot until the
   contract rules, validation and scoring are specified and implemented.
@@ -371,8 +369,31 @@ animent les changements d'ordre sur 420 ms. Respecter la préférence de mouveme
 réduit et vérifier les actions sur l'état courant, sans accumuler de gestionnaires
 de clic/glissement lors des mises à jour Socket.IO.
 
-Les annonces (tierce, cinquante, cent, carré) et les variantes Sans Atout /
-Tout Atout ne sont pas implémentées. La belote/rebelote est attribuée
+Les annonces (tierce, cinquante, cent, carré) ne sont pas implémentées.
+Sans Atout et Tout Atout suivent le §11 du PDF du dépôt : `ContractMode`
+est distinct de `Suit` (le paquet garde 32 cartes). `Contract.suit`,
+`BidAction.suit` et `TrickState.atout` acceptent une couleur ou un mode ;
+les identifiants réseau sont `SANS_ATOUT` / `TOUT_ATOUT`, symboles SA / TA.
+Les deux modes interdisent les coupes ; TA impose de monter dans la couleur
+demandée, même sur le partenaire. SA utilise l'ordre hors atout, avec l'as
+à 19 ; TA l'ordre atout, valeurs V=13, 9=9, A=6, 10=5, R=3, D=2.
+`Card.strength_index` centralise le tri par mode. Le tablage sans coupe
+compare aussi cette force. Les plafonds numériques sont 160 SA, 180 couleur,
+240 TA, puis Capot ; les boutons −/+ suivent les actions de la couleur/mode.
+SA n'a pas de belote ; TA admet les quatre paires, y compris dans les deux
+équipes. `find_belotes` renvoie couleur→siège ; `DonneResult.belote_points`
+et les états web portent les montants par équipe. Les anciens champs
+`belote_team` / `belote_holder_seat` restent compatibles quand uniques.
+Ne révéler que chaque paire déjà annoncée (ou toutes au bilan), jamais
+les autres paires parce que l'une vient de l'être. Les bulles TA précisent
+la couleur et leur compteur Belote/Rebelote est propre à chaque paire.
+Les bots utilisent un jeu SA/TA commun dans `belote/bots/contract_modes.py`
+sans passer dans leur ancienne chasse ni dans les simulations Spark prévues
+pour une couleur d'atout unique. Les règles des contrats à une couleur
+restent inchangées. `tests/test_contract_modes.py` couvre deux parcours :
+règles/enchères et donnes complètes console/web avec tous les bots,
+confidentialité des belotes et historique consultable.
+La belote/rebelote est attribuée
 automatiquement au détenteur du roi et de la dame d'atout en main initiale.
 Cette détection reste privée : envoyer `belote_team` et `belote_holder_seat`
 à `null` tant qu'aucune carte de la paire n'a été annoncée et que le bilan

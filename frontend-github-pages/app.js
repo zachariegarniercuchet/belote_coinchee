@@ -27,7 +27,7 @@
   // dure la phase d'enchères (la nouvelle annonce d'un joueur remplace la
   // précédente), puis disparaissent une fois la phase terminée.
   const bidBubbleState = { donne: null, count: 0, clearedForPhase: false };
-  const beloteBubbleState = { donne: null, count: 0, timer: null };
+  const beloteBubbleState = { donne: null, count: 0, timers: new Map() };
 
   // Formulaire d'enchère (popup centrale) : on choisit couleur + montant,
   // puis on valide avec "Confirmer". Mémorisé entre deux state_update.
@@ -630,8 +630,10 @@
       "Donne n°" + (state.donne_number || 1) + " · Plis — ",
       teamText(0, "Équipe A " + state.tricks_won_this_donne["0"]),
       " · ", teamText(1, "Équipe B " + state.tricks_won_this_donne["1"]),
-      ((state.belote_team !== null && state.belote_team !== undefined)
-        ? " · Belote Équipe " + (String(state.belote_team) === "0" ? "A" : "B") + " (+20)" : "") +
+      ["0", "1"].map(team => {
+        const bonus = state.belote_points?.[team] ?? (String(state.belote_team) === team ? 20 : 0);
+        return bonus ? " · Belote Équipe " + (team === "0" ? "A" : "B") + " (+" + bonus + ")" : "";
+      }).join("") +
       turnTxt);
   }
 
@@ -792,10 +794,10 @@
   }
 
   function resetBeloteBubbles(donne = null) {
-    clearTimeout(beloteBubbleState.timer);
+    beloteBubbleState.timers.forEach(timer => clearTimeout(timer));
     beloteBubbleState.donne = donne;
     beloteBubbleState.count = 0;
-    beloteBubbleState.timer = null;
+    beloteBubbleState.timers.clear();
     document.querySelectorAll(".belote-bubble").forEach(bubble => bubble.remove());
   }
 
@@ -803,20 +805,24 @@
     if (beloteBubbleState.donne !== state.donne_number) resetBeloteBubbles(state.donne_number);
     const announcements = state.belote_announcements || [];
     if (announcements.length <= beloteBubbleState.count) return;
+    const fresh = announcements.slice(beloteBubbleState.count);
     beloteBubbleState.count = announcements.length;
     if (state.phase !== "trick") return;
-
-    const entry = announcements[announcements.length - 1];
     const plays = (state.current_trick && state.current_trick.length
       ? state.current_trick : state.completed_trick) || [];
     // À la reconnexion, ne pas rejouer une annonce dont la carte a déjà été ramassée.
-    if (!plays.some(play => play.seat === entry.seat && play.card.id === entry.card_id)) return;
-    clearTimeout(beloteBubbleState.timer);
-    showBidBubble(entry.seat, { type: "BELOTE", label: entry.label });
-    const bubble = document.querySelector("#seat-marker-" + entry.seat + " .speech-bubble");
-    bubble.classList.add("belote-bubble");
-    bubble.setAttribute("role", "status");
-    beloteBubbleState.timer = setTimeout(() => bubble.remove(), 3200);
+    fresh.forEach(entry => {
+      if (!plays.some(play => play.seat === entry.seat && play.card.id === entry.card_id)) return;
+      clearTimeout(beloteBubbleState.timers.get(entry.seat));
+      const label = state.contract?.suit === "TOUT_ATOUT"
+        ? entry.label + " " + ({ PIQUE: "♠", COEUR: "♥", CARREAU: "♦", TREFLE: "♣" }[entry.suit] || "")
+        : entry.label;
+      showBidBubble(entry.seat, { type: "BELOTE", label });
+      const bubble = document.querySelector("#seat-marker-" + entry.seat + " .speech-bubble");
+      bubble.classList.add("belote-bubble");
+      bubble.setAttribute("role", "status");
+      beloteBubbleState.timers.set(entry.seat, setTimeout(() => bubble.remove(), 3200));
+    });
   }
 
   function showBidBubble(seat, entry) {
@@ -997,12 +1003,13 @@
       });
       if (!suits.find(s => s.name === bidFormState.suit)) bidFormState.suit = suits[0].name;
 
-      const pointsSet = new Set();
-      let hasCapot = false;
-      enchereActions.forEach(a => {
-        if (a.is_capot) hasCapot = true;
-        else if (a.points != null) pointsSet.add(a.points);
-      });
+      const amountsForSuit = () => {
+        const allowed = enchereActions.filter(a => a.suit === bidFormState.suit);
+        const values = [...new Set(allowed.filter(a => !a.is_capot).map(a => a.points))].sort((a, b) => a - b);
+        const amounts = values.map(points => ({ label: String(points), points, isCapot: false }));
+        if (allowed.some(a => a.is_capot)) amounts.push({ label: "Capot", points: null, isCapot: true });
+        return amounts;
+      };
 
       const suitRow = document.createElement("div");
       suitRow.className = "bid-suit-row";
@@ -1011,20 +1018,21 @@
         const btn = document.createElement("button");
         btn.className = "bid-suit-btn" + (s.name === bidFormState.suit ? " selected" : "");
         btn.textContent = s.symbol;
+        btn.title = s.name === "SANS_ATOUT" ? "Sans Atout" : s.name === "TOUT_ATOUT" ? "Tout Atout" : s.symbol;
         btn.style.color = (s.name === "COEUR" || s.name === "CARREAU") ? "#e0576a" : "#f7f1e3";
         btn.onclick = () => {
           bidFormState.suit = s.name;
           Object.entries(suitButtons).forEach(([name, b]) => b.classList.toggle("selected", name === s.name));
-          refreshConfirm();
+          amounts = amountsForSuit();
+          const index = amounts.findIndex(amount => amount.points === bidFormState.points && amount.isCapot === bidFormState.isCapot);
+          selectAmount(index >= 0 ? index : 0);
         };
         suitButtons[s.name] = btn;
         suitRow.appendChild(btn);
       });
       container.appendChild(suitRow);
 
-      const amounts = Array.from(pointsSet).sort((a, b) => a - b).map(points =>
-        ({ label: String(points), points, isCapot: false }));
-      if (hasCapot) amounts.push({ label: "Capot", points: null, isCapot: true });
+      let amounts = amountsForSuit();
       // TODO Générale : les huit plis par le seul annonceur ; règles et score à définir.
       // amounts.push({ label: "Générale", points: null, isCapot: false, isGenerale: true });
       let amountIndex = amounts.findIndex(amount =>
@@ -1157,7 +1165,7 @@
         const cards = hand.filter(card => card.suit === suit);
         const red = suit === "COEUR" || suit === "CARREAU";
         return '<div class="review-suit' + (red ? ' review-red' : '') +
-          (suit === c.suit ? ' review-trump' : '') + '">' +
+          (suit === c.suit || c.suit === "TOUT_ATOUT" ? ' review-trump' : '') + '">' +
           '<span class="review-symbol" title="' + suit + '">' + symbols[suit] + '</span>' +
           '<span class="review-ranks">' +
           (cards.length ? cards.map(card => '<span>' + escapeHtml(ranks[card.rank] || card.rank) + '</span>').join("")
@@ -1174,7 +1182,7 @@
         '" title="' + escapeHtml(nameOf(state, seat)) + '"><small>' + (index + 1) +
         '</small><b>' + escapeHtml(ranks[card.rank] || card.rank) + '</b><span>' + card.symbol + '</span></div>'
       ).join("") + (tablePlays.length ? '' : '<small>Avancer pour voir<br>les cartes jouées</small>') + '</div>' :
-      '<small>Atout</small><strong>' + c.symbol + '</strong>';
+      '<small>Contrat</small><strong>' + c.symbol + '</strong>';
     const table = document.getElementById("hand-review-table");
     table.classList.toggle("review-replaying", replay);
     table.innerHTML = panels + '<div class="review-centre">' + centre + '</div>';
@@ -1267,13 +1275,14 @@
       ).join("");
       const dixVal = r.dix_de_der_value || 10;
       const belVal = r.belote_bonus || 20;
+      const beloteOf = tk => r.belote_points?.[tk] ?? (String(r.belote_team) === tk ? belVal : 0);
       const totalOf = (tk) => (r.total_points ? r.total_points[tk]
         : (r.raw_points[tk] + ((r.dix_de_der_team !== null && String(r.dix_de_der_team) === tk) ? dixVal : 0)
-          + ((r.belote_team !== null && String(r.belote_team) === tk) ? belVal : 0)));
+          + beloteOf(tk)));
       const detailTextOf = (tk) => {
         let txt = "Plis " + r.raw_points[tk];
         if (r.dix_de_der_team !== null && String(r.dix_de_der_team) === tk) txt += " + dix de der " + dixVal;
-        if (r.belote_team !== null && String(r.belote_team) === tk) txt += " + belote " + belVal;
+        if (beloteOf(tk)) txt += " + belote " + beloteOf(tk);
         txt += " = " + totalOf(tk);
         return txt;
       };

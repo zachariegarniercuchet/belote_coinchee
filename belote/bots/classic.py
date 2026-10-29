@@ -9,7 +9,8 @@ from __future__ import annotations
 import random
 
 from ..bidding import ActionType, BidAction, BiddingState
-from ..cards import Card, Suit, Rank, ATOUT_POINTS, ATOUT_ORDER, NONATOUT_ORDER
+from ..cards import Card, Suit, Rank, ATOUT_POINTS, ATOUT_ORDER, NONATOUT_ORDER, ContractMode
+from .contract_modes import choose_mode_card
 from ..player import Player
 from ..trick import TrickState, trick_winner, team_of, partner_of
 
@@ -68,7 +69,7 @@ class HeuristicBot(Player):
             prior = plays[:i]
             if card.suit != suit_led:
                 voids.append((player, suit_led))
-            if suit_led != atout and card.suit != atout:
+            if isinstance(atout, Suit) and suit_led != atout and card.suit != atout:
                 atout_prior = [(p, c) for p, c in prior if c.suit == atout]
                 if atout_prior:
                     best_is_atout = True
@@ -203,6 +204,8 @@ class HeuristicBot(Player):
         return self._longest_suit_lead(hand, legal_cards, atout)
 
     def choose_card(self, hand, trick_state: TrickState, legal_cards: list[Card]):
+        if isinstance(trick_state.atout, ContractMode):
+            return choose_mode_card(self, hand, trick_state, legal_cards)
         atout = trick_state.atout
 
         if not trick_state.plays:

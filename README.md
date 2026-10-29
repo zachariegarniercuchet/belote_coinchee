@@ -137,6 +137,18 @@ Cocher **Revoir les plis, carte par carte** permet de parcourir la donne avec
 jouées, le pli reste au centre et son gagnant est indiqué. Les fins tablées
 sont signalées, car leurs derniers plis sont résolus automatiquement.
 
+Les enchères proposent aussi **SA (Sans Atout)** et **TA (Tout Atout)**,
+selon la section 11 de `REGLES-DE-LA-BELOTE-COINCHEE.pdf` :
+aucune coupe dans les deux modes ; en TA, monter dans la couleur demandée
+est obligatoire, même sur le partenaire. En SA : ordre A–10–R–D–V–9–8–7,
+as à 19 points, aucune belote. En TA : ordre V–9–A–10–R–D–8–7,
+valeurs 13–9–6–5–3–2–0–0, jusqu'à quatre belotes (20 points par paire).
+Les deux modes totalisent 152 points de cartes, puis le dix de der habituel.
+Les montants proposés vont jusqu'à 160 en SA, 180 à une couleur et 240 en
+TA (belotes comprises), puis Capot ; coinche et surcoinche restent possibles.
+Chaque belote TA est révélée séparément à sa première carte annoncée.
+Les autres annonces (tierce, cinquante, cent, carré) restent hors périmètre.
+
 Si l'environnement `.venv` a déjà été préparé, double-cliquer sur
 **`start-server.cmd`**, ou lancer cette commande PowerShell depuis la racine :
 

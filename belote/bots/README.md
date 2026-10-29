@@ -12,6 +12,7 @@
 | `brooklyn_v3.py` | `BrooklynBotV3` — estimation des cartes récupérables et retour d'atout au partenaire |
 | `brooklyn_v4.py` | `BrooklynBotV4` — enchères v3, gros gagnant à l'atout, petite coupe en attaque, dernier atout gardé après la chasse |
 | `registry.py`  | `BOT_REGISTRY` : le catalogue officiel + fabriques                   |
+| `contract_modes.py` | Jeu SA/TA sur informations publiques, distinct des anciennes politiques à une couleur |
 | `weights/`     | **n'existe pas encore** — créé le jour où un bot a des poids (voir §3) |
 
 Pour la stratégie Brooklyn, les premiers benchmarks et la correction des
