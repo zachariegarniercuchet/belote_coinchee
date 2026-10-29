@@ -773,12 +773,13 @@ input::placeholder { color: rgba(247,241,227,.4); }
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 6px;
-  position: absolute;
-  top: var(--bid-top, 50%);
-  left: var(--bid-left, 50%);
+  align-content: center;
+  position: fixed;
+  top: var(--bid-fixed-top, 50vh);
+  left: var(--bid-fixed-left, 50vw);
   transform: translate(-50%, -50%);
-  width: var(--bid-width, min(280px, 86%));
-  max-height: var(--bid-max-height, 70%);
+  width: var(--bid-fixed-width, min(264px, calc(100vw - 32px)));
+  height: var(--bid-fixed-height, 150px);
   overflow-y: auto;
   margin: 0;
   background: var(--wood);
@@ -794,8 +795,6 @@ input::placeholder { color: rgba(247,241,227,.4); }
   to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 .bid-controls.hidden { display: none !important; }
-#screen-game.bidding-scroll { overflow-y: auto; }
-.table-felt.bid-needs-room { min-height: 480px; }
 .bid-title {
   position: absolute;
   width: 1px;
@@ -839,7 +838,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
   flex-shrink: 0;
 }
 .bid-chip:active { background: var(--gold); color: var(--ink); }
-.bid-actions-row { grid-column: 1 / -1; display: flex; gap: 6px; margin: 0; }
+.bid-actions-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; margin: 0; }
 .bid-actions-row .bid-chip { flex: 1; text-align: center; min-height: 40px; }
 .bid-chip.pass { background: rgba(255,255,255,.08); }
 .bid-chip.coinche { background: var(--red); color: #fff; }
@@ -858,6 +857,10 @@ input::placeholder { color: rgba(247,241,227,.4); }
   color: var(--ink);
 }
 .bid-confirm-btn:disabled { opacity: .4; }
+.bid-controls.bid-compact { padding: 6px; gap: 4px; }
+.bid-compact .bid-suit-btn, .bid-compact .bid-step-btn, .bid-compact .bid-actions-row .bid-chip { min-height: 32px; }
+.bid-compact .bid-amount { font-size: 20px; }
+.bid-compact .bid-confirm-btn { min-height: 32px; padding: 4px 6px; }
 
 /* ---------- Overlays ---------- */
 .overlay {
@@ -1045,6 +1048,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
   .table-felt { min-height: 0; border-width: 3px; border-radius: 14px; }
   .seat-marker { font-size: 10px; padding: 4px 6px; }
   .seat-marker .seat-avatar { --avatar-size: 18px; }
+  .seat-marker[data-position="0"] { left: 12%; }
   .tricks-info { font-size: 11px; padding: 5px 8px; }
   .info-strip { margin-top: 6px; }
 }

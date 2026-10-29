@@ -356,13 +356,14 @@ L'entrée Générale reste commentée après Capot dans
 les deux interfaces ; la Générale reste suivie dans les TODO ci-dessus.
 Le panneau d'enchères utilise trois lignes compactes : six choix de contrat,
 montant −/+ avec Confirmer à côté, puis Passer/Coincher. Le titre reste
-accessible aux lecteurs d'écran. `bidPanelPlacement` choisit une zone libre
-à partir des rectangles réels des cartes, joueurs, bulles et tas ; le
-placement est recalculé après les états et redimensionnements. Sur écran
-contraint, limiter la hauteur et permettre le défilement ; si aucune zone
-ne tient, agrandir le plateau défilable pendant l'enchère. Le mode manette
-garde son formulaire dans le flux. Ne pas réintroduire la grande popup
-fixe en paysage ni couvrir la main pour garder une taille arbitraire.
+accessible aux lecteurs d'écran. Taille et position sont choisies UNE FOIS
+au chargement à partir de la taille de l'écran, puis verrouillées en pixels
+pour toute la page, même quand annonces, actions ou tours changent. Ne pas
+replacer/redimensionner le panneau à chaque état ni selon les bulles.
+La fenêtre est attachée directement à `screen-game`, en position fixe
+(hors du conteneur de taille du tapis). Sous 640 px de hauteur initiale,
+les trois lignes sont plus compactes ; si nécessaire, leur contenu défile
+dans le cadre fixe. Le mode manette garde ce même cadre dans le flux.
 
 `serialize.sorted_hand` trie les mains affichées sans modifier les mains du
 moteur : force décroissante, ordre d'atout seulement après la fin des enchères,
@@ -498,7 +499,7 @@ Le récapitulatif capture ses interactions et son défilement vertical
 (souris/tactile), même entre deux donnes. Un clic dans son contenu ou sa
 barre de défilement ne valide jamais la donne ; utiliser « Donne suivante »
 ou le fond extérieur. La fin de partie garde uniquement le retour au salon.
-La consultation parcourt directement les plis : précédent/suivant de 0 à 8,
+La consultation parcourt directement les plis : deux flèches ← / → de 0 à 8,
 sans case à cocher ni curseur. Un clic affiche les quatre cartes, numérotées
 dans l'ordre réel de jeu, avec une aura dorée autour de la gagnante.
 Les mains restantes conservent leur tri initial. Changer de donne revient

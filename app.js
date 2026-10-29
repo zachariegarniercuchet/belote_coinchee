@@ -34,6 +34,17 @@
   const bidFormState = { key: null, suit: null, points: null, isCapot: false };
   const redealAnimation = { key: null, layer: null, timer: null };
 
+  // Snapshot once: game states and announcements never resize/reposition this panel.
+  const initialBidViewport = { width: window.innerWidth, height: window.innerHeight };
+  const initialBidPanel = document.getElementById("bid-controls");
+  const compactBidPanel = initialBidViewport.height < 640;
+  initialBidPanel.classList.toggle("bid-compact", compactBidPanel);
+  initialBidPanel.style.setProperty("--bid-fixed-left", initialBidViewport.width / 2 + "px");
+  initialBidPanel.style.setProperty("--bid-fixed-top", initialBidViewport.height / 2 + "px");
+  initialBidPanel.style.setProperty("--bid-fixed-width", Math.min(264, Math.max(212, initialBidViewport.width - 32)) + "px");
+  initialBidPanel.style.setProperty("--bid-fixed-height", (compactBidPanel
+    ? Math.min(118, Math.max(80, initialBidViewport.height - 208)) : 150) + "px");
+
   // Tenir compte du plateau réellement disponible, y compris en paysage.
   const tableFelt = document.querySelector(".table-felt");
   if (typeof window.ResizeObserver === "function") {
@@ -42,84 +53,9 @@
       if (width > 0 && height > 0) {
         const cardWidth = Math.max(24, Math.min(62, width * .11, height * .14));
         tableFelt.style.setProperty("--played-card-w", cardWidth + "px");
-        scheduleBidLayout();
       }
     }).observe(tableFelt);
   }
-  window.addEventListener("resize", scheduleBidLayout);
-  let bidLayoutFrame = null;
-
-  function scheduleBidLayout() {
-    if (bidLayoutFrame !== null) return;
-    bidLayoutFrame = requestAnimationFrame(() => {
-      bidLayoutFrame = null;
-      layoutBidControls();
-    });
-  }
-
-  function bidPanelPlacement(area, obstacles, wantedHeight) {
-    const gap = 8;
-    let best = null;
-    for (const width of new Set([Math.min(280, area.width - 2 * gap), Math.min(230, area.width - 2 * gap)])) {
-      if (width <= 0) continue;
-      const xs = [gap, area.width - gap - width, (area.width - width) / 2];
-      obstacles.forEach(r => xs.push(r.right + gap, r.left - width - gap));
-      for (const left of xs) {
-        if (left < gap || left + width > area.width - gap) continue;
-        const blocked = obstacles.filter(r => left < r.right + gap && left + width > r.left - gap)
-          .map(r => [Math.max(gap, r.top - gap), Math.min(area.height - gap, r.bottom + gap)])
-          .filter(([top, bottom]) => bottom > top).sort((a, b) => a[0] - b[0]);
-        let start = gap;
-        const consider = end => {
-          const height = Math.min(wantedHeight, end - start);
-          if (height < 32) return;
-          const x = left + width / 2;
-          const y = Math.max(start + height / 2, Math.min(area.height * .5, end - height / 2));
-          const score = height * 10 + width * .1 - Math.abs(x - area.width / 2) * .1 - Math.abs(y - area.height / 2) * .05;
-          if (!best || score > best.score) best = { left: x, top: y, width, height, score };
-        };
-        blocked.forEach(([top, bottom]) => {
-          consider(top);
-          start = Math.max(start, bottom);
-        });
-        consider(area.height - gap);
-      }
-    }
-    return best;
-  }
-
-  function layoutBidControls() {
-    const panel = document.getElementById("bid-controls");
-    if (panel.classList.contains("hidden") || panel.parentElement !== tableFelt) {
-      tableFelt.classList.remove("bid-needs-room");
-      document.getElementById("screen-game").classList.remove("bidding-scroll");
-      return;
-    }
-    const bounds = tableFelt.getBoundingClientRect();
-    if (!bounds.width || !bounds.height) return;
-    const origin = { left: bounds.left + tableFelt.clientLeft, top: bounds.top + tableFelt.clientTop };
-    const obstacles = [...tableFelt.querySelectorAll(".seat-marker, .speech-bubble, .hand-cards .playing-card, .trick-pile")]
-      .map(el => el.getBoundingClientRect()).filter(r => r.width && r.height)
-      .map(r => ({ left: r.left - origin.left, right: r.right - origin.left,
-        top: r.top - origin.top, bottom: r.bottom - origin.top }));
-    panel.style.removeProperty("--bid-max-height");
-    panel.style.removeProperty("--bid-width");
-    const place = bidPanelPlacement({ width: tableFelt.clientWidth, height: tableFelt.clientHeight },
-      obstacles, panel.scrollHeight + 2);
-    if (!place) {
-      // Exceptionally crowded/small screen: scroll the table instead of covering cards.
-      const needsResize = !tableFelt.classList.contains("bid-needs-room");
-      tableFelt.classList.add("bid-needs-room");
-      document.getElementById("screen-game").classList.add("bidding-scroll");
-      if (needsResize) scheduleBidLayout();
-      return;
-    }
-    panel.style.setProperty("--bid-left", place.left + "px");
-    panel.style.setProperty("--bid-top", place.top + "px");
-    panel.style.setProperty("--bid-width", place.width + "px");
-    panel.style.setProperty("--bid-max-height", place.height + "px");
-  }
-
   // ------------------------------------------------------------------
   // Navigation entre écrans
   // ------------------------------------------------------------------
@@ -537,7 +473,7 @@
     } else {
       phonePanel.classList.add("hidden");
       boardPanel.classList.remove("hidden");
-      felt.appendChild(bidControls);
+      document.getElementById("screen-game").appendChild(bidControls);
       felt.appendChild(handCards);
     }
 
@@ -547,7 +483,6 @@
     renderClaim(state);
     renderDonneRecap(state);
     renderRedeal(state, controllerMode);
-    scheduleBidLayout();
   }
 
   function clearRedealAnimation(resetKey = true) {
@@ -1379,7 +1314,7 @@
         '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
         '<div class="score-caption">Total</div>' +
         (recapState.completed_deals?.length
-          ? '<button id="btn-hand-review" class="btn btn-secondary" type="button">Voir les mains et les plis</button>'
+          ? '<button id="btn-hand-review" class="btn btn-secondary" type="button">Voir les mains</button>'
           : "") +
         (finalRecap
           ? '<p class="recap-hint">Touchez les points pour voir le détail de la dernière donne.</p>' +

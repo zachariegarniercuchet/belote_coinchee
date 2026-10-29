@@ -132,7 +132,7 @@ initiales autour d'un carré, couleur par couleur et triées selon le contrat.
 Le joueur reste en bas. Le sélecteur permet de revoir les donnes terminées
 de cette partie, y compris depuis le bilan final ; **Retour aux scores**
 ferme cette vue sans continuer la partie. Aucune main inachevée n'est révélée.
-**Pli précédent / Pli suivant** parcourt directement la donne, sans case à
+Les flèches **← / →** parcourent directement la donne, sans case à
 cocher ni curseur : un clic affiche les quatre cartes numérotées dans l'ordre
 de jeu, avec une aura dorée autour de la gagnante. Les mains se vident et
 les points des équipes s'affichent à gauche et à droite du partenaire
