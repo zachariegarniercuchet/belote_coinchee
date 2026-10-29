@@ -353,7 +353,16 @@ les enchères adverses. Sans couleur annoncée par l'équipe, ou si elle n'est p
 la première couleur autorisée (pique normalement). Le joueur reste libre de
 changer ce choix ; le montant initial reste le minimum légal.
 L'entrée Générale reste commentée après Capot dans
-les deux interfaces ; TA/SA et Générale sont suivis dans les TODO ci-dessus.
+les deux interfaces ; la Générale reste suivie dans les TODO ci-dessus.
+Le panneau d'enchères utilise trois lignes compactes : six choix de contrat,
+montant −/+ avec Confirmer à côté, puis Passer/Coincher. Le titre reste
+accessible aux lecteurs d'écran. `bidPanelPlacement` choisit une zone libre
+à partir des rectangles réels des cartes, joueurs, bulles et tas ; le
+placement est recalculé après les états et redimensionnements. Sur écran
+contraint, limiter la hauteur et permettre le défilement ; si aucune zone
+ne tient, agrandir le plateau défilable pendant l'enchère. Le mode manette
+garde son formulaire dans le flux. Ne pas réintroduire la grande popup
+fixe en paysage ni couvrir la main pour garder une taille arbitraire.
 
 `serialize.sorted_hand` trie les mains affichées sans modifier les mains du
 moteur : force décroissante, ordre d'atout seulement après la fin des enchères,

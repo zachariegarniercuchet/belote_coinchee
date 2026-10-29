@@ -770,18 +770,21 @@ input::placeholder { color: rgba(247,241,227,.4); }
 
 /* ---------- Enchères : panneau compact centré, la main reste visible ---------- */
 .bid-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
   position: absolute;
-  top: 52%;
-  left: 50%;
+  top: var(--bid-top, 50%);
+  left: var(--bid-left, 50%);
   transform: translate(-50%, -50%);
-  width: min(280px, 86%);
-  max-height: 70%;
+  width: var(--bid-width, min(280px, 86%));
+  max-height: var(--bid-max-height, 70%);
   overflow-y: auto;
   margin: 0;
   background: var(--wood);
   border: 1px solid var(--gold);
-  border-radius: 16px;
-  padding: 10px 12px;
+  border-radius: 12px;
+  padding: 8px;
   z-index: 8;
   box-shadow: 0 12px 32px rgba(0,0,0,.6);
   animation: bid-pop .22s ease-out;
@@ -791,30 +794,39 @@ input::placeholder { color: rgba(247,241,227,.4); }
   to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 .bid-controls.hidden { display: none !important; }
+#screen-game.bidding-scroll { overflow-y: auto; }
+.table-felt.bid-needs-room { min-height: 480px; }
 .bid-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
   margin: 0;
   font-size: 16px;
   font-weight: 800;
   color: var(--gold-light);
   text-align: center;
 }
-.bid-suit-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(38px, 1fr)); align-items: center; gap: 6px; margin: 8px auto; max-width: 360px; }
-.bid-amount-row { display: grid; grid-template-columns: 44px minmax(80px, 1fr) 44px; gap: 10px; align-items: center; }
-.bid-amount { text-align: center; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--gold-light); }
-.bid-amount-row .bid-step-btn { min-height: 44px; padding: 0; font-size: 26px; line-height: 1; }
+.bid-suit-row { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); align-items: center; gap: 4px; margin: 0; }
+.bid-amount-row { grid-column: 1; grid-row: 2; display: grid; grid-template-columns: 32px minmax(0, 1fr) 32px; gap: 4px; align-items: center; }
+.bid-amount { text-align: center; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--gold-light); }
+.bid-amount-row .bid-step-btn { min-height: 40px; padding: 0; font-size: 24px; line-height: 1; }
 .bid-step-btn:disabled { opacity: .3; cursor: default; }
 .bid-suit-btn {
   background: rgba(255,255,255,.08);
   min-width: 0;
-  min-height: 44px;
+  min-height: 40px;
   padding: 5px 4px;
-  border-radius: 12px;
-  font-size: 20px;
+  border-radius: 8px;
+  font-size: 18px;
   line-height: 1;
   flex-shrink: 0;
   border: 2px solid transparent;
 }
 .bid-suit-btn.selected { background: rgba(217,164,65,.25); border-color: var(--gold); }
+.bid-mode-btn { font-size: 14px; }
 .bid-chip {
   background: rgba(255,255,255,.1);
   color: var(--cream);
@@ -827,18 +839,20 @@ input::placeholder { color: rgba(247,241,227,.4); }
   flex-shrink: 0;
 }
 .bid-chip:active { background: var(--gold); color: var(--ink); }
-.bid-actions-row { display: flex; gap: 6px; margin-top: 4px; }
+.bid-actions-row { grid-column: 1 / -1; display: flex; gap: 6px; margin: 0; }
 .bid-actions-row .bid-chip { flex: 1; text-align: center; min-height: 40px; }
 .bid-chip.pass { background: rgba(255,255,255,.08); }
 .bid-chip.coinche { background: var(--red); color: #fff; }
 .bid-chip.selected { background: var(--gold); color: var(--ink); }
 .bid-confirm-btn {
   display: block;
-  width: 100%;
-  margin-top: 8px;
-  padding: 10px;
-  border-radius: 12px;
-  font-size: 15px;
+  grid-column: 2;
+  grid-row: 2;
+  width: auto;
+  margin: 0;
+  padding: 6px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 800;
   background: linear-gradient(180deg, var(--gold-light), var(--gold));
   color: var(--ink);
@@ -1025,11 +1039,4 @@ input::placeholder { color: rgba(247,241,227,.4); }
   .seat-marker .seat-avatar { --avatar-size: 18px; }
   .tricks-info { font-size: 11px; padding: 5px 8px; }
   .info-strip { margin-top: 6px; }
-  .bid-controls {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: min(430px, 94vw);
-    max-height: calc(100dvh - 16px);
-  }
 }

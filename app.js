@@ -42,8 +42,82 @@
       if (width > 0 && height > 0) {
         const cardWidth = Math.max(24, Math.min(62, width * .11, height * .14));
         tableFelt.style.setProperty("--played-card-w", cardWidth + "px");
+        scheduleBidLayout();
       }
     }).observe(tableFelt);
+  }
+  window.addEventListener("resize", scheduleBidLayout);
+  let bidLayoutFrame = null;
+
+  function scheduleBidLayout() {
+    if (bidLayoutFrame !== null) return;
+    bidLayoutFrame = requestAnimationFrame(() => {
+      bidLayoutFrame = null;
+      layoutBidControls();
+    });
+  }
+
+  function bidPanelPlacement(area, obstacles, wantedHeight) {
+    const gap = 8;
+    let best = null;
+    for (const width of new Set([Math.min(280, area.width - 2 * gap), Math.min(230, area.width - 2 * gap)])) {
+      if (width <= 0) continue;
+      const xs = [gap, area.width - gap - width, (area.width - width) / 2];
+      obstacles.forEach(r => xs.push(r.right + gap, r.left - width - gap));
+      for (const left of xs) {
+        if (left < gap || left + width > area.width - gap) continue;
+        const blocked = obstacles.filter(r => left < r.right + gap && left + width > r.left - gap)
+          .map(r => [Math.max(gap, r.top - gap), Math.min(area.height - gap, r.bottom + gap)])
+          .filter(([top, bottom]) => bottom > top).sort((a, b) => a[0] - b[0]);
+        let start = gap;
+        const consider = end => {
+          const height = Math.min(wantedHeight, end - start);
+          if (height < 32) return;
+          const x = left + width / 2;
+          const y = Math.max(start + height / 2, Math.min(area.height * .5, end - height / 2));
+          const score = height * 10 + width * .1 - Math.abs(x - area.width / 2) * .1 - Math.abs(y - area.height / 2) * .05;
+          if (!best || score > best.score) best = { left: x, top: y, width, height, score };
+        };
+        blocked.forEach(([top, bottom]) => {
+          consider(top);
+          start = Math.max(start, bottom);
+        });
+        consider(area.height - gap);
+      }
+    }
+    return best;
+  }
+
+  function layoutBidControls() {
+    const panel = document.getElementById("bid-controls");
+    if (panel.classList.contains("hidden") || panel.parentElement !== tableFelt) {
+      tableFelt.classList.remove("bid-needs-room");
+      document.getElementById("screen-game").classList.remove("bidding-scroll");
+      return;
+    }
+    const bounds = tableFelt.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    const origin = { left: bounds.left + tableFelt.clientLeft, top: bounds.top + tableFelt.clientTop };
+    const obstacles = [...tableFelt.querySelectorAll(".seat-marker, .speech-bubble, .hand-cards .playing-card, .trick-pile")]
+      .map(el => el.getBoundingClientRect()).filter(r => r.width && r.height)
+      .map(r => ({ left: r.left - origin.left, right: r.right - origin.left,
+        top: r.top - origin.top, bottom: r.bottom - origin.top }));
+    panel.style.removeProperty("--bid-max-height");
+    panel.style.removeProperty("--bid-width");
+    const place = bidPanelPlacement({ width: tableFelt.clientWidth, height: tableFelt.clientHeight },
+      obstacles, panel.scrollHeight + 2);
+    if (!place) {
+      // Exceptionally crowded/small screen: scroll the table instead of covering cards.
+      const needsResize = !tableFelt.classList.contains("bid-needs-room");
+      tableFelt.classList.add("bid-needs-room");
+      document.getElementById("screen-game").classList.add("bidding-scroll");
+      if (needsResize) scheduleBidLayout();
+      return;
+    }
+    panel.style.setProperty("--bid-left", place.left + "px");
+    panel.style.setProperty("--bid-top", place.top + "px");
+    panel.style.setProperty("--bid-width", place.width + "px");
+    panel.style.setProperty("--bid-max-height", place.height + "px");
   }
 
   // ------------------------------------------------------------------
@@ -473,6 +547,7 @@
     renderClaim(state);
     renderDonneRecap(state);
     renderRedeal(state, controllerMode);
+    scheduleBidLayout();
   }
 
   function clearRedealAnimation(resetKey = true) {
@@ -967,6 +1042,8 @@
   function renderBidControls(state) {
     const actions = state.legal_bid_actions;
     const container = document.getElementById("bid-controls");
+    container.setAttribute("role", "group");
+    container.setAttribute("aria-label", "Choisir une enchère");
     const turnKey = state.donne_number + ":" + state.your_seat + ":" + (state.bidding_history || []).length;
     const key = turnKey + "|" + actions.map(a => a.index + ":" + a.type + ":" + (a.suit || "") + ":" + (a.points == null ? "" : a.points) + ":" + (a.is_capot ? "C" : "")).join("|");
     if (bidFormState.key !== key) {
@@ -1018,7 +1095,8 @@
       const suitButtons = {};
       suits.forEach(s => {
         const btn = document.createElement("button");
-        btn.className = "bid-suit-btn" + (s.name === bidFormState.suit ? " selected" : "");
+        btn.className = "bid-suit-btn" + (["SANS_ATOUT", "TOUT_ATOUT"].includes(s.name) ? " bid-mode-btn" : "") +
+          (s.name === bidFormState.suit ? " selected" : "");
         btn.textContent = s.symbol;
         btn.title = s.name === "SANS_ATOUT" ? "Sans Atout" : s.name === "TOUT_ATOUT" ? "Tout Atout" : s.symbol;
         btn.style.color = (s.name === "COEUR" || s.name === "CARREAU") ? "#e0576a" : "#f7f1e3";
