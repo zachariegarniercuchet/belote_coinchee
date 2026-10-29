@@ -162,6 +162,13 @@ class ContractModeTests(unittest.TestCase):
                     review = session._build_common()['completed_deals'][0]
                     self.assertEqual(review['contract']['suit'], mode.name)
                     self.assertEqual(len(review['tricks']), 8)
+                    self.assertEqual(review['tricks'][-1]['team_points'],
+                                     {str(t): web.result.total_points[t] for t in (0, 1)})
+                    for i, trick in enumerate(review['tricks']):
+                        self.assertEqual(trick['points'], sum(card.points(mode) for _, card in web.tricks[i]))
+                        if i:
+                            self.assertTrue(all(trick['team_points'][str(t)] >=
+                                                review['tricks'][i-1]['team_points'][str(t)] for t in (0, 1)))
         # Four belotes may all belong to one camp and finance a TA contract.
         all_pairs = {0: [c for c in full_deck() if c.rank in (Rank.ROI, Rank.DAME)]}
         self.assertEqual(belote_points_by_team(find_belotes(all_pairs, TA)), {0:80, 1:0})

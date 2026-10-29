@@ -485,7 +485,7 @@ manette ; le tablage reste consultable avant les scores sur le plateau.
 Le bouton de retour est activé une fois `game_over` reçu, lorsque la session
 est effectivement terminée et peut être libérée par `new_game`.
 
-Le bouton « Voir les mains de départ » du récapitulatif ouvre une vue de
+Le bouton « Voir les mains et les plis » du récapitulatif ouvre une vue de
 consultation : quatre mains initiales autour d'un carré, regroupées par
 couleur et triées selon l'atout du contrat, avec le joueur courant en bas.
 Un sélecteur permet de revoir les donnes terminées de la partie en cours ;
@@ -498,12 +498,16 @@ Le récapitulatif capture ses interactions et son défilement vertical
 (souris/tactile), même entre deux donnes. Un clic dans son contenu ou sa
 barre de défilement ne valide jamais la donne ; utiliser « Donne suivante »
 ou le fond extérieur. La fin de partie garde uniquement le retour au salon.
-L'option « Revoir les plis » parcourt l'historique carte par carte, dans
-l'ordre réel des joueurs : précédent/suivant et curseur de 0 à 32 cartes.
-Les mains restantes conservent leur tri initial ; les quatre cartes du pli
-restent au centre jusqu'à l'étape suivante, avec le gagnant indiqué. Changer
-de donne ou de mode revient aux mains initiales. `completed_deals.tricks`
-contient les cartes et gagnants, uniquement au récapitulatif comme les mains.
+La consultation parcourt directement les plis : précédent/suivant de 0 à 8,
+sans case à cocher ni curseur. Un clic affiche les quatre cartes, numérotées
+dans l'ordre réel de jeu, avec une aura dorée autour de la gagnante.
+Les mains restantes conservent leur tri initial. Changer de donne revient
+aux mains initiales. Les compteurs A/B entourent la main du partenaire ;
+ils indiquent les points de la donne après le pli affiché, belotes et dix
+de der compris (100 en cas de capot), sans les primes de contrat.
+`completed_deals.tricks` contient cartes, gagnant, points des cartes et
+`team_points` cumulés côté serveur ; ne pas dupliquer les règles de score
+dans le frontend. Ces données ne sont envoyées qu'au récapitulatif.
 Le champ `claimed` signale les fins tablées dont les derniers plis ont été
 résolus automatiquement, afin de distinguer cette résolution du jeu effectif.
 

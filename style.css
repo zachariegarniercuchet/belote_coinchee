@@ -1004,12 +1004,19 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .review-centre strong { font-size: clamp(24px, 5vw, 40px); }
 .hand-review-controls { margin: 12px 0; }
 .review-navigation { display: flex; justify-content: center; gap: 10px; }
-#hand-review-progress { display: block; width: 100%; margin: 12px 0; accent-color: var(--gold-light); }
 #hand-review-status { min-height: 2.5em; margin: 6px 0; font-size: 12px; }
 .review-replaying { grid-template-columns: minmax(0, 1fr) 104px minmax(0, 1fr); }
+.review-north-row { grid-area: north; display: grid; grid-template-columns: minmax(44px, 1fr) minmax(0, 230px) minmax(44px, 1fr); gap: 8px; align-items: center; }
+.review-north-row .review-hand { grid-area: auto; }
+.review-team-score { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--team-a); }
+.review-team-score[data-team="1"] { color: var(--team-b); }
+.review-team-score b { font-size: clamp(18px, 4vw, 26px); font-variant-numeric: tabular-nums; }
+.review-team-score small, .review-score-caption { font-size: 10px; }
+.review-score-caption { opacity: .7; margin-bottom: 0; }
 .review-trick { position: relative; height: 146px; display: grid; place-items: center; }
 .review-play { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 32px; height: 46px; background: #f7f1e3; color: #18212a; border-radius: 4px; box-shadow: 0 2px 5px #0006; line-height: 1; }
 .review-play.review-red { color: #b52435; }
+.review-play.review-winning { box-shadow: 0 0 0 2px var(--gold-light), 0 0 16px rgba(240,198,116,.85); }
 .review-play b, .review-play span { font-size: 16px; }
 .review-play small { position: absolute; top: -6px; right: -5px; width: 14px; height: 14px; border-radius: 50%; background: #263b32; color: #fff; font-size: 10px; line-height: 14px; }
 .review-play[data-position="0"] { bottom: 0; left: calc(50% - 16px); }

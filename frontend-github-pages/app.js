@@ -1210,30 +1210,25 @@
     const deal = state?.completed_deals?.find(item => item.number === number);
     if (!deal) return;
     const c = deal.contract;
-    const replay = document.getElementById("hand-review-replay").checked;
-    const plays = (deal.tricks || []).flatMap(trick => trick.plays);
-    handReviewStep = Math.max(0, Math.min(handReviewStep, plays.length));
-    const trickIndex = Math.max(0, Math.ceil(handReviewStep / 4) - 1);
-    const currentTrick = deal.tricks?.[trickIndex];
-    const tablePlays = replay && handReviewStep ? plays.slice(trickIndex * 4, handReviewStep) : [];
-    const playedIds = new Set(replay ? plays.slice(0, handReviewStep).map(play => play.card.id) : []);
-    document.getElementById("hand-review-title").textContent = replay ? "Revoir les plis" : "Mains de départ";
-    document.getElementById("hand-review-controls").classList.toggle("hidden", !replay);
+    const tricks = deal.tricks || [];
+    handReviewStep = Math.max(0, Math.min(handReviewStep, tricks.length));
+    const currentTrick = handReviewStep ? tricks[handReviewStep - 1] : null;
+    const tablePlays = currentTrick?.plays || [];
+    const playedIds = new Set(tricks.slice(0, handReviewStep).flatMap(trick => trick.plays).map(play => play.card.id));
+    const points = handReviewStep ? currentTrick.team_points : { "0": 0, "1": 0 };
+    const counter = team => '<aside class="review-team-score" data-team="' + team +
+      '" aria-label="Points de la donne, équipe ' + (team === 0 ? 'A' : 'B') + '">' +
+      '<small>Équipe ' + (team === 0 ? 'A' : 'B') + '</small><b>' + (points?.[String(team)] ?? '—') + '</b><small>points</small></aside>';
+    document.getElementById("hand-review-title").textContent = "Mains et plis";
     document.getElementById("hand-review-prev").disabled = handReviewStep === 0;
-    document.getElementById("hand-review-next").disabled = handReviewStep === plays.length;
-    const progress = document.getElementById("hand-review-progress");
-    progress.max = plays.length;
-    progress.value = handReviewStep;
-    const complete = tablePlays.length === 4;
+    document.getElementById("hand-review-next").disabled = handReviewStep === tricks.length;
     const status = handReviewStep === 0 ? "Mains de départ" :
-      "Pli " + (trickIndex + 1) + " / " + deal.tricks.length + " · " +
-      (complete ? "Remporté par " + nameOf(state, currentTrick.winner) +
-        " · Équipe " + (currentTrick.winner % 2 === 0 ? "A" : "B") : "Carte " + tablePlays.length + " / 4");
+      "Pli " + handReviewStep + " / " + tricks.length + " · Remporté par " + nameOf(state, currentTrick.winner) +
+      " · Équipe " + (currentTrick.winner % 2 === 0 ? "A" : "B");
     document.getElementById("hand-review-status").textContent = status;
-    progress.setAttribute("aria-valuetext", status);
     document.getElementById("hand-review-contract").textContent =
       "Contrat : " + (c.is_capot ? "Capot" : c.points) + " " + c.symbol + " · " + nameOf(state, c.player) +
-      (replay && deal.claimed ? " · Fin tablée : les derniers plis sont résolus automatiquement." : "");
+      (deal.claimed ? " · Fin tablée : les derniers plis sont résolus automatiquement." : "");
     const viewer = Number.isInteger(state.your_seat) ? state.your_seat : 0;
     const symbols = { PIQUE: "♠", COEUR: "♥", TREFLE: "♣", CARREAU: "♦" };
     const ranks = { V: "J", D: "Q", R: "K" };
@@ -1251,20 +1246,22 @@
           (cards.length ? cards.map(card => '<span>' + escapeHtml(ranks[card.rank] || card.rank) + '</span>').join("")
             : '<span class="review-void">—</span>') + '</span></div>';
       }).join("");
-      return '<section class="review-hand" data-position="' + ((seat - viewer + 4) % 4) +
+      const panel = '<section class="review-hand" data-position="' + ((seat - viewer + 4) % 4) +
         '" data-team="' + (seat % 2) + '"><h3>' +
         escapeHtml(nameOf(state, seat) + (seat === state.your_seat ? " (toi)" : "")) + '</h3>' + rows + '</section>';
+      return (seat - viewer + 4) % 4 === 2
+        ? '<div class="review-north-row">' + counter(0) + panel + counter(1) + '</div>' : panel;
     }).join("");
-    const centre = replay ? '<div class="review-trick" aria-label="Cartes du pli">' +
+    const centre = '<div class="review-trick" aria-label="Cartes du pli">' +
       tablePlays.map(({ seat, card }, index) =>
         '<div class="review-play' + (card.color === "red" ? ' review-red' : '') +
+        (seat === currentTrick.winner ? ' review-winning' : '') +
         '" data-position="' + ((seat - viewer + 4) % 4) +
         '" title="' + escapeHtml(nameOf(state, seat)) + '"><small>' + (index + 1) +
         '</small><b>' + escapeHtml(ranks[card.rank] || card.rank) + '</b><span>' + card.symbol + '</span></div>'
-      ).join("") + (tablePlays.length ? '' : '<small>Avancer pour voir<br>les cartes jouées</small>') + '</div>' :
-      '<small>Contrat</small><strong>' + c.symbol + '</strong>';
+      ).join("") + (tablePlays.length ? '' : '<small>Pli suivant pour voir<br>les cartes jouées</small>') + '</div>';
     const table = document.getElementById("hand-review-table");
-    table.classList.toggle("review-replaying", replay);
+    table.classList.add("review-replaying");
     table.innerHTML = panels + '<div class="review-centre">' + centre + '</div>';
   }
 
@@ -1273,17 +1270,12 @@
     renderHandReview();
   }
   document.getElementById("hand-review-deal").addEventListener("change", resetHandReview);
-  document.getElementById("hand-review-replay").addEventListener("change", resetHandReview);
   document.getElementById("hand-review-prev").addEventListener("click", () => {
     handReviewStep--;
     renderHandReview();
   });
   document.getElementById("hand-review-next").addEventListener("click", () => {
     handReviewStep++;
-    renderHandReview();
-  });
-  document.getElementById("hand-review-progress").addEventListener("input", event => {
-    handReviewStep = Number(event.target.value);
     renderHandReview();
   });
   document.getElementById("hand-review").addEventListener("click", event => {
@@ -1299,7 +1291,6 @@
     select.innerHTML = handReviewState.completed_deals.map(deal =>
       '<option value="' + deal.number + '">Donne n°' + deal.number + '</option>').join("");
     select.value = String(handReviewState.completed_deals.at(-1).number);
-    document.getElementById("hand-review-replay").checked = false;
     resetHandReview();
     document.getElementById("hand-review").classList.remove("hidden");
     select.focus();
@@ -1387,7 +1378,7 @@
         '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
         '<div class="score-caption">Total</div>' +
         (recapState.completed_deals?.length
-          ? '<button id="btn-hand-review" class="btn btn-secondary" type="button">Voir les mains de départ</button>'
+          ? '<button id="btn-hand-review" class="btn btn-secondary" type="button">Voir les mains et les plis</button>'
           : "") +
         (finalRecap
           ? '<p class="recap-hint">Touchez les points pour voir le détail de la dernière donne.</p>' +

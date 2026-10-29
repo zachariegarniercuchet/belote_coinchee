@@ -207,25 +207,22 @@
   <div id="hand-review" class="overlay interactive hidden" role="dialog" aria-modal="true" aria-labelledby="hand-review-title">
     <div class="overlay-box hand-review-box">
       <div class="hand-review-header">
-        <h2 id="hand-review-title">Mains de départ</h2>
+        <h2 id="hand-review-title">Mains et plis</h2>
         <button id="hand-review-close" class="btn btn-small" type="button">Retour aux scores</button>
       </div>
       <label class="hand-review-picker" for="hand-review-deal">Donne
         <select id="hand-review-deal"></select>
       </label>
       <p id="hand-review-contract"></p>
-      <label class="hand-review-picker">
-        <input id="hand-review-replay" type="checkbox"> Revoir les plis, carte par carte
-      </label>
-      <div id="hand-review-controls" class="hand-review-controls hidden">
+      <div id="hand-review-controls" class="hand-review-controls">
         <div class="review-navigation">
-          <button id="hand-review-prev" class="btn btn-small" type="button">← Précédent</button>
-          <button id="hand-review-next" class="btn btn-small" type="button">Suivant →</button>
+          <button id="hand-review-prev" class="btn btn-small" type="button">← Pli précédent</button>
+          <button id="hand-review-next" class="btn btn-small" type="button">Pli suivant →</button>
         </div>
-        <input id="hand-review-progress" type="range" min="0" max="32" value="0" step="1" aria-label="Avancement de la donne">
         <p id="hand-review-status" role="status"></p>
       </div>
       <div id="hand-review-table" class="hand-review-table"></div>
+      <p class="review-score-caption">Points de la donne · belotes et dix de der compris</p>
     </div>
   </div>
 

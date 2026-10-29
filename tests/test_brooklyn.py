@@ -445,12 +445,14 @@ class BrooklynTests(unittest.TestCase):
                     str(seat): [card_to_dict(card) for card in sorted_hand(hand, completed.contract.suit)]
                     for seat, hand in completed.initial_hands.items()
                 })
-                self.assertEqual(review["tricks"], [
+                self.assertEqual([{"plays": t["plays"], "winner": t["winner"]} for t in review["tricks"]], [
                     {"plays": [{"seat": seat, "card": card_to_dict(card)} for seat, card in plays],
                      "winner": winner}
                     for plays, winner in zip(completed.tricks, completed.trick_winners)
                 ])
                 self.assertEqual(len(review["tricks"]), 8)
+                self.assertEqual(review["tricks"][-1]["team_points"],
+                                 {str(t): completed.result.total_points[t] for t in (0, 1)})
                 self.assertEqual(review["claimed"], completed.claim is not None)
             for log in game.donne_logs:
                 if log.annulee:

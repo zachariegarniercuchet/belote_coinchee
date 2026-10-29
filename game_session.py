@@ -26,7 +26,8 @@ from belote.cards import Rank, cut_deck, deal, new_shuffled_deck
 from belote.claim import find_claim, play_claim
 from belote.game import DonneLog, Game
 from belote.player import Player
-from belote.scoring import compute_donne_score, find_belotes, belote_points_by_team
+from belote.scoring import (compute_donne_score, find_belotes, belote_points_by_team,
+                            BELOTE_BONUS, DIX_DE_DER_CAPOT, DIX_DE_DER_NORMAL)
 from belote.trick import TrickState, team_of
 
 from extensions import socketio
@@ -558,6 +559,31 @@ class GameSession:
             "total_points": {"0": totals.get(0, 0), "1": totals.get(1, 0)},
         }
 
+    @staticmethod
+    def _review_tricks(log):
+        totals = {0: 0, 1: 0}
+        belotes = find_belotes(log.initial_hands, log.contract.suit)
+        announced = set()
+        history = []
+        for index, (plays, winner) in enumerate(zip(log.tricks, log.trick_winners)):
+            points = sum(card.points(log.contract.suit) for _, card in plays)
+            totals[team_of(winner)] += points
+            for seat, card in plays:
+                if (belotes.get(card.suit) == seat and card.rank in (Rank.ROI, Rank.DAME)
+                        and card.suit not in announced):
+                    totals[team_of(seat)] += BELOTE_BONUS
+                    announced.add(card.suit)
+            if index == len(log.tricks) - 1:
+                totals[team_of(winner)] += (DIX_DE_DER_CAPOT if log.result.capot_team is not None
+                                            else DIX_DE_DER_NORMAL)
+            history.append({
+                "plays": [{"seat": seat, "card": card_to_dict(card)} for seat, card in plays],
+                "winner": winner,
+                "points": points,
+                "team_points": {str(t): totals[t] for t in (0, 1)},
+            })
+        return history
+
     def _completed_deals(self):
         # Reveal initial hands only at a recap, never while a deal is in play.
         if self.ctx.phase not in ("donne_end", "game_end"):
@@ -576,13 +602,7 @@ class GameSession:
                     str(seat): [card_to_dict(card) for card in sorted_hand(hand, log.contract.suit)]
                     for seat, hand in log.initial_hands.items()
                 },
-                "tricks": [
-                    {
-                        "plays": [{"seat": seat, "card": card_to_dict(card)} for seat, card in plays],
-                        "winner": winner,
-                    }
-                    for plays, winner in zip(log.tricks, log.trick_winners)
-                ],
+                "tricks": self._review_tricks(log),
                 "claimed": log.claim is not None,
             }
             for number, log in enumerate(self.game.donne_logs, 1)
