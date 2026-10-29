@@ -516,6 +516,8 @@ Le récapitulatif capture ses interactions et son défilement vertical
 (souris/tactile), même entre deux donnes. Un clic dans son contenu ou sa
 barre de défilement ne valide jamais la donne ; utiliser « Donne suivante »
 ou le fond extérieur. La fin de partie garde uniquement le retour au salon.
+Le bilan explique une chute (montant insuffisant, majorité non atteinte,
+capot non réalisé) sans annoncer un zéro fictif quand la belote est conservée.
 La consultation parcourt directement les plis : deux flèches ← / → de 0 à 8,
 sans case à cocher ni curseur. Un clic affiche les quatre cartes, numérotées
 dans l'ordre réel de jeu, avec une aura dorée autour de la gagnante.

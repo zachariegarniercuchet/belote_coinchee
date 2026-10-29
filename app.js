@@ -1295,6 +1295,19 @@
         return txt;
       };
       const preneurLabel = "Équipe " + (String(r.preneur_team) === "0" ? "A" : "B");
+      const failureReasons = [];
+      if (!r.contract_reached) {
+        const attack = totalOf(String(r.preneur_team));
+        const defense = totalOf(String(r.defense_team));
+        if (c?.is_capot && r.capot_team !== r.preneur_team) {
+          failureReasons.push("Les huit plis du capot n’ont pas été remportés.");
+        } else if (c && !c.is_capot && attack < c.points) {
+          failureReasons.push("Enchère non atteinte : " + attack + " points pour " + c.points + " demandés.");
+        }
+        if (attack <= defense) {
+          failureReasons.push("Majorité non atteinte : " + attack + " points contre " + defense + " pour la défense.");
+        }
+      }
       const f0 = r.final_scores ? r.final_scores["0"] : 0;
       const f1 = r.final_scores ? r.final_scores["1"] : 0;
       const markedLine = "Points marqués : Équipe A +" + f0 + " · Équipe B +" + f1;
@@ -1308,7 +1321,8 @@
         '<p class="result-line">Équipe B — <span class="pts-toggle" data-team="1" title="' + detailTextOf("1") + '"><strong>' + totalOf("1") + "</strong></span></p>" +
         '<div class="pts-detail hidden" id="pts-detail"></div>' +
         '<p class="result-line result-outcome ' + (r.contract_reached ? "success" : "failed") + '">' +
-        (r.contract_reached ? "Contrat réussi (" + preneurLabel + ")" : "Contrat raté (" + preneurLabel + " : 0)") + "</p>" +
+        (r.contract_reached ? "Contrat réussi (" + preneurLabel + ")" : "Contrat chuté (" + preneurLabel + ")") + "</p>" +
+        (failureReasons.length ? '<p class="result-line">' + escapeHtml(failureReasons.join(" ")) + '</p>' : "") +
         '<p class="result-line">' + markedLine + "</p>" +
         '<div class="score-teams"><strong>' + escapeHtml(teamA) + '</strong><span>vs</span><strong>' + escapeHtml(teamB) + '</strong></div>' +
         '<div class="score-head"><span>Équipe A</span><span>Équipe B</span></div>' +

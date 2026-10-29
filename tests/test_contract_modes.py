@@ -258,6 +258,14 @@ class ContractModeTests(unittest.TestCase):
         result = compute_donne_score(contract, {0:152, 1:0}, 0, None, None, {0:80, 1:0})
         self.assertTrue(result.contract_reached)
         self.assertEqual(result.total_points, {0:242, 1:0})
+        # Supplied 80-TA recap: 91 >= 80 is insufficient against 111.
+        # The same majority condition applies to a suited contract.
+        for suit in (TA, Suit.COEUR):
+            example = compute_donne_score(Contract(1, 1, 80, suit, False),
+                                          {0:81, 1:71}, 0, None, None, {0:20, 1:20})
+            self.assertEqual(example.total_points, {0:111, 1:91})
+            self.assertFalse(example.contract_reached)
+            self.assertEqual(example.final_scores, {0:260, 1:20})
         # All belotes remain imprenables, also when a coinched contract falls.
         contract.coinche_state = CoincheState.COINCHE
         result = compute_donne_score(contract, {0:50, 1:102}, 1, None, None, {0:40, 1:40})
