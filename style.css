@@ -771,7 +771,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
 /* ---------- Enchères : panneau compact centré, la main reste visible ---------- */
 .bid-controls {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
   align-content: center;
   position: fixed;
@@ -809,7 +809,7 @@ input::placeholder { color: rgba(247,241,227,.4); }
   text-align: center;
 }
 .bid-suit-row { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); align-items: center; gap: 4px; margin: 0; }
-.bid-amount-row { grid-column: 1; grid-row: 2; display: grid; grid-template-columns: 32px minmax(0, 1fr) 32px; gap: 4px; align-items: center; }
+.bid-amount-row { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; gap: 8px; align-items: center; }
 .bid-amount { text-align: center; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--gold-light); }
 .bid-amount-row .bid-step-btn { min-height: 40px; padding: 0; font-size: 24px; line-height: 1; }
 .bid-step-btn:disabled { opacity: .3; cursor: default; }
@@ -838,15 +838,15 @@ input::placeholder { color: rgba(247,241,227,.4); }
   flex-shrink: 0;
 }
 .bid-chip:active { background: var(--gold); color: var(--ink); }
-.bid-actions-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; margin: 0; }
-.bid-actions-row .bid-chip { flex: 1; text-align: center; min-height: 40px; }
+.bid-actions-row { grid-column: 1 / -1; grid-row: 3; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: 6px; margin: 0; }
+.bid-actions-row .bid-chip { min-width: 0; padding: 5px 3px; font-size: 12px; text-align: center; min-height: 40px; }
+.bid-chip:disabled { opacity: .4; cursor: default; }
 .bid-chip.pass { background: rgba(255,255,255,.08); }
 .bid-chip.coinche { background: var(--red); color: #fff; }
+.bid-chip.coinche:disabled { background: rgba(255,255,255,.1); color: var(--cream); }
 .bid-chip.selected { background: var(--gold); color: var(--ink); }
 .bid-confirm-btn {
   display: block;
-  grid-column: 2;
-  grid-row: 2;
   width: auto;
   margin: 0;
   padding: 6px;

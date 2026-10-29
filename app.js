@@ -1005,6 +1005,10 @@
     const coincheAction = actions.find(a => a.type === "COINCHE");
     const surcoincheAction = actions.find(a => a.type === "SURCOINCHE");
     const enchereActions = actions.filter(a => a.type === "ENCHERE");
+    const confirmBtn = document.createElement("button");
+    confirmBtn.className = "bid-chip bid-confirm-btn";
+    confirmBtn.textContent = "Confirmer";
+    confirmBtn.disabled = true;
 
     if (enchereActions.length) {
       const suits = [];
@@ -1085,9 +1089,6 @@
       amountRow.appendChild(increase);
       container.appendChild(amountRow);
 
-      const confirmBtn = document.createElement("button");
-      confirmBtn.className = "bid-chip bid-confirm-btn";
-      confirmBtn.textContent = "Confirmer";
       const refreshConfirm = () => {
         const ok = bidFormState.suit && (bidFormState.isCapot || bidFormState.points != null) &&
           enchereActions.some(a => a.suit === bidFormState.suit && !!a.is_capot === bidFormState.isCapot &&
@@ -1100,33 +1101,33 @@
         if (match) socket.emit("bid_choice", { code: roomCode, index: match.index });
       };
       selectAmount(amountIndex);
-      container.appendChild(confirmBtn);
     }
 
     const actionsRow = document.createElement("div");
     actionsRow.className = "bid-actions-row";
-    if (passAction) {
+    actionsRow.appendChild(confirmBtn);
+    {
       const b = document.createElement("button");
       b.className = "bid-chip pass";
       b.textContent = "Passer";
-      b.onclick = () => socket.emit("bid_choice", { code: roomCode, index: passAction.index });
+      b.disabled = !passAction;
+      b.onclick = () => {
+        if (passAction) socket.emit("bid_choice", { code: roomCode, index: passAction.index });
+      };
       actionsRow.appendChild(b);
     }
-    if (coincheAction) {
+    {
+      const doubleAction = surcoincheAction || coincheAction;
       const b = document.createElement("button");
       b.className = "bid-chip coinche";
-      b.textContent = "Coincher";
-      b.onclick = () => socket.emit("bid_choice", { code: roomCode, index: coincheAction.index });
+      b.textContent = surcoincheAction ? "Surcoincher" : "Coincher";
+      b.disabled = !doubleAction;
+      b.onclick = () => {
+        if (doubleAction) socket.emit("bid_choice", { code: roomCode, index: doubleAction.index });
+      };
       actionsRow.appendChild(b);
     }
-    if (surcoincheAction) {
-      const b = document.createElement("button");
-      b.className = "bid-chip coinche";
-      b.textContent = "Surcoincher";
-      b.onclick = () => socket.emit("bid_choice", { code: roomCode, index: surcoincheAction.index });
-      actionsRow.appendChild(b);
-    }
-    if (actionsRow.childNodes.length) container.appendChild(actionsRow);
+    container.appendChild(actionsRow);
   }
 
   function isFinalRecap(state) {
