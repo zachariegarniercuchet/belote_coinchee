@@ -32,6 +32,7 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="join">Rejoindre</button>
       <button class="tab-btn" data-tab="create">Créer un salon</button>
+      <button class="tab-btn" data-tab="public">Salons publics</button>
     </div>
 
     <div id="tab-join" class="tab-panel">
@@ -46,8 +47,34 @@
     <div id="tab-create" class="tab-panel hidden">
       <label>Ton prénom</label>
       <input id="create-name" type="text" placeholder="Ton prénom" maxlength="20" autocomplete="off">
+      <label>Visibilité du salon</label>
+      <div class="visibility-picker">
+        <label class="vis-option">
+          <input type="radio" name="room-visibility" value="public" checked>
+          <span class="vis-option-text">
+            <b>Public</b>
+            <small>Apparaît dans la liste des salons. Les visiteurs peuvent regarder
+              la partie en cours et prendre la place d'un bot.</small>
+          </span>
+        </label>
+        <label class="vis-option">
+          <input type="radio" name="room-visibility" value="private">
+          <span class="vis-option-text">
+            <b>Privé</b>
+            <small>Accessible uniquement avec le code, sans spectateur.</small>
+          </span>
+        </label>
+      </div>
       <button id="btn-create" class="btn btn-primary">Créer un nouveau salon</button>
       <p class="hint">Lance ceci depuis l'ordinateur qui fait tourner le serveur, ou depuis n'importe quel appareil du réseau.</p>
+    </div>
+
+    <div id="tab-public" class="tab-panel hidden">
+      <label>Ton prénom</label>
+      <input id="public-name" type="text" placeholder="Ton prénom" maxlength="20" autocomplete="off">
+      <button id="btn-refresh-rooms" class="btn btn-ghost btn-small">Actualiser la liste</button>
+      <div id="public-rooms" class="public-rooms"></div>
+      <p id="public-empty" class="hint">Aucun salon public pour l'instant. Crée-en un, il apparaîtra ici.</p>
     </div>
   </div>
 </section>
@@ -57,12 +84,15 @@
   <div class="lobby-wrap">
     <div class="lobby-header">
       <div>
-        <div class="room-code-label">Code du salon</div>
+        <div class="room-code-label">Code du salon
+          <span id="lobby-visibility" class="vis-badge hidden"></span>
+        </div>
         <div id="lobby-code" class="room-code">----</div>
       </div>
       <img id="lobby-qr" class="qr" alt="QR code du salon">
     </div>
     <p id="lobby-url" class="hint small"></p>
+    <p id="lobby-spectators" class="spectator-line hidden" role="status"></p>
 
     <div id="seats" class="seats"></div>
 
@@ -194,6 +224,7 @@
       </div>
       <div class="info-strip">
         <div id="tricks-info" class="tricks-info"></div>
+        <div id="spectator-badge" class="spectator-badge hidden" role="status"></div>
       </div>
     </div>
     <div id="phone-panel" class="phone-panel hidden">

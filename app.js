@@ -22,6 +22,7 @@
   let lastTrickAnimationKey = null;
   let dismissedClaimDonneNumber = null;
 
+
   // Bulles d'annonce (enchères / coinche) : elles restent affichées tant que
   // dure la phase d'enchères (la nouvelle annonce d'un joueur remplace la
   // précédente), puis disparaissent une fois la phase terminée.
@@ -70,6 +71,8 @@
       btn.classList.add("active");
       document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
       document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
+      // On demande la liste à chaque ouverture : elle change tout le temps.
+      if (btn.dataset.tab === "public") requestPublicRooms();
     });
   });
 
@@ -77,8 +80,58 @@
     const name = document.getElementById("create-name").value.trim();
     if (!name) { showToast("Entre ton prénom."); return; }
     myName = name;
-    socket.emit("create_room", { name });
+    const picked = document.querySelector('input[name="room-visibility"]:checked');
+    socket.emit("create_room", { name, visibility: picked ? picked.value : "public" });
   });
+
+  // ------------------------------------------------------------------
+  // Annuaire des salons publics
+  // ------------------------------------------------------------------
+  function requestPublicRooms() {
+    socket.emit("list_public_rooms", {});
+  }
+
+  function joinPublicRoom(code) {
+    const name = document.getElementById("public-name").value.trim();
+    if (!name) { showToast("Entre ton prénom."); return; }
+    myName = name;
+    roomCode = code;
+    socket.emit("join_lobby", { code, name });
+  }
+
+  function renderPublicRooms(rooms) {
+    const wrap = document.getElementById("public-rooms");
+    const empty = document.getElementById("public-empty");
+    const list = Array.isArray(rooms) ? rooms : [];
+    empty.classList.toggle("hidden", list.length > 0);
+    wrap.innerHTML = "";
+    const labels = {
+      waiting: "En attente de joueurs",
+      playing: "Partie en cours",
+      finished: "Partie terminée",
+    };
+    list.forEach(room => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "public-room";
+      const code = document.createElement("span");
+      code.className = "public-room-code";
+      code.textContent = room.code;
+      const phase = document.createElement("span");
+      phase.className = "public-room-phase " + (room.phase || "waiting");
+      phase.textContent = labels[room.phase] || labels.waiting;
+      const meta = document.createElement("span");
+      meta.className = "public-room-meta";
+      meta.textContent = room.player_count + "/4 joueurs · " + room.target_score + " pts" +
+        (room.spectator_count ? " · " + room.spectator_count + " spectateur" +
+          (room.spectator_count > 1 ? "s" : "") : "");
+      row.append(code, phase, meta);
+      row.onclick = () => joinPublicRoom(room.code);
+      wrap.appendChild(row);
+    });
+  }
+
+  document.getElementById("btn-refresh-rooms").addEventListener("click", requestPublicRooms);
 
   document.getElementById("btn-join").addEventListener("click", () => {
     const name = document.getElementById("join-name").value.trim();
@@ -163,9 +216,30 @@
     document.getElementById("bot-info-overlay").classList.add("hidden");
   }
 
+  // Visibilité du salon et spectateurs présents (salon public uniquement).
+  function renderLobbyBadges(state) {
+    const isPublic = state.visibility !== "private";
+    const badge = document.getElementById("lobby-visibility");
+    badge.classList.remove("hidden");
+    badge.classList.toggle("public", isPublic);
+    badge.classList.toggle("private", !isPublic);
+    badge.textContent = isPublic ? "PUBLIC" : "PRIVÉ";
+    badge.title = isPublic
+      ? "Salon visible dans la liste des salons publics : les visiteurs peuvent regarder la partie."
+      : "Salon accessible uniquement avec le code, sans spectateur.";
+
+    const count = state.spectator_count || 0;
+    const line = document.getElementById("lobby-spectators");
+    line.classList.toggle("hidden", count === 0);
+    line.textContent = count
+      ? "👁 " + count + " visiteur" + (count > 1 ? "s" : "") + " regarde" + (count > 1 ? "nt" : "") + " le salon"
+      : "";
+  }
+
   function renderSeats(state) {
     lastLobbyState = state;
     mySeatChosen = state.your_seat ?? null;
+    renderLobbyBadges(state);
     const wrap = document.getElementById("seats");
     wrap.innerHTML = "";
     const bots = state.available_bots || [];
@@ -283,7 +357,6 @@
     if (state.target_score) {
       document.getElementById("target-score").value = String(state.target_score);
     }
-
     if (state.game_in_progress) {
       showScreen("screen-game");
     }
@@ -360,13 +433,18 @@
 
   socket.on("error_message", d => showToast(d.message));
 
+  socket.on("public_rooms", data => renderPublicRooms(data && data.rooms));
+
   socket.on("connect", () => {
     if (roomCode && myName) {
       socket.emit("join_lobby", { code: roomCode, name: myName });
-      if (mySeatChosen !== null) {
+      // Un spectateur n'a pas de siège : ne jamais lui envoyer take_seat.
+      if (mySeatChosen !== null && mySeatChosen !== "spectator") {
         socket.emit("take_seat", { code: roomCode, seat: mySeatChosen });
       }
       socket.emit("request_state", { code: roomCode });
+    } else {
+      requestPublicRooms();
     }
   });
 
@@ -403,7 +481,7 @@
 
   function claimVisible(state) {
     return !!(state && state.claim && dismissedClaimDonneNumber !== state.donne_number &&
-      (!state.board_present || state.your_seat === "board"));
+      (!state.board_present || state.your_seat === "board" || state.your_seat === "spectator"));
   }
 
   function renderClaim(state) {
@@ -430,9 +508,31 @@
     renderGame(lastRenderedState);
   });
 
+  // Compteur de spectateurs : les joueurs voient qu'on les observe, le
+  // visiteur voit qu'il est bien en train de regarder. Placé sous le plateau,
+  // ou en haut du panneau téléphone en mode manette.
+  function renderSpectatorBadge(state, controllerMode) {
+    const badge = document.getElementById("spectator-badge");
+    const count = state.spectator_count || 0;
+    const text = state.your_seat === "spectator"
+      ? "👁 Tu regardes la partie"
+      : (count ? "👁 " + count + " spectateur" + (count > 1 ? "s" : "") : "");
+    badge.classList.toggle("hidden", !text);
+    badge.textContent = text;
+    // Le panneau téléphone vide son contenu à chaque diffusion : on replace
+    // le badge dans le conteneur réellement affiché.
+    const host = controllerMode ? document.getElementById("phone-panel")
+      : document.querySelector("#board-panel .info-strip");
+    if (host && badge.parentElement !== host) {
+      if (controllerMode) host.prepend(badge);
+      else host.appendChild(badge);
+    }
+  }
+
   function renderGame(state) {
     lastRenderedState = state;
-    if (state.your_seat !== undefined && state.your_seat !== "board") {
+    // Un spectateur n'a pas de siège : ne jamais le mémoriser comme tel.
+    if (Number.isInteger(state.your_seat)) {
       mySeatChosen = state.your_seat;
     } else if (state.your_seat === "board") {
       mySeatChosen = "board";
@@ -444,9 +544,11 @@
     document.getElementById("target-display").textContent = state.target_score;
 
     const isBoard = state.your_seat === "board";
+    const isSpectator = state.your_seat === "spectator";
     // Mode manette : un siège "plateau" est pris (tablette au centre) et je
     // suis un joueur sur téléphone -> pas de plateau, juste statut + enchère + main.
-    const controllerMode = !isBoard && !!state.board_present;
+    // Un spectateur regarde toujours le plateau, même s'il est pris.
+    const controllerMode = !isBoard && !isSpectator && !!state.board_present;
     const boardPanel = document.getElementById("board-panel");
     const phonePanel = document.getElementById("phone-panel");
     const felt = boardPanel.querySelector(".table-felt");
@@ -463,9 +565,18 @@
       felt.appendChild(bidControls);
       felt.appendChild(handCards);
     }
+    renderSpectatorBadge(state, controllerMode);
 
     renderBoardPanel(state);
-    if (!isBoard) renderHandPanel(state);
+    if (isSpectator) {
+      // Jamais de main ni de enchère pour un spectateur, même après un
+      // passage par un siège de joueur.
+      bidControls.classList.add("hidden");
+      bidControls.innerHTML = "";
+      handCards.replaceChildren();
+    } else if (!isBoard) {
+      renderHandPanel(state);
+    }
 
     renderClaim(state);
     renderDonneRecap(state);
@@ -601,6 +712,38 @@
       marker.classList.toggle("has-bot-avatar", !!(profile && profile.avatar));
       // Laisser la bulle attachée : seules les nouvelles annonces la rejouent.
       marker.querySelectorAll(".claimed-hand").forEach(row => row.remove());
+
+      // Spectateur : reprendre un siège de bot, uniquement entre deux donnes.
+      // Le bouton n'est recréé que si l'état a changé, pour ne pas le retirer
+      // à chaque diffusion identique.
+      const isSpectator = state.your_seat === "spectator";
+      const pendingName = (state.pending_takeovers || {})[String(seat)];
+      const takeKey = (isSpectator && state.phase === "donne_end" && profile && !pendingName)
+        ? "take" : (pendingName ? "pending" : "");
+      const existingTake = marker.querySelector(".takeover-slot");
+      if (!existingTake || existingTake.dataset.key !== takeKey) {
+        if (existingTake) existingTake.remove();
+        marker.classList.toggle("takeover-ready", takeKey === "take");
+        if (takeKey === "take") {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "takeover-slot takeover-btn";
+          btn.dataset.key = "take";
+          btn.textContent = "Prendre ce siège";
+          btn.title = "Tu prendras la place de ce bot à la donne suivante.";
+          btn.onclick = event => {
+            event.stopPropagation();
+            socket.emit("request_takeover", { code: roomCode, seat });
+          };
+          marker.appendChild(btn);
+        } else if (takeKey === "pending") {
+          const note = document.createElement("div");
+          note.className = "takeover-slot takeover-pending";
+          note.dataset.key = "pending";
+          note.textContent = "⏳ " + pendingName + " jouera dès la prochaine donne";
+          marker.appendChild(note);
+        }
+      }
       marker.classList.toggle("active-turn", state.waiting_seat === seat);
       marker.classList.toggle("dealer", state.dealer === seat);
       marker.classList.toggle("claim-winner", claimVisible(state) && state.claim.seat === seat);
@@ -1190,7 +1333,8 @@
       return;
     }
     const content = document.getElementById("donne-recap-content");
-    const canViewRecap = !state.board_present || state.your_seat === "board" || isFinalRecap(state);
+    const canViewRecap = !state.board_present || state.your_seat === "board"
+      || state.your_seat === "spectator" || isFinalRecap(state);
     if (!canViewRecap) {
       overlay.classList.add("hidden");
       return;

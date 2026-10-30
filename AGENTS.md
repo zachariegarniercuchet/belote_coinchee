@@ -91,6 +91,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_brooklyn.py` | Stratégie de David, enchères de partenariat v2 et parties légales identiques console/web. |
 | `benchmarks/bots.py`, `benchmarks/README.md` | Comparaison reproductible des bots via le moteur web, calibration des contrats et diagnostic des entames à l'atout, sans toucher au serveur actif. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
+| `tests/test_spectators.py` | Salon public : annuaire, spectateur sans main, reprise d'un siège de bot entre deux donnes, témoin privé. |
 | `tests/test_supabase_config.py` | Injection des clés Supabase dans la page, repli invité sans configuration et service de `auth.js`. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
 | `render.yaml`, `DEPLOY.md` | Configuration Render et documentation de déploiement. |
@@ -142,6 +143,7 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_claim.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_hand_order.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_lobby.py
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_spectators.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_supabase_config.py
 ```
 
@@ -174,10 +176,11 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 - Le fil de partie attend les choix humains via `threading.Event` ; salons et
   sessions utilisent des verrous. Vérifier la synchronisation pour les attentes,
   reconnexions, fins de donne et changements de session.
-- Les événements principaux sont `create_room`, `join_lobby`, `take_seat`,
-  `leave_seat`, `set_bot`, `start_game`, `bid_choice`, `play_card`,
-  `request_state`, `dismiss_recap`, `new_game`. Les clients reçoivent notamment
-  `lobby_update`, `state_update` et `error_message`.
+- Les événements principaux sont `create_room` (avec `visibility`),
+  `join_lobby`, `take_seat`, `leave_seat`, `set_bot`, `start_game`,
+  `bid_choice`, `play_card`, `request_state`, `dismiss_recap`, `new_game`,
+  `list_public_rooms` et `request_takeover`. Les clients reçoivent notamment
+  `lobby_update`, `state_update`, `public_rooms` et `error_message`.
 - Préserver les identifiants échangés : carte sous la forme `VALET_PIQUE`,
   index d'enchère issu de la liste légale courante, clés de sièges/équipes
   converties en chaînes dans les objets JSON. Coordonner toute évolution du
@@ -342,6 +345,21 @@ pas prendre la même place, même avec des prénoms identiques. Chaque état de
 salon est personnalisé avec `your_seat` ; le client attend cette confirmation
 et ne déduit pas son siège du prénom. Pendant la partie, interdire changements
 et départs, mais permettre la reconnexion à son siège réservé.
+
+Un salon se crée en public ou en privé (public par défaut). Un salon privé
+garde son comportement d'origine : accès par code, aucun spectateur. Un salon
+public figure dans l'annuaire de l'accueil (`list_public_rooms` →
+`public_rooms`) et accepte des visiteurs : une connexion sans siège y est
+spectatrice, reçoit l'état public du plateau sans main ni action de jeu, et
+porte `your_seat: "spectator"`. Le compteur `spectator_count` et la ligne
+« N visiteurs regardent le salon » sont publics. Entre deux donnes
+uniquement (`phase: "donne_end"`), un spectateur peut réserver un siège de
+bot via `request_takeover` : le nom part dans `pending_takeovers`, visible de
+tous, et `GameSession.apply_pending_takeovers()` permute le bot en
+`NetworkPlayer` au début de la donne suivante, avant la distribution, donc le
+nouveau joueur reçoit sa main. Aucune donne en cours n'est interrompue ; le
+bouton n'apparaît que sur les sièges de bot occupés. Un spectateur ne redevient
+jamais spectateur volontairement : il reste joueur jusqu'à la fin de la partie.
 
 Le formulaire d'enchères web affiche les couleurs au-dessus d'un montant
 unique, ajusté par −/+. Les crans viennent des actions légales du serveur :
