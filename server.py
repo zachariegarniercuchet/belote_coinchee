@@ -184,12 +184,24 @@ def _seat_key(raw):
 @socketio.on("create_room")
 def on_create_room(data):
     name = ((data or {}).get("name") or "").strip()[:20] or "Hôte"
-    room = rooms.create_room()
+    # Salon public par défaut : figure dans l'annuaire et accepte des
+    # spectateurs pendant la partie. Un salon privé reste accessible par code.
+    visibility = ((data or {}).get("visibility") or "public").strip().lower()
+    if visibility not in ("public", "private"):
+        visibility = "public"
+    room = rooms.create_room(visibility=visibility)
     sio_join_room(room.code)
     with sid_lock:
         sid_info[request.sid] = {"code": room.code, "name": name}
-    socketio.emit("room_created", {"code": room.code, "name": name}, to=request.sid)
+    socketio.emit("room_created", {"code": room.code, "name": name,
+                                   "visibility": room.visibility}, to=request.sid)
     _emit_lobby_update(room)
+
+
+@socketio.on("list_public_rooms")
+def on_list_public_rooms(_data=None):
+    """Annuaire des salons publics, envoyé uniquement au demandeur."""
+    socketio.emit("public_rooms", {"rooms": rooms.public_rooms()}, to=request.sid)
 
 
 @socketio.on("join_lobby")
@@ -212,6 +224,13 @@ def on_join_lobby(data):
                 if seat.name == name and seat.sid is None:
                     seat.sid = request.sid
                     break
+
+    # Sans siège, on est spectateur : on suit le salon et la partie sans main.
+    with room.lock:
+        if room.seat_of_sid(request.sid) is None:
+            room.add_spectator(request.sid, name)
+        else:
+            room.remove_spectator(request.sid)
 
     socketio.emit("lobby_joined", room.lobby_state(request.sid), to=request.sid)
     _emit_lobby_update(room)
@@ -239,6 +258,7 @@ def on_take_seat(data):
         socketio.emit("lobby_update", room.lobby_state(request.sid), to=request.sid)
         return
     _emit_lobby_update(room)
+    room.remove_spectator(request.sid)
     if room.game_session:
         room.game_session.broadcast()
 
@@ -257,6 +277,45 @@ def on_leave_seat(data):
         if seat is not None:
             room.free_seat(seat)
     _emit_lobby_update(room)
+
+
+@socketio.on("request_takeover")
+def on_request_takeover(data):
+    """Un spectateur réserve un siège de bot ; il prend place à la donne suivante.
+
+    La donne en cours n'est jamais interrompue : la permutation est appliquée
+    par GameSession au début de la donne suivante.
+    """
+    room = rooms.get((data or {}).get("code"))
+    if not room:
+        return
+    session = room.game_session
+    if not session or session.finished:
+        return
+    # Seul un spectateur peut monter à table ; un joueur déjà assis ne l'est pas.
+    if room.seat_of_sid(request.sid) is not None:
+        return
+    with sid_lock:
+        info = sid_info.get(request.sid)
+    name = info["name"] if info else "Joueur"
+    try:
+        seat = int((data or {}).get("seat"))
+    except (TypeError, ValueError):
+        return
+    if seat not in PLAYER_SEATS:
+        return
+    if not session.accepts_takeovers():
+        socketio.emit(
+            "error_message",
+            {"message": "On ne change de joueur qu'entre deux donnes. Réessaie au prochain récapitulatif."},
+            to=request.sid,
+        )
+        return
+    if not room.request_takeover(seat, request.sid, name):
+        socketio.emit("error_message", {"message": "Ce siège est déjà pris."}, to=request.sid)
+        return
+    _emit_lobby_update(room)
+    session.broadcast()
 
 
 @socketio.on("set_bot")
@@ -403,6 +462,7 @@ def on_disconnect():
         for seat in room.seats.values():
             if seat.sid == request.sid:
                 seat.sid = None
+        room.remove_spectator(request.sid)
     _emit_lobby_update(room)
 
 

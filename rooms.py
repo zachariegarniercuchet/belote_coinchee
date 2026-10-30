@@ -36,13 +36,24 @@ class Seat:
 
 
 class Room:
-    def __init__(self, code: str):
+    def __init__(self, code: str, visibility: str = "public"):
         self.code = code
         self.created_at = time.time()
         self.lock = threading.RLock()
         self.seats: dict = {s: Seat() for s in SEATS}
         self.game_session = None  # web.game_session.GameSession, une fois la partie lancée
         self.target_score = 1000
+        # "public" : la salle figure dans la liste d'accueil et accepte des
+        # spectateurs pendant la partie. "private" : accès par code seul,
+        # aucun spectateur, comportement d'origine.
+        self.visibility = visibility if visibility in ("public", "private") else "public"
+        # sid -> prénom des connections connectées sans siège (spectateurs).
+        # Un spectateur ne reçoit aucune main et ne peut jouer qu'en reprenant
+        # un siège de bot, entre deux donnes.
+        self.spectators: dict[str, str] = {}
+        # Reprises de siège en attente : siège -> (sid, prénom). Posées par un
+        # spectateur entre deux donnes, appliquées au début de la donne suivante.
+        self.pending_takeovers: dict[int, tuple[str, str]] = {}
         # Bot choisi par siège (siège vide au démarrage -> rempli par ce bot).
         # Modifiable depuis le lobby par n'importe quel membre du salon.
         self.bot_choices: dict[int, str] = {p: DEFAULT_BOT_ID for p in PLAYER_SEATS}
@@ -59,10 +70,77 @@ class Room:
             self.bot_choices[seat_key] = bot_id
             return True
 
+    def add_spectator(self, sid: str, name: str) -> None:
+        """Inscrit une connection sans siège comme spectateur du salon.
+
+        Un salon privé ne connaît pas de spectateurs : il garde son
+        comportement d'origine (accès par code, sièges verrouillés en partie).
+        """
+        with self.lock:
+            if self.visibility != "public":
+                return
+            self.spectators[sid] = name
+
+    def remove_spectator(self, sid: str) -> None:
+        with self.lock:
+            self.spectators.pop(sid, None)
+            # Une demande de reprise ne doit pas survivre à son demandeur.
+            for seat in [s for s, (s_sid, _n) in self.pending_takeovers.items() if s_sid == sid]:
+                del self.pending_takeovers[seat]
+
+    def spectator_count(self) -> int:
+        with self.lock:
+            return len(self.spectators)
+
+    def pending_takeover_of(self, seat) -> tuple[str, str] | None:
+        with self.lock:
+            return self.pending_takeovers.get(seat)
+
+    def pending_takeovers_snapshot(self) -> dict[int, str]:
+        """{siège: prénom} des reprises en attente, lu en une seule prise de verrou."""
+        with self.lock:
+            return {seat: name for seat, (_sid, name) in self.pending_takeovers.items()}
+
+    def request_takeover(self, seat, sid: str, name: str) -> bool:
+        """Réserve un siège de bot pour un spectateur, à prendre à la donne suivante.
+
+        Le siège reste occupé par son bot jusqu'au début de la donne suivante :
+        la partie en cours n'est jamais interrompue.
+        """
+        with self.lock:
+            if self.visibility != "public":
+                return False
+            if seat not in PLAYER_SEATS:
+                return False
+            if self.seats[seat].occupied:
+                return False  # déjà pris par un humain
+            holder = self.pending_takeovers.get(seat)
+            if holder is not None and holder[0] != sid:
+                return False  # un autre spectateur l'a déjà réservé
+            self.pending_takeovers[seat] = (sid, name)
+            return True
+
+    def apply_takeovers(self) -> list[tuple[int, str, str]]:
+        """Passe les reprises en attente au statut de siège occupé.
+
+        Retourne [(siège, sid, prénom)] pour que la session puisse remplacer le
+        bot par un joueur web. Le verrou couvre toute la permutation.
+        """
+        with self.lock:
+            taken = list(self.pending_takeovers.items())
+            self.pending_takeovers = {}
+            for seat, (sid, name) in taken:
+                slot = self.seats[seat]
+                slot.sid = sid
+                slot.name = name
+                self.spectators.pop(sid, None)
+            return [(seat, sid, name) for seat, (sid, name) in taken]
+
     def lobby_state(self, viewer_sid: str | None = None) -> dict:
         with self.lock:
             return {
                 "code": self.code,
+                "visibility": self.visibility,
                 "your_seat": self.seat_of_sid(viewer_sid) if viewer_sid is not None else None,
                 "seats": {
                     str(s): {"name": seat.name, "connected": seat.sid is not None}
@@ -71,6 +149,9 @@ class Room:
                 "target_score": self.target_score,
                 "bot_choices": {str(p): self.bot_choices[p] for p in PLAYER_SEATS},
                 "available_bots": list_bots(),
+                "spectator_count": len(self.spectators),
+                "pending_takeovers": {str(seat): name for seat, name
+                                      in self.pending_takeovers_snapshot().items()},
                 "game_in_progress": self.game_session is not None and not self.game_session.finished,
                 "game_over": self.game_session is not None and self.game_session.finished,
             }
@@ -134,12 +215,39 @@ class RoomManager:
             if code not in self._rooms:
                 return code
 
-    def create_room(self) -> Room:
+    def create_room(self, visibility: str = "public") -> Room:
         with self._lock:
             code = self._generate_code()
-            room = Room(code)
+            room = Room(code, visibility=visibility)
             self._rooms[code] = room
             return room
+
+    def public_rooms(self) -> list[dict]:
+        """Annuaire des salons publics, pour l'écran d'accueil.
+
+        Un salon privé n'y figure jamais. Le résultat ne contient aucune main
+        ni information de jeu : uniquement le remplissage et l'avancement.
+        """
+        with self._lock:
+            candidates = [room for room in self._rooms.values() if room.visibility == "public"]
+        listing = []
+        for room in candidates:
+            with room.lock:
+                if room.game_session is None:
+                    phase = "lobby"
+                elif room.game_session.finished:
+                    phase = "finished"
+                else:
+                    phase = "playing"
+                listing.append({
+                    "code": room.code,
+                    "phase": phase,
+                    "target_score": room.target_score,
+                    "player_count": sum(1 for p in PLAYER_SEATS if room.seats[p].occupied),
+                    "spectator_count": len(room.spectators),
+                })
+        # Les salons libres d'abord, puis ceux en partie ; code croissant ensuite.
+        return sorted(listing, key=lambda r: (r["phase"] != "lobby", r["code"]))
 
     def get(self, code: str) -> Room | None:
         if not code:

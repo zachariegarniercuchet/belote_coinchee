@@ -128,6 +128,10 @@ class NetworkGame(Game):
         ctx = self.session.ctx
         rng = self.rng
         redealing = ctx.phase == "donne_annulee"
+        # Montée à table des spectateurs réservés entre deux donnes : le bot
+        # est remplacé avant la distribution, donc le nouveau joueur reçoit
+        # bien sa main. Aucune donne en cours n'est interrompue pour cela.
+        self.session.apply_pending_takeovers()
         for player in self.players.values():
             player.notify_donne_start()
 
@@ -404,6 +408,28 @@ class GameSession:
         self._stop = True
         self._recap_closed.set()
 
+    def accepts_takeovers(self) -> bool:
+        """Vrai uniquement entre deux donnes : une donne en cours ne s'interrompt pas."""
+        return not self.finished and not self._stop and self.ctx.phase == "donne_end"
+
+    def apply_pending_takeovers(self):
+        """Remplace les bots dont un spectateur a réservé le siège par un joueur web.
+
+        Appelé au tout début d'une donne, avant la distribution. `players` est
+        le dict partagé avec Game/Donne, donc la permutation est immédiatement
+        vue par le moteur.
+        """
+        taken = self.room.apply_takeovers()
+        if not taken:
+            return
+        with self._lock:
+            for seat, _sid, name in taken:
+                self.players[seat] = NetworkPlayer(seat, self, name)
+                # Le portrait du bot ne doit plus apparaître à table.
+                self.bot_profiles.pop(seat, None)
+                self.ctx.hand_suit_orders[seat] = []
+        self.broadcast()
+
     def _wait_for_recap(self):
         with self._lock:
             pending = bool(self._recap_pending_seats)
@@ -594,6 +620,10 @@ class GameSession:
             },
             "board_present": bool(board_seat and board_seat.occupied),
             "bot_profiles": {str(seat): dict(profile) for seat, profile in self.bot_profiles.items()},
+            # Spectateurs présents et sièges de bot promis à un spectateur.
+            "spectator_count": self.room.spectator_count(),
+            "pending_takeovers": {str(seat): name for seat, name
+                                  in self.room.pending_takeovers_snapshot().items()},
             "waiting_seat": ctx.waiting_seat,
             "waiting_kind": ctx.waiting_kind,
             "waiting_seat_name": (
@@ -662,6 +692,9 @@ class GameSession:
         common = self._build_common()
         with self.room.lock:
             seats_snapshot = {k: (v.sid, v.name) for k, v in self.room.seats.items()}
+            seated_sids = {sid for sid, _name in seats_snapshot.values() if sid}
+            # Un spectateur qui aurait repris un siège n'est plus spectateur.
+            spectator_sids = [sid for sid in self.room.spectators if sid not in seated_sids]
 
         for seat in PLAYER_SEATS:
             sid, _name = seats_snapshot[seat]
@@ -676,3 +709,13 @@ class GameSession:
                 "legal_bid_actions": [], "legal_card_ids": [],
             })
             socketio.emit("state_update", payload, to=board_sid)
+
+        # Spectateurs : la table publique, sans main ni aucune action possible.
+        if spectator_sids:
+            payload = dict(common)
+            payload.update({
+                "your_seat": "spectator", "your_hand": [], "your_turn": False,
+                "legal_bid_actions": [], "legal_card_ids": [],
+            })
+            for sid in spectator_sids:
+                socketio.emit("state_update", payload, to=sid)
