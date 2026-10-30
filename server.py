@@ -337,6 +337,18 @@ def on_set_bot(data):
         _emit_lobby_update(room)
 
 
+@socketio.on("set_time_control")
+def on_set_time_control(data):
+    """Le lobby choisit l'échiquier de temps : temps par coup et temps total."""
+    room = rooms.get((data or {}).get("code"))
+    if not room:
+        return
+    # On rediffuse dans tous les cas : si la valeur est refusée (hors preset,
+    # partie déjà lancée), le sélecteur du demandeur reprend l'échiquier réel.
+    room.set_time_control((data or {}).get("move_time"), (data or {}).get("total_time"))
+    _emit_lobby_update(room)
+
+
 @socketio.on("start_game")
 def on_start_game(data):
     code = (data or {}).get("code")

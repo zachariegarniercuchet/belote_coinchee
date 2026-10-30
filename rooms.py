@@ -19,6 +19,21 @@ from belote.bots import DEFAULT_BOT_ID, is_valid_bot, list_bots
 SEATS = (0, 1, 2, 3, "board")
 PLAYER_SEATS = (0, 1, 2, 3)
 
+# Échiquiers de temps proposés dans le salon, en secondes. 0 = illimité.
+# Les deux listes servent de liste blanche côté serveur et de propositions
+# côté client : le sélecteur du lobby est construit à partir d'ici.
+MOVE_TIME_PRESETS = (0, 10, 20, 30, 45, 60, 90)
+TOTAL_TIME_PRESETS = (0, 120, 300, 600, 900, 1200, 1800)
+
+
+def _preset_or_none(value, presets) -> int | None:
+    """Ramène une valeur reçue du client à un preset autorisé, sinon None."""
+    try:
+        seconds = int(value)
+    except (TypeError, ValueError):
+        return None
+    return seconds if seconds in presets else None
+
 # Caractères sans ambiguïté visuelle (pas de O/0, I/1) pour un code lisible à l'oral.
 CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
@@ -43,6 +58,10 @@ class Room:
         self.seats: dict = {s: Seat() for s in SEATS}
         self.game_session = None  # web.game_session.GameSession, une fois la partie lancée
         self.target_score = 1000
+        # Échiquier de temps choisi dans le salon, en secondes (0 = illimité).
+        # Décompté uniquement pendant la réflexion des joueurs humains.
+        self.move_time_limit = 0
+        self.total_time_limit = 0
         # "public" : la salle figure dans la liste d'accueil et accepte des
         # spectateurs pendant la partie. "private" : accès par code seul,
         # aucun spectateur, comportement d'origine.
@@ -69,6 +88,48 @@ class Room:
                 return False
             self.bot_choices[seat_key] = bot_id
             return True
+
+    def set_time_control(self, move_seconds, total_seconds) -> bool:
+        """Choisit l'échiquier de temps du salon, avant le démarrage de la partie.
+
+        Les deux valeurs doivent figurer dans les presets ; sinon rien ne change.
+        """
+        move = _preset_or_none(move_seconds, MOVE_TIME_PRESETS)
+        total = _preset_or_none(total_seconds, TOTAL_TIME_PRESETS)
+        if move is None or total is None:
+            return False
+        with self.lock:
+            if self.game_session is not None and not self.game_session.finished:
+                return False  # partie en cours : réglages verrouillés
+            self.move_time_limit = move
+            self.total_time_limit = total
+            return True
+
+    def sid_of_seat(self, seat) -> str | None:
+        """Sid de la connection actuellement installée à `seat`, s'il y en a une."""
+        with self.lock:
+            slot = self.seats.get(seat)
+            return slot.sid if slot is not None else None
+
+    def release_seat_to_bot(self, seat, bot_id: str) -> str | None:
+        """Dépossède un joueur humain de son siège (temps total épuisé).
+
+        Le siège redevient vide : c'est `bot_id` qui y joue désormais, et le
+        lobby affiche son sélecteur de bot habituel. La connection dépossédée
+        passe spectatrice. Retourne son sid (None s'il n'y en avait pas).
+        """
+        if seat not in PLAYER_SEATS:
+            return None
+        with self.lock:
+            slot = self.seats[seat]
+            sid, name = slot.sid, slot.name
+            slot.sid = None
+            slot.name = None
+            if is_valid_bot(bot_id):
+                self.bot_choices[seat] = bot_id
+            if sid is not None:
+                self.spectators[sid] = name or "Spectateur"
+            return sid
 
     def add_spectator(self, sid: str, name: str) -> None:
         """Inscrit une connection sans siège comme spectateur du salon.
@@ -147,6 +208,10 @@ class Room:
                     for s, seat in self.seats.items()
                 },
                 "target_score": self.target_score,
+                "move_time_limit": self.move_time_limit,
+                "total_time_limit": self.total_time_limit,
+                "move_time_presets": list(MOVE_TIME_PRESETS),
+                "total_time_presets": list(TOTAL_TIME_PRESETS),
                 "bot_choices": {str(p): self.bot_choices[p] for p in PLAYER_SEATS},
                 "available_bots": list_bots(),
                 "spectator_count": len(self.spectators),

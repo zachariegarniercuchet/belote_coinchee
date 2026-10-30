@@ -92,6 +92,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `benchmarks/bots.py`, `benchmarks/README.md` | Comparaison reproductible des bots via le moteur web, calibration des contrats et diagnostic des entames à l'atout, sans toucher au serveur actif. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
 | `tests/test_spectators.py` | Salon public : annuaire, spectateur sans main, reprise d'un siège de bot entre deux donnes, témoin privé. |
+| `tests/test_time_control.py` | Échiquier de temps du salon : réglage partagé et verrouillé au démarrage, coup forcé par le bot de secours, joueur viré quand son temps total est épuisé. |
 | `tests/test_supabase_config.py` | Injection des clés Supabase dans la page, repli invité sans configuration et service de `auth.js`. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
 | `render.yaml`, `DEPLOY.md` | Configuration Render et documentation de déploiement. |
@@ -144,6 +145,7 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_hand_order.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_lobby.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_spectators.py
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_time_control.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_supabase_config.py
 ```
 
@@ -360,6 +362,26 @@ tous, et `GameSession.apply_pending_takeovers()` permute le bot en
 nouveau joueur reçoit sa main. Aucune donne en cours n'est interrompue ; le
 bouton n'apparaît que sur les sièges de bot occupés. Un spectateur ne redevient
 jamais spectateur volontairement : il reste joueur jusqu'à la fin de la partie.
+
+L'échiquier de temps se règle dans le salon, à côté du score cible, et vaut
+pour toute la partie : deux sélecteurs (`#move-time`, `#total-time`) envoient
+`set_time_control`, et les options sont construites depuis les presets du
+serveur (`MOVE_TIME_PRESETS`, `TOTAL_TIME_PRESETS`, en secondes, 0 = illimité)
+pour que la liste blanche et l'interface ne puissent pas diverger. Les valeurs
+sont lues dans la salle au démarrage (`GameSession`) et verrouillées ensuite :
+un refus (hors preset, partie lancée) rediffuse l'état du salon pour que le
+sélecteur revienne au choix réel. Seuls les sièges humains sont chronométrés,
+et le décompte ne court que pendant leur propre réflexion (enchères et cartes),
+jamais pendant les pauses, le jeu des bots ni le ramassage des plis. Les
+échéances sont des instants serveur (`turn_deadline` avec `server_time`) :
+le client en dérive le décompte sans dépendre de l'horloge de l'appareil, et
+les budgets restants partent dans `clocks` (sièges humains seulement).
+Un temps par coup dépassé fait jouer le coup par un bot de secours par siège,
+armé en tête de donne et nourri des mêmes notifications que les joueurs en
+place (`notify_players`) : le joueur garde sa place et son budget. Un temps
+total épuisé le dépossède de son siège — `release_seat_to_bot`, le bot promu
+conserve la mémoire de la donne — et son client reçoit `seat_lost` pour
+rester dans le salon plutôt que sur un écran de jeu sans mise à jour.
 
 Le formulaire d'enchères web affiche les couleurs au-dessus d'un montant
 unique, ajusté par −/+. Les crans viennent des actions légales du serveur :

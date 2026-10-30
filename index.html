@@ -106,6 +106,17 @@
           <option value="2000">2000</option>
         </select>
       </label>
+      <label class="row">
+        Temps par coup
+        <select id="move-time" aria-label="Temps de réflexion pour chaque coup"></select>
+      </label>
+      <label class="row">
+        Temps total par joueur
+        <select id="total-time" aria-label="Temps total accordé à chaque joueur"></select>
+      </label>
+      <p class="hint small">Illimité par défaut. Si un joueur dépasse son temps
+        par coup, le bot par défaut joue le coup à sa place ; s'il épuise son
+        temps total, il passe spectateur et le bot termine la partie à sa place.</p>
       <label class="row checkbox-row">
         <input type="checkbox" id="fill-bots" checked>
         Compléter les sièges vides avec les bots choisis ci-dessous (pour tester seul·e)

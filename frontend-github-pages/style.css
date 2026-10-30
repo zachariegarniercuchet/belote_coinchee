@@ -465,6 +465,13 @@ input::placeholder { color: rgba(247,241,227,.4); }
 .seat-marker .sm-cards { opacity: .7; margin-top: 2px; }
 .seat-marker.dealer::after { content: "D"; position:absolute; top:-8px; right:-8px; background:var(--gold); color:var(--ink); width:18px; height:18px; border-radius:50%; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; }
 
+/* Horloges : temps total restant par joueur, et décompte du coup en cours. */
+.seat-marker .seat-clock { margin-top: 2px; font-size: 11px; font-weight: 700; letter-spacing: .3px; opacity: .85; font-variant-numeric: tabular-nums; }
+.turn-clock { font-weight: 700; font-variant-numeric: tabular-nums; }
+.turn-clock.urgent { color: #ff7a6b; animation: turn-clock-pulse 1s ease-in-out infinite; }
+@keyframes turn-clock-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .turn-clock.urgent { animation: none; } }
+
 .seat-marker[data-position="0"] { bottom: calc(var(--card-h) + 10px); left: 50%; transform: translateX(-50%); }
 .seat-marker[data-position="0"] .sm-cards { display: none; }
 .seat-marker[data-position="1"] { right: 6px; top: 26%; transform: translateY(-50%); }

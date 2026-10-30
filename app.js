@@ -21,7 +21,12 @@
   let handReviewState = null;
   let lastTrickAnimationKey = null;
   let dismissedClaimDonneNumber = null;
-
+  // Vrai après un départ forcé (temps total écoulé) : on reste dans le salon
+  // plutôt que de retomber sur un écran de jeu sans main ni mise à jour.
+  let seatLost = false;
+  // Écart heure serveur - heure navigateur (secondes), pour afficher les
+  // décomptes sans dépendre de l'horloge de l'appareil.
+  let clockOffset = 0;
 
   // Bulles d'annonce (enchères / coinche) : elles restent affichées tant que
   // dure la phase d'enchères (la nouvelle annonce d'un joueur remplace la
@@ -236,6 +241,60 @@
       : "";
   }
 
+  // ------------------------------------------------------------------
+  // Échiquier de temps du salon (temps par coup et temps total)
+  // ------------------------------------------------------------------
+  function formatDuration(seconds) {
+    const s = Math.max(0, Math.round(seconds));
+    if (s < 60) return s + " s";
+    const minutes = Math.floor(s / 60);
+    const rest = s % 60;
+    return rest ? minutes + " min " + rest + " s" : minutes + " min";
+  }
+
+  function formatClock(seconds) {
+    const s = Math.max(0, Math.ceil(seconds));
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }
+
+  // Les presets viennent du serveur : le sélecteur et la liste blanche
+  // côté serveur ne peuvent donc pas diverger.
+  function fillTimeSelect(select, presets, current) {
+    const values = (presets || []).map(String);
+    const unchanged = select.options.length === values.length &&
+      values.every((value, index) => select.options[index].value === value);
+    if (!unchanged) {
+      select.innerHTML = "";
+      values.forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = Number(value) === 0 ? "Illimité" : formatDuration(Number(value));
+        select.appendChild(option);
+      });
+    }
+    if (values.includes(String(current))) select.value = String(current);
+  }
+
+  function syncTimeControl(state) {
+    const move = document.getElementById("move-time");
+    const total = document.getElementById("total-time");
+    if (!move || !total) return;
+    fillTimeSelect(move, state.move_time_presets, state.move_time_limit);
+    fillTimeSelect(total, state.total_time_presets, state.total_time_limit);
+  }
+
+  function sendTimeControl() {
+    if (!roomCode) return;
+    socket.emit("set_time_control", {
+      code: roomCode,
+      move_time: parseInt(document.getElementById("move-time").value, 10),
+      total_time: parseInt(document.getElementById("total-time").value, 10),
+    });
+  }
+
+  document.getElementById("move-time").addEventListener("change", sendTimeControl);
+  document.getElementById("total-time").addEventListener("change", sendTimeControl);
+
   function renderSeats(state) {
     lastLobbyState = state;
     mySeatChosen = state.your_seat ?? null;
@@ -334,6 +393,7 @@
         btn.className = "seat-take-btn";
         btn.textContent = "S'asseoir";
         btn.onclick = () => {
+          seatLost = false;
           socket.emit("take_seat", { code: roomCode, seat: key });
         };
         controls.appendChild(btn);
@@ -357,7 +417,9 @@
     if (state.target_score) {
       document.getElementById("target-score").value = String(state.target_score);
     }
-    if (state.game_in_progress) {
+    syncTimeControl(state);
+
+    if (state.game_in_progress && !seatLost) {
       showScreen("screen-game");
     }
   }
@@ -427,11 +489,23 @@
   });
 
   socket.on("game_started", () => {
+    seatLost = false;
     resetGameView();
     showScreen("screen-game");
   });
 
   socket.on("error_message", d => showToast(d.message));
+
+  // Temps total écoulé : le siège est repris par le bot par défaut, et le
+  // joueur repasse spectateur (il reste dans le salon pour la suite).
+  socket.on("seat_lost", d => {
+    seatLost = true;
+    mySeatChosen = null;
+    resetGameView();
+    showToast((d && d.message) || "Ton temps total est écoulé : le bot te remplace.");
+    showScreen("screen-lobby");
+    socket.emit("request_state", { code: roomCode });
+  });
 
   socket.on("public_rooms", data => renderPublicRooms(data && data.rooms));
 
@@ -531,6 +605,10 @@
 
   function renderGame(state) {
     lastRenderedState = state;
+    // Décalage d'horloge : les échéances sont des instants serveur.
+    if (typeof state.server_time === "number") {
+      clockOffset = state.server_time - Date.now() / 1000;
+    }
     // Un spectateur n'a pas de siège : ne jamais le mémoriser comme tel.
     if (Number.isInteger(state.your_seat)) {
       mySeatChosen = state.your_seat;
@@ -744,6 +822,20 @@
           marker.appendChild(note);
         }
       }
+      // Temps total restant : uniquement pour un siège tenu par un humain.
+      const seatClock = state.clocks && state.clocks[String(seat)];
+      let clockEl = marker.querySelector(".seat-clock");
+      if (seatClock === undefined || seatClock === null) {
+        if (clockEl) clockEl.remove();
+      } else {
+        if (!clockEl) {
+          clockEl = document.createElement("div");
+          clockEl.className = "seat-clock";
+          marker.appendChild(clockEl);
+        }
+        clockEl.textContent = "⏳ " + formatClock(seatClock);
+        clockEl.title = "Temps total restant pour " + nameOf(state, seat);
+      }
       marker.classList.toggle("active-turn", state.waiting_seat === seat);
       marker.classList.toggle("dealer", state.dealer === seat);
       marker.classList.toggle("claim-winner", claimVisible(state) && state.claim.seat === seat);
@@ -775,7 +867,45 @@
       ((state.belote_team !== null && state.belote_team !== undefined)
         ? " · Belote Équipe " + (String(state.belote_team) === "0" ? "A" : "B") + " (+20)" : "") +
       turnTxt);
+    // Décompte du coup en cours : seulement si un humain est réellement chronométré.
+    if (state.turn_deadline) {
+      const span = document.createElement("span");
+      span.id = "turn-clock";
+      span.className = "turn-clock";
+      tricksInfo.appendChild(span);
+      updateTurnClock(span, state);
+    }
   }
+
+  // Horloges affichées : recalculées en continu à partir de l'échéance serveur,
+  // sans nouvelle diffusion et sans dépendre de l'horloge de l'appareil.
+  function serverNow() {
+    return Date.now() / 1000 + clockOffset;
+  }
+
+  function updateTurnClock(span, state) {
+    const left = Math.max(0, Math.ceil(state.turn_deadline - serverNow()));
+    span.textContent = " · ⏱ " + left + " s";
+    span.classList.toggle("urgent", left <= 5);
+  }
+
+  function refreshClocks() {
+    const state = lastRenderedState;
+    if (!state) return;
+    if (state.turn_deadline) {
+      const span = document.getElementById("turn-clock");
+      if (span) updateTurnClock(span, state);
+    }
+    if (!state.clocks) return;
+    SEAT_KEYS.forEach(seat => {
+      if (!Number.isInteger(seat)) return;
+      const left = state.clocks[String(seat)];
+      const el = document.querySelector("#seat-marker-" + seat + " .seat-clock");
+      if (el && left !== undefined && left !== null) el.textContent = "⏳ " + formatClock(left);
+    });
+  }
+
+  setInterval(refreshClocks, 250);
 
   // ------------------------------------------------------------------
   // Pli ramassé : pile cliquable en haut à droite (dernier pli uniquement)

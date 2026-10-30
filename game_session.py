@@ -67,6 +67,7 @@ class GameContext:
         self.waiting_kind = None       # "bid" | "card" | None
         self.pending_legal_bid = None
         self.pending_legal_cards = None
+        self.turn_deadline = None      # échéance du coup courant (temps serveur), None si illimité
         self.error_message = None
 
 
@@ -132,8 +133,8 @@ class NetworkGame(Game):
         # est remplacé avant la distribution, donc le nouveau joueur reçoit
         # bien sa main. Aucune donne en cours n'est interrompue pour cela.
         self.session.apply_pending_takeovers()
-        for player in self.players.values():
-            player.notify_donne_start()
+        self.session.arm_fallback_bots()
+        self.session.notify_players("notify_donne_start")
 
         deck = cut_deck(new_shuffled_deck(rng), rng)
         starting_player = (dealer - 1) % 4
@@ -170,6 +171,7 @@ class NetworkGame(Game):
             ctx.waiting_seat = p
             ctx.waiting_kind = "bid"
             ctx.pending_legal_bid = legal
+            self.session.begin_turn(p)
             self.session.broadcast()
 
             if not isinstance(self.players[p], NetworkPlayer):
@@ -202,8 +204,7 @@ class NetworkGame(Game):
             return log
 
         contract = bidding_state.contract
-        for player in self.players.values():
-            player.notify_contract(contract)
+        self.session.notify_players("notify_contract", contract)
         atout = contract.suit
         leader = (dealer - 1) % 4
         # Connue du moteur dès la fin des enchères pour calculer le score,
@@ -238,8 +239,7 @@ class NetworkGame(Game):
                     tricks_won_by_team[team_of(claim.seat)] += 1
                     log.tricks.append(list(trick.plays))
                     log.trick_winners.append(claim.seat)
-                    for player in self.players.values():
-                        player.notify_trick_result(list(trick.plays), claim.seat)
+                    self.session.notify_players("notify_trick_result", list(trick.plays), claim.seat)
                 last_trick_winner = claim.seat
                 ctx.tricks_won_this_donne = dict(tricks_won_by_team)
                 ctx.current_trick = None
@@ -265,6 +265,7 @@ class NetworkGame(Game):
                     ctx.waiting_seat = p
                     ctx.waiting_kind = "card"
                     ctx.pending_legal_cards = legal
+                    self.session.begin_turn(p)
                     self.session.broadcast()
 
                     if not isinstance(self.players[p], NetworkPlayer):
@@ -297,8 +298,7 @@ class NetworkGame(Game):
 
             log.tricks.append(list(trick.plays))
             log.trick_winners.append(winner)
-            for player in self.players.values():
-                player.notify_trick_result(list(trick.plays), winner)
+            self.session.notify_players("notify_trick_result", list(trick.plays), winner)
 
             ctx.completed_trick_cards = list(trick.plays)
             ctx.last_trick_winner_seat = winner
@@ -349,10 +349,20 @@ class GameSession:
         self._recap_closed = threading.Event()
         self._recap_pending_seats = set()
 
-        # Choix de bots figé au démarrage : priorité à l'argument explicite,
-        # sinon le sélecteur du lobby (room.bot_choices), sinon le défaut.
+        # Réglages figés au démarrage : échiquier de temps (secondes, 0 =
+        # illimité) et choix de bots — priorité à l'argument explicite, sinon
+        # le sélecteur du lobby (room.bot_choices), sinon le défaut. Le temps
+        # total est un budget par joueur, pour toute la partie, décompté
+        # pendant la seule réflexion de ce joueur (enchères et cartes).
+        self._timeout_bots: dict[int, Player] = {}   # bots de secours par siège humain
+        self._clocks: dict[int, float] | None = None
+
         with room.lock:
             room_choices = dict(room.bot_choices)
+            self.move_time_limit = int(room.move_time_limit or 0)
+            self.total_time_limit = int(room.total_time_limit or 0)
+        if self.total_time_limit:
+            self._clocks = {p: float(self.total_time_limit) for p in PLAYER_SEATS}
         if bot_ids:
             for key, bid in bot_ids.items():
                 try:
@@ -466,18 +476,139 @@ class GameSession:
         while time.time() < end and not self._stop:
             time.sleep(0.2)
 
+    # --- échiquier de temps ------------------------------------------------
+
+    def _turn_budget(self, seat: int) -> float | None:
+        """Durée maximale d'attente autorisée pour le coup courant, None si illimité."""
+        budget = float(self.move_time_limit) if self.move_time_limit else None
+        if self._clocks is not None:
+            remaining = max(0.0, self._clocks.get(seat, 0.0))
+            budget = remaining if budget is None else min(budget, remaining)
+        return budget
+
+    def begin_turn(self, seat: int):
+        """Fixe l'échéance du coup courant avant la diffusion de l'état.
+
+        Seul un siège tenu par un humain est chronométré : un bot choisit sans
+        attendre, et le décompte reprendra si un joueur reprend ce siège.
+        """
+        if not isinstance(self.players.get(seat), NetworkPlayer):
+            self.ctx.turn_deadline = None
+            return
+        budget = self._turn_budget(seat)
+        self.ctx.turn_deadline = time.time() + budget if budget is not None else None
+
+    def arm_fallback_bots(self):
+        """Prépare, pour chaque siège humain, le bot de secours du temps par coup.
+
+        Créés en tête de donne, ils reçoivent donc les mêmes notifications que
+        les joueurs en place (contrat, plis joués) et jouent un jeu cohérent.
+        """
+        if not self.move_time_limit and self._clocks is None:
+            self._timeout_bots = {}
+            return
+        for seat, player in self.players.items():
+            if isinstance(player, NetworkPlayer) and seat not in self._timeout_bots:
+                self._timeout_bots[seat] = self._new_fallback_bot(seat)
+
+    def notify_players(self, method: str, *args):
+        """Informe les joueurs en place ET les bots de secours d'un événement de donne."""
+        for player in list(self.players.values()):
+            getattr(player, method)(*args)
+        for bot in self._timeout_bots.values():
+            getattr(bot, method)(*args)
+
+    def _consume_clock(self, seat: int, elapsed: float) -> None:
+        """Retire au budget total d'un joueur le temps qu'il vient de réfléchir."""
+        if self._clocks is not None and seat in self._clocks:
+            self._clocks[seat] = max(0.0, self._clocks[seat] - max(0.0, elapsed))
+
+    @staticmethod
+    def _new_fallback_bot(seat: int) -> Player:
+        return create_bot(DEFAULT_BOT_ID, seat, name=get_bot_name(DEFAULT_BOT_ID, seat))
+
+    def _forced_choice(self, seat: int, kind: str, elapsed: float):
+        """Coup joué par le bot de secours quand le temps d'un joueur est épuisé."""
+        self._consume_clock(seat, elapsed)
+        if self._clocks is not None and self._clocks.get(seat, 0.0) <= 0:
+            self._kick_seat(seat)
+        bot = self._timeout_bots.get(seat) or self.players[seat]
+        if kind == "bid":
+            legal = self.ctx.pending_legal_bid or []
+            action = bot.choose_bid(self.ctx.hands.get(seat, []), self.ctx.bidding_state, legal)
+            return action if action in legal else legal[0]
+        legal = self.ctx.pending_legal_cards or []
+        card = bot.choose_card(self.ctx.hands.get(seat, []), self.ctx.current_trick, legal)
+        return card if card in legal else legal[0]
+
+    def _kick_seat(self, seat: int):
+        """Le temps total d'un joueur est épuisé : le bot par défaut prend sa place.
+
+        Le joueur est dépossédé de son siège (il redevient spectateur) et le
+        bot promu conserve la mémoire de la donne via ses notifications.
+        """
+        bot = self._timeout_bots.pop(seat, None)
+        if bot is None:
+            bot = self._new_fallback_bot(seat)
+        name = self.players[seat].name if seat in self.players else "Joueur"
+        self.players[seat] = bot
+        self.ctx.hand_suit_orders[seat] = []
+        info = get_bot_info(DEFAULT_BOT_ID)
+        self.bot_profiles[seat] = {"id": info["id"], "avatar": info["avatars"][seat]}
+        if self._clocks is not None:
+            self._clocks[seat] = 0.0
+        sid = self.room.release_seat_to_bot(seat, DEFAULT_BOT_ID)
+        socketio.emit(
+            "error_message",
+            {"message": f"⏱ {name} a épuisé son temps : {bot.name} prend sa place à table."},
+            room=self.room.code,
+        )
+        if sid is not None:
+            socketio.emit(
+                "seat_lost",
+                {"code": self.room.code,
+                 "message": "⏱ Ton temps total est écoulé : tu passes spectateur, "
+                            f"le bot {bot.name} finit la partie à ta place."},
+                to=sid,
+            )
+        self.broadcast()
+
     # --- réception des choix humains --------------------------------------
 
     def _wait_for_choice(self, seat: int, kind: str):
         event = threading.Event()
+        deadline = self.ctx.turn_deadline
+        if deadline is None:
+            budget = self._turn_budget(seat)
+            deadline = time.time() + budget if budget is not None else None
+        start = time.time()
         with self._lock:
             self._pending_event = event
             self._pending_seat = seat
             self._pending_kind = kind
             self._pending_choice = None
-        event.wait()
+        if deadline is None:
+            event.wait()
+        else:
+            event.wait(max(0.0, deadline - time.time()))
+        elapsed = time.time() - start
         with self._lock:
-            return self._pending_choice
+            choice = self._pending_choice
+            if self._pending_event is event:
+                self._pending_event = None
+        self.ctx.turn_deadline = None
+        if choice is not None:
+            self._consume_clock(seat, elapsed)
+            return choice
+        # Temps par coup épuisé : le bot de secours choisit à la place du joueur.
+        sid = self.room.sid_of_seat(seat)
+        if sid:
+            socketio.emit(
+                "error_message",
+                {"message": "⏱ Temps écoulé : le bot a joué ce coup à ta place."},
+                to=sid,
+            )
+        return self._forced_choice(seat, kind, elapsed)
 
     def submit_bid(self, seat: int, index: int) -> bool:
         with self._lock:
@@ -596,6 +727,17 @@ class GameSession:
             if log.result is not None and log.contract is not None
         ]
 
+    def _clocks_dict(self):
+        """Temps total restant, pour les seuls sièges tenus par un humain."""
+        if self._clocks is None:
+            return None
+        with self._lock:
+            return {
+                str(seat): round(max(0.0, self._clocks.get(seat, 0.0)), 1)
+                for seat, player in self.players.items()
+                if isinstance(player, NetworkPlayer)
+            }
+
     def _build_common(self):
         ctx = self.ctx
         board_seat = self.room.seats.get("board")
@@ -629,6 +771,14 @@ class GameSession:
             "waiting_seat_name": (
                 self.room.seats[ctx.waiting_seat].name if ctx.waiting_seat is not None else None
             ),
+            # Échiquier de temps de la salle : secondes, 0 = illimité. `clocks`
+            # ne contient que les sièges humains ; `turn_deadline` est un
+            # instant serveur (voir `server_time` pour en dériver le décompte).
+            "time_control": {"move_seconds": self.move_time_limit,
+                              "total_seconds": self.total_time_limit},
+            "clocks": self._clocks_dict(),
+            "turn_deadline": ctx.turn_deadline,
+            "server_time": time.time(),
             "contract": self._contract_dict(),
             "bidding_history": self._bidding_history(),
             "current_trick": self._trick_plays_dict(ctx.current_trick.plays if ctx.current_trick else []),
