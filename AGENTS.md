@@ -89,7 +89,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_brooklyn.py` | Stratégie de David, enchères de partenariat v2 et parties légales identiques console/web. |
 | `benchmarks/bots.py`, `benchmarks/README.md` | Comparaison reproductible des bots via le moteur web, calibration des contrats et diagnostic des entames à l'atout, sans toucher au serveur actif. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
-| `tests/test_spectators.py` | Salon public : annuaire, spectateur sans main, reprise d'un siège de bot entre deux donnes, témoin privé. |
+| `tests/test_spectators.py` | Salon public : annuaire avec créateur, spectateur sans main, reprise d'un siège de bot entre deux donnes, témoin privé, fermeture automatique des salons abandonnés. |
 | `tests/test_time_control.py` | Échiquier de temps du salon : réglage partagé et verrouillé au démarrage, coup forcé par le bot de secours, joueur viré quand son temps total est épuisé. |
 | `tests/test_supabase_config.py` | Injection des clés Supabase dans la page, repli invité sans configuration et service de `auth.js`. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
@@ -366,6 +366,26 @@ tous, et `GameSession.apply_pending_takeovers()` permute le bot en
 nouveau joueur reçoit sa main. Aucune donne en cours n'est interrompue ; le
 bouton n'apparaît que sur les sièges de bot occupés. Un spectateur ne redevient
 jamais spectateur volontairement : il reste joueur jusqu'à la fin de la partie.
+
+L'annuaire vit dans un rectangle séparé `#public-card` sous le panneau
+principal de l'accueil (l'onglet « Salons publics » a été supprimé). Il est
+toujours visible, affiche « Aucun salon » quand la liste est vide, propose un
+bouton **Actualiser** et un champ prénom, et montre le créateur de chaque
+salon (`created_by`, transmis par `Room` → `public_rooms`).
+
+Les salons abandonnés sont fermés automatiquement, sans jamais interrompre une
+partie ni déconnecter un joueur : `purge_expired_rooms()` dans `server.py`
+ne supprime que les salons **sans partie en cours** et **sans aucune
+connection humaine attachée** (détecté via `sid_info`, qui compte aussi les
+joueurs de lobby d'un salon privé, non suivis sur le `Room`). Deux seuils,
+mesurés depuis `Room.last_activity` (rajeuni à chaque action humaine,
+création/jonction/siège/coup/déconnexion) : `EMPTY_ROOM_IDLE` (30 min) pour un
+salon nu, `NO_HUMAN_IDLE` (2 h) pour un salon qui a accueilli des joueurs ou
+une partie. Le balayage tourne à chaque demande d'annuaire et dans une tâche
+de fond démarrée uniquement sous `__main__` (`_purge_loop`), jamais à
+l'import. Ne jamais purger un salon joué : `GameSession.stop()` n'est jamais
+appelé et `_wait_for_choice` attend sans timeout, un arrêt laisserait un
+thread orphelin.
 
 L'échiquier de temps se règle dans le salon, à côté du score cible, et vaut
 pour toute la partie : deux sélecteurs (`#move-time`, `#total-time`) envoient
@@ -669,3 +689,26 @@ vérifie deux donnes passées, le donneur suivant, les phases, scores et états 
   Un compte de test `e2e.1792447462@gmail.com` existe et peut être supprimé
   dans Authentication → Users ; les inscriptions précédentes avaient été
   bloquées (adresse invalide puis limite d'emails) et n'avaient rien créé.
+
+## Mise à jour du 31 octobre 2026 — annuaire sous le panneau et fermeture des salons
+
+- Annuaire déplacé : l'onglet « Salons publics » a disparu, la liste vit
+  dans `#public-card` sous `.home-card`, toujours visible, avec « Aucun
+  salon », **Actualiser**, champ prénom et créateur (`created_by`).
+  `style.css` resynchronisé entre les deux frontends.
+- Fermeture automatique des salons abandonnés : `purge_expired_rooms()` et
+  `_purge_loop()` dans `server.py`, seuils `EMPTY_ROOM_IDLE` (30 min) /
+  `NO_HUMAN_IDLE` (2 h) dans `rooms.py`, jamais pendant une partie ni avec
+  un humain connecté.
+- Tests : `test_spectators.py` (2), `test_lobby.py`, `test_time_control.py`,
+  `test_autoplay.py`, `test_claim.py`, `test_hand_order.py`,
+  `test_supabase_config.py` — tous OK.
+- **Échec préexistant** : `tests/test_contract_modes.py` échoue (10
+  échecs, RNG/moteur) **avec et sans** les changements de cette livraison
+  (vérifié via `git stash`). Distinct des 2 échecs connus de `test_rules.py`.
+  Ne pas le faire passer en touchant au moteur sans demande explicite.
+- Vérification navigateur **faite** : accueil (12/12) — onglet absent,
+  carte sous le panneau, message vide, création de salon Zoé présente avec
+  « par Zoé », aucune erreur JS ; purge (3/3) — serveur démarrant avec la
+  purge câblée, annuaire et salon créé fonctionnels. Les seuils 30 min / 2 h
+  sont couverts par l'unitaire (horloge manipulée), pas par le navigateur.
