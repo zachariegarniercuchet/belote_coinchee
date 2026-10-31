@@ -68,6 +68,9 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [SA distribution and protected honours](2026-10-30-sa-bidding.md): paired
+  800-game before/after runs (1,600 total), fresh seeds 46000–46049, all four
+  Brooklyn versions, SA selection/support changes and unchanged TA evaluation.
 - [SA/TA across Brooklyn v1–v4](2026-10-29-sa-ta.md): 800 games at
   `dc31e65`, with per-mode success/calibration and all capots included.
 - [Versioned Brooklyn v4](2026-10-26-v4.md): 400 games at `09e0bf9`, newly

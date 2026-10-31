@@ -1,0 +1,52 @@
+{
+  "seed": 20261030,
+  "hands": 20000,
+  "note": "Own SA opening ceilings on identical random hands, not final contracts or outcomes. One seat in four has the opening lead. No parameter tuning.",
+  "before_revision": "6d2270d6407e3cedd3dcc844e23bb1cecd0331ba",
+  "after_revision": "e27e94771cad703236be9b07c1e460ae07930502",
+  "regular_shapes": [
+    [
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      3,
+      2,
+      2,
+      1
+    ]
+  ],
+  "hand_distribution": {
+    "void_hands": 5390,
+    "regular_hands": 9179
+  },
+  "counts": {
+    "before": {
+      "opens": 6224,
+      "void_openings": 1792,
+      "regular_openings": 2786,
+      "sum_bid": 535560
+    },
+    "after": {
+      "opens": 3513,
+      "void_openings": 699,
+      "regular_openings": 1826,
+      "sum_bid": 299630
+    }
+  },
+  "seven_master_run_minimum_card_points": 85,
+  "five_master_counterexample": {
+    "card_points": {
+      "0": 53,
+      "1": 99
+    },
+    "total_points": {
+      "0": 53,
+      "1": 109
+    },
+    "contract": 80,
+    "made": false
+  }
+}
