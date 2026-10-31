@@ -10,6 +10,13 @@
   const BACKEND_URL = window.BELOTE_BACKEND_URL || "";
   const socket = BACKEND_URL ? io(BACKEND_URL) : io();
 
+  // Chemins HTTP vers le backend : identiques a l'origine quand BACKEND_URL
+  // est vide (serveur Flask), prefixes par le backend distant sinon (GitHub
+  // Pages), sans quoi le QR code et le lien du salon renverraient 404.
+  function backendUrl(path) {
+    return BACKEND_URL.replace(/\/+$/, "") + path;
+  }
+
   let roomCode = null;
   let myName = null;
   let mySeatChosen = null; // 0-3 ou "board", mémorisé pour se rasseoir après reconnexion
@@ -164,8 +171,8 @@
   function enterLobby(code) {
     roomCode = code;
     document.getElementById("lobby-code").textContent = code;
-    document.getElementById("lobby-qr").src = "/room/" + code + "/qr.png";
-    fetch("/room/" + code + "/info")
+    document.getElementById("lobby-qr").src = backendUrl("/room/" + code + "/qr.png");
+    fetch(backendUrl("/room/" + code + "/info"))
       .then(r => r.json())
       .then(d => { document.getElementById("lobby-url").textContent = d.join_url; })
       .catch(() => {});
@@ -183,7 +190,7 @@
   }
 
   function botAvatarUrl(file) {
-    return BACKEND_URL.replace(/\/+$/, "") + "/assets/bots/" + encodeURIComponent(file);
+    return backendUrl("/assets/bots/" + encodeURIComponent(file));
   }
 
   function botAvatar(file, name, extraClass = "") {
