@@ -92,6 +92,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_spectators.py` | Salon public : annuaire avec créateur, spectateur sans main, reprise d'un siège de bot entre deux donnes, témoin privé, fermeture automatique des salons abandonnés. |
 | `tests/test_time_control.py` | Échiquier de temps du salon : réglage partagé et verrouillé au démarrage, coup forcé par le bot de secours, joueur viré quand son temps total est épuisé. |
 | `tests/test_supabase_config.py` | Injection des clés Supabase dans la page, repli invité sans configuration et service de `auth.js`. |
+| `tests/test_room_links.py` | QR code et lien de partage : URL publique déduite de l'hôte de la requête (Render), IP Wi-Fi en local et surcharge `PUBLIC_BASE_URL`. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
 | `render.yaml`, `DEPLOY.md` | Configuration Render et documentation de déploiement. |
 | `README.md`, `belote/bots/README.md` | Présentation, utilisation et procédure d'ajout de bots. |
@@ -151,6 +152,7 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_spectators.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_time_control.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_supabase_config.py
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_room_links.py
 ```
 
 ## Conventions et précautions d'implémentation
@@ -200,6 +202,13 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   par l'autre sans examiner le diff. `auth.js` et `style.css` sont tenus
   identiques entre la racine et `frontend-github-pages/` ; `app.js` ne l'est
   pas (voir « État initial » plus bas).
+- Le lien de partage et le QR code du salon viennent de `get_base_url()` dans
+  `server.py` : `PUBLIC_BASE_URL` si défini, sinon l'hôte de la requête
+  (schéma pris à `X-Forwarded-Proto`), et IP Wi-Fi seulement pour `localhost`,
+  une IP privée ou un nom de poste. Ne pas recalculer ce lien côté frontend :
+  `app.js` appelle `/room/<code>/info` et `/room/<code>/qr.png` via
+  `backendUrl()` afin qu'ils visent le backend configuré, même depuis GitHub
+  Pages.
 - Les comptes sont **optionnels** : sans `SUPABASE_URL` ni `SUPABASE_ANON_KEY`,
   la page ne montre aucune trace de compte et `auth.js` ne charge aucune
   bibliothèque. Ne jamais rendre une connexion obligatoire pour jouer, ne
@@ -712,3 +721,38 @@ vérifie deux donnes passées, le donneur suivant, les phases, scores et états 
   « par Zoé », aucune erreur JS ; purge (3/3) — serveur démarrant avec la
   purge câblée, annuaire et salon créé fonctionnels. Les seuils 30 min / 2 h
   sont couverts par l'unitaire (horloge manipulée), pas par le navigateur.
+
+## Mise à jour du 31 octobre 2026 — QR code et lien de partage
+
+- Bug constaté : le QR code du salon encodait une URL locale.
+  `get_base_url()` retombait sur `LAN_IP`, c'est-à-dire l'adresse interne du
+  conteneur Render, `PUBLIC_BASE_URL` étant vide dans `render.yaml` : le scan
+  ouvrait un serveur injoignable au lieu de
+  `https://belote-coinchee-g77g.onrender.com`.
+- Correctif serveur : `get_base_url()` déduit l'URL de l'hôte de la requête.
+  Un hôte public est repris tel quel avec le schéma de `X-Forwarded-Proto`
+  (Render) ; `LAN_IP` reste réservée à `localhost`, à une IP privée, à un nom
+  de poste et à un nom `.local`, comme avant. `PUBLIC_BASE_URL` garde son rôle
+  de surcharge (laisser vide sur Render, renseigner seulement pour viser une
+  autre adresse, par exemple GitHub Pages).
+- `app.js` (racine et `frontend-github-pages/`) : nouvelle fonction
+  `backendUrl()` qui préfixe `/room/<code>/info` et `/room/<code>/qr.png`
+  (comme elle le faisait déjà pour les portraits de bots). Sans elle, la copie
+  statique demandait ces URLs à GitHub Pages, qui renvoie 404.
+- `frontend-github-pages/index.html` : `window.BELOTE_BACKEND_URL` passe de
+  l'exemple `https://VOTRE-SERVICE.onrender.com` à
+  `https://belote-coinchee-g77g.onrender.com`.
+- Tests : nouveau `tests/test_room_links.py` (2 tests : lien public derrière
+  le proxy Render et PNG du QR comparé octet à octet, puis IP Wi-Fi en local
+  et surcharge `PUBLIC_BASE_URL`). Suites relues : `test_autoplay.py`,
+  `test_claim.py`, `test_hand_order.py`, `test_lobby.py`,
+  `test_spectators.py`, `test_time_control.py`, `test_supabase_config.py`,
+  `test_room_links.py` — tous OK ; `test_card_play_rules.py` 17/0 ;
+  `test_rules.py` toujours 16 réussites / 2 échecs connus ;
+  `test_contract_modes.py` toujours ses 10 échecs préexistants ;
+  `node --check` OK sur les quatre fichiers JS.
+- Vérification navigateur **non faite** pour ce changement : le QR n'a pas été
+  scanné depuis un téléphone. L'URL encodée est couverte par
+  `test_room_links.py` (PNG comparé) et par l'inspection de la page servie
+  par Render ; un redéploiement est nécessaire pour confirmer en conditions
+  réelles.
