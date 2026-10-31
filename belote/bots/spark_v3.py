@@ -24,7 +24,8 @@ from __future__ import annotations
 import random
 
 from ..bidding import ActionType, BiddingState, BidAction
-from ..cards import Card, Suit
+from ..cards import Card, Suit, ContractMode
+from .contract_modes import choose_mode_card
 from .spark_v1 import SparkBotV1
 from .spark_v2 import SparkBotV2
 from ..scoring import compute_donne_score
@@ -57,19 +58,19 @@ class SparkBotV3(SparkBotV2):
             self._bid_id = id(bidding_state)
             self._auction_min = {}
         for p, act in bidding_state.history:
-            if act.type == ActionType.ENCHERE and act.suit is not None \
+            if act.type == ActionType.ENCHERE and isinstance(act.suit, Suit) \
                     and not act.is_capot:
                 cur = self._auction_min.setdefault(p, {})
                 cur[act.suit] = max(cur.get(act.suit, 0), 2)
             elif act.type == ActionType.COINCHE:
                 c = bidding_state.contract
-                if c is not None:
+                if c is not None and isinstance(c.suit, Suit):
                     cur = self._auction_min.setdefault(p, {})
                     cur[c.suit] = max(cur.get(c.suit, 0), 3)
         # support raises in the contract suit mean 3+ (only v1-family raises;
         # HeuristicBot never raises, so this never misfires against it)
         c = bidding_state.contract
-        if c is not None and not c.is_capot:
+        if c is not None and isinstance(c.suit, Suit) and not c.is_capot:
             for p, act in bidding_state.history:
                 if (act.type == ActionType.ENCHERE and act.suit == c.suit
                         and p != c.player and team_of(p) == c.team):
@@ -305,6 +306,8 @@ class SparkBotV3(SparkBotV2):
 
     def choose_card(self, hand: list[Card], trick_state: TrickState,
                     legal_cards: list[Card]) -> Card:
+        if isinstance(trick_state.atout, ContractMode):
+            return choose_mode_card(self, hand, trick_state, legal_cards)
         if len(legal_cards) == 1 or self.contract is None:
             return super().choose_card(list(hand), trick_state, list(legal_cards))
         cands = self._shortlist(list(hand), trick_state, list(legal_cards))

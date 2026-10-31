@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .cards import Card, Suit, ATOUT_ORDER, NONATOUT_ORDER
+from .cards import Card, Suit, ContractMode, Trump
 
 
 def team_of(player: int) -> int:
@@ -18,9 +18,12 @@ def partner_of(player: int) -> int:
     return (player + 2) % 4
 
 
-def trick_winner(plays: list[tuple[int, Card]], atout: Suit) -> int:
+def trick_winner(plays: list[tuple[int, Card]], atout: Trump) -> int:
     """Retourne le joueur qui remporte le pli (règle 5.1)."""
     suit_led = plays[0][1].suit
+    if isinstance(atout, ContractMode):
+        return min(((p, c) for p, c in plays if c.suit == suit_led),
+                   key=lambda pc: pc[1].strength_index(atout))[0]
     atout_plays = [(p, c) for p, c in plays if c.suit == atout]
     if atout_plays:
         return min(atout_plays, key=lambda pc: pc[1].atout_strength_index())[0]
@@ -29,7 +32,7 @@ def trick_winner(plays: list[tuple[int, Card]], atout: Suit) -> int:
 
 
 def legal_cards(hand: list[Card], plays_so_far: list[tuple[int, Card]],
-                 atout: Suit, current_player: int) -> list[Card]:
+                 atout: Trump, current_player: int) -> list[Card]:
     """
     Calcule les cartes que `current_player` peut légalement jouer, selon les
     règles 5.2 (1 à 4), y compris la précision sur le fait de « ne pas pisser ».
@@ -39,6 +42,16 @@ def legal_cards(hand: list[Card], plays_so_far: list[tuple[int, Card]],
 
     suit_led = plays_so_far[0][1].suit
     cards_suit_led = [c for c in hand if c.suit == suit_led]
+    if isinstance(atout, ContractMode):
+        if not cards_suit_led:
+            return list(hand)  # Ni SA ni TA ne permettent de couper.
+        if atout is ContractMode.TOUT_ATOUT:
+            best = min((c for _, c in plays_so_far if c.suit == suit_led),
+                       key=lambda c: c.strength_index(atout))
+            stronger = [c for c in cards_suit_led
+                        if c.strength_index(atout) < best.strength_index(atout)]
+            return stronger or cards_suit_led  # Monter, même sur le partenaire.
+        return cards_suit_led
 
     # Déterminer qui est actuellement maître du pli et avec quel type de carte.
     atout_plays = [(p, c) for p, c in plays_so_far if c.suit == atout]
@@ -89,7 +102,7 @@ def legal_cards(hand: list[Card], plays_so_far: list[tuple[int, Card]],
 @dataclass
 class TrickState:
     leader: int
-    atout: Suit
+    atout: Trump
     plays: list[tuple[int, Card]] = field(default_factory=list)
 
     @property

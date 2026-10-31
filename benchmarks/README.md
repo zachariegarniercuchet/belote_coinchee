@@ -22,6 +22,17 @@ Progress is printed to stderr; the summary goes to stdout. Optional JSON
 output also contains every game's deal outcomes and lead counts, plus the
 source revision, so reported metrics can be audited.
 
+After adding SA/TA, rerun all versions with
+`--brooklyn brooklyn_v1 brooklyn_v2 brooklyn_v3 brooklyn_v4` (800 games).
+Deal records include `contract_suit`, `capot_bid`, belote points and the
+opener's number of belote pairs. Summary `by_mode` separates suited contracts,
+SA and TA (counts, take share, success, numeric mean bid and margins).
+SA/TA have no single trump-suit count: their opening diagnostics are null,
+and they are excluded from suited J/9 opening and trump-hunting diagnostics,
+but included in every overall outcome/calibration metric.
+Historical snapshots remain tied to their revision; comparing before/after
+does not isolate the effect of SA/TA from other intervening changes.
+
 Metrics:
 
 - Taking share excludes passed-out deals; contract success is the actual
@@ -57,6 +68,8 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [SA/TA across Brooklyn v1–v4](2026-10-29-sa-ta.md): 800 games at
+  `dc31e65`, with per-mode success/calibration and all capots included.
 - [Versioned Brooklyn v4](2026-10-26-v4.md): 400 games at `09e0bf9`, newly
   rerunning v3 as an unchanged control; defensive v5 remains deferred.
 - [V3 first trump lead and return to partner](2026-10-26-first-trump.md):

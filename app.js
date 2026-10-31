@@ -19,6 +19,7 @@
   let recapState = null;
   let recapDonneNumber = null;
   let handReviewState = null;
+  let handReviewStep = 0;
   let lastTrickAnimationKey = null;
   let dismissedClaimDonneNumber = null;
   // Vrai après un départ forcé (temps total écoulé) : on reste dans le salon
@@ -32,12 +33,23 @@
   // dure la phase d'enchères (la nouvelle annonce d'un joueur remplace la
   // précédente), puis disparaissent une fois la phase terminée.
   const bidBubbleState = { donne: null, count: 0, clearedForPhase: false };
-  const beloteBubbleState = { donne: null, count: 0, timer: null };
+  const beloteBubbleState = { donne: null, count: 0, timers: new Map() };
 
   // Formulaire d'enchère (popup centrale) : on choisit couleur + montant,
   // puis on valide avec "Confirmer". Mémorisé entre deux state_update.
   const bidFormState = { key: null, suit: null, points: null, isCapot: false };
   const redealAnimation = { key: null, layer: null, timer: null };
+
+  // Snapshot once: game states and announcements never resize/reposition this panel.
+  const initialBidViewport = { width: window.innerWidth, height: window.innerHeight };
+  const initialBidPanel = document.getElementById("bid-controls");
+  const compactBidPanel = initialBidViewport.height < 640;
+  initialBidPanel.classList.toggle("bid-compact", compactBidPanel);
+  initialBidPanel.style.setProperty("--bid-fixed-left", initialBidViewport.width / 2 + "px");
+  initialBidPanel.style.setProperty("--bid-fixed-top", initialBidViewport.height / 2 + "px");
+  initialBidPanel.style.setProperty("--bid-fixed-width", Math.min(264, Math.max(212, initialBidViewport.width - 32)) + "px");
+  initialBidPanel.style.setProperty("--bid-fixed-height", (compactBidPanel
+    ? Math.min(118, Math.max(80, initialBidViewport.height - 208)) : 150) + "px");
 
   // Tenir compte du plateau réellement disponible, y compris en paysage.
   const tableFelt = document.querySelector(".table-felt");
@@ -50,7 +62,6 @@
       }
     }).observe(tableFelt);
   }
-
   // ------------------------------------------------------------------
   // Navigation entre écrans
   // ------------------------------------------------------------------
@@ -568,7 +579,9 @@
     const count = claim.remaining_tricks;
     const reason = claim.reason === "trumps"
       ? "Il ne lui reste que des atouts, et personne d’autre n’en a."
-      : "Il n’y a plus d’atouts et toutes ses cartes sont maîtresses.";
+      : ["SANS_ATOUT", "TOUT_ATOUT"].includes(state.contract?.suit)
+        ? "Toutes ses cartes sont maîtresses dans leur couleur ; aucune coupe n’est possible."
+        : "Il n’y a plus d’atouts et toutes ses cartes sont maîtresses.";
     document.getElementById("claim-detail").textContent =
       reason + (count === 1 ? " Le dernier pli est" : " Les " + count + " derniers plis sont") +
       " pour l’équipe " + (claim.seat % 2 === 0 ? "A" : "B") + ".";
@@ -640,7 +653,7 @@
     } else {
       phonePanel.classList.add("hidden");
       boardPanel.classList.remove("hidden");
-      felt.appendChild(bidControls);
+      document.getElementById("screen-game").appendChild(bidControls);
       felt.appendChild(handCards);
     }
     renderSpectatorBadge(state, controllerMode);
@@ -864,8 +877,10 @@
       "Donne n°" + (state.donne_number || 1) + " · Plis — ",
       teamText(0, "Équipe A " + state.tricks_won_this_donne["0"]),
       " · ", teamText(1, "Équipe B " + state.tricks_won_this_donne["1"]),
-      ((state.belote_team !== null && state.belote_team !== undefined)
-        ? " · Belote Équipe " + (String(state.belote_team) === "0" ? "A" : "B") + " (+20)" : "") +
+      ["0", "1"].map(team => {
+        const bonus = state.belote_points?.[team] ?? (String(state.belote_team) === team ? 20 : 0);
+        return bonus ? " · Belote Équipe " + (team === "0" ? "A" : "B") + " (+" + bonus + ")" : "";
+      }).join("") +
       turnTxt);
     // Décompte du coup en cours : seulement si un humain est réellement chronométré.
     if (state.turn_deadline) {
@@ -1064,10 +1079,10 @@
   }
 
   function resetBeloteBubbles(donne = null) {
-    clearTimeout(beloteBubbleState.timer);
+    beloteBubbleState.timers.forEach(timer => clearTimeout(timer));
     beloteBubbleState.donne = donne;
     beloteBubbleState.count = 0;
-    beloteBubbleState.timer = null;
+    beloteBubbleState.timers.clear();
     document.querySelectorAll(".belote-bubble").forEach(bubble => bubble.remove());
   }
 
@@ -1075,20 +1090,24 @@
     if (beloteBubbleState.donne !== state.donne_number) resetBeloteBubbles(state.donne_number);
     const announcements = state.belote_announcements || [];
     if (announcements.length <= beloteBubbleState.count) return;
+    const fresh = announcements.slice(beloteBubbleState.count);
     beloteBubbleState.count = announcements.length;
     if (state.phase !== "trick") return;
-
-    const entry = announcements[announcements.length - 1];
     const plays = (state.current_trick && state.current_trick.length
       ? state.current_trick : state.completed_trick) || [];
     // À la reconnexion, ne pas rejouer une annonce dont la carte a déjà été ramassée.
-    if (!plays.some(play => play.seat === entry.seat && play.card.id === entry.card_id)) return;
-    clearTimeout(beloteBubbleState.timer);
-    showBidBubble(entry.seat, { type: "BELOTE", label: entry.label });
-    const bubble = document.querySelector("#seat-marker-" + entry.seat + " .speech-bubble");
-    bubble.classList.add("belote-bubble");
-    bubble.setAttribute("role", "status");
-    beloteBubbleState.timer = setTimeout(() => bubble.remove(), 3200);
+    fresh.forEach(entry => {
+      if (!plays.some(play => play.seat === entry.seat && play.card.id === entry.card_id)) return;
+      clearTimeout(beloteBubbleState.timers.get(entry.seat));
+      const label = state.contract?.suit === "TOUT_ATOUT"
+        ? entry.label + " " + ({ PIQUE: "♠", COEUR: "♥", CARREAU: "♦", TREFLE: "♣" }[entry.suit] || "")
+        : entry.label;
+      showBidBubble(entry.seat, { type: "BELOTE", label });
+      const bubble = document.querySelector("#seat-marker-" + entry.seat + " .speech-bubble");
+      bubble.classList.add("belote-bubble");
+      bubble.setAttribute("role", "status");
+      beloteBubbleState.timers.set(entry.seat, setTimeout(() => bubble.remove(), 3200));
+    });
   }
 
   function showBidBubble(seat, entry) {
@@ -1231,6 +1250,8 @@
   function renderBidControls(state) {
     const actions = state.legal_bid_actions;
     const container = document.getElementById("bid-controls");
+    container.setAttribute("role", "group");
+    container.setAttribute("aria-label", "Choisir une enchère");
     const turnKey = state.donne_number + ":" + state.your_seat + ":" + (state.bidding_history || []).length;
     const key = turnKey + "|" + actions.map(a => a.index + ":" + a.type + ":" + (a.suit || "") + ":" + (a.points == null ? "" : a.points) + ":" + (a.is_capot ? "C" : "")).join("|");
     if (bidFormState.key !== key) {
@@ -1257,6 +1278,10 @@
     const coincheAction = actions.find(a => a.type === "COINCHE");
     const surcoincheAction = actions.find(a => a.type === "SURCOINCHE");
     const enchereActions = actions.filter(a => a.type === "ENCHERE");
+    const confirmBtn = document.createElement("button");
+    confirmBtn.className = "bid-chip bid-confirm-btn";
+    confirmBtn.textContent = "Confirmer";
+    confirmBtn.disabled = true;
 
     if (enchereActions.length) {
       const suits = [];
@@ -1269,34 +1294,37 @@
       });
       if (!suits.find(s => s.name === bidFormState.suit)) bidFormState.suit = suits[0].name;
 
-      const pointsSet = new Set();
-      let hasCapot = false;
-      enchereActions.forEach(a => {
-        if (a.is_capot) hasCapot = true;
-        else if (a.points != null) pointsSet.add(a.points);
-      });
+      const amountsForSuit = () => {
+        const allowed = enchereActions.filter(a => a.suit === bidFormState.suit);
+        const values = [...new Set(allowed.filter(a => !a.is_capot).map(a => a.points))].sort((a, b) => a - b);
+        const amounts = values.map(points => ({ label: String(points), points, isCapot: false }));
+        if (allowed.some(a => a.is_capot)) amounts.push({ label: "Capot", points: null, isCapot: true });
+        return amounts;
+      };
 
       const suitRow = document.createElement("div");
       suitRow.className = "bid-suit-row";
       const suitButtons = {};
       suits.forEach(s => {
         const btn = document.createElement("button");
-        btn.className = "bid-suit-btn" + (s.name === bidFormState.suit ? " selected" : "");
+        btn.className = "bid-suit-btn" + (["SANS_ATOUT", "TOUT_ATOUT"].includes(s.name) ? " bid-mode-btn" : "") +
+          (s.name === bidFormState.suit ? " selected" : "");
         btn.textContent = s.symbol;
+        btn.title = s.name === "SANS_ATOUT" ? "Sans Atout" : s.name === "TOUT_ATOUT" ? "Tout Atout" : s.symbol;
         btn.style.color = (s.name === "COEUR" || s.name === "CARREAU") ? "#e0576a" : "#f7f1e3";
         btn.onclick = () => {
           bidFormState.suit = s.name;
           Object.entries(suitButtons).forEach(([name, b]) => b.classList.toggle("selected", name === s.name));
-          refreshConfirm();
+          amounts = amountsForSuit();
+          const index = amounts.findIndex(amount => amount.points === bidFormState.points && amount.isCapot === bidFormState.isCapot);
+          selectAmount(index >= 0 ? index : 0);
         };
         suitButtons[s.name] = btn;
         suitRow.appendChild(btn);
       });
       container.appendChild(suitRow);
 
-      const amounts = Array.from(pointsSet).sort((a, b) => a - b).map(points =>
-        ({ label: String(points), points, isCapot: false }));
-      if (hasCapot) amounts.push({ label: "Capot", points: null, isCapot: true });
+      let amounts = amountsForSuit();
       // TODO Générale : les huit plis par le seul annonceur ; règles et score à définir.
       // amounts.push({ label: "Générale", points: null, isCapot: false, isGenerale: true });
       let amountIndex = amounts.findIndex(amount =>
@@ -1334,9 +1362,6 @@
       amountRow.appendChild(increase);
       container.appendChild(amountRow);
 
-      const confirmBtn = document.createElement("button");
-      confirmBtn.className = "bid-chip bid-confirm-btn";
-      confirmBtn.textContent = "Confirmer";
       const refreshConfirm = () => {
         const ok = bidFormState.suit && (bidFormState.isCapot || bidFormState.points != null) &&
           enchereActions.some(a => a.suit === bidFormState.suit && !!a.is_capot === bidFormState.isCapot &&
@@ -1349,33 +1374,33 @@
         if (match) socket.emit("bid_choice", { code: roomCode, index: match.index });
       };
       selectAmount(amountIndex);
-      container.appendChild(confirmBtn);
     }
 
     const actionsRow = document.createElement("div");
     actionsRow.className = "bid-actions-row";
-    if (passAction) {
+    actionsRow.appendChild(confirmBtn);
+    {
       const b = document.createElement("button");
       b.className = "bid-chip pass";
       b.textContent = "Passer";
-      b.onclick = () => socket.emit("bid_choice", { code: roomCode, index: passAction.index });
+      b.disabled = !passAction;
+      b.onclick = () => {
+        if (passAction) socket.emit("bid_choice", { code: roomCode, index: passAction.index });
+      };
       actionsRow.appendChild(b);
     }
-    if (coincheAction) {
+    {
+      const doubleAction = surcoincheAction || coincheAction;
       const b = document.createElement("button");
       b.className = "bid-chip coinche";
-      b.textContent = "Coincher";
-      b.onclick = () => socket.emit("bid_choice", { code: roomCode, index: coincheAction.index });
+      b.textContent = surcoincheAction ? "Surcoincher" : "Coincher";
+      b.disabled = !doubleAction;
+      b.onclick = () => {
+        if (doubleAction) socket.emit("bid_choice", { code: roomCode, index: doubleAction.index });
+      };
       actionsRow.appendChild(b);
     }
-    if (surcoincheAction) {
-      const b = document.createElement("button");
-      b.className = "bid-chip coinche";
-      b.textContent = "Surcoincher";
-      b.onclick = () => socket.emit("bid_choice", { code: roomCode, index: surcoincheAction.index });
-      actionsRow.appendChild(b);
-    }
-    if (actionsRow.childNodes.length) container.appendChild(actionsRow);
+    container.appendChild(actionsRow);
   }
 
   function isFinalRecap(state) {
@@ -1394,33 +1419,74 @@
     const deal = state?.completed_deals?.find(item => item.number === number);
     if (!deal) return;
     const c = deal.contract;
+    const tricks = deal.tricks || [];
+    handReviewStep = Math.max(0, Math.min(handReviewStep, tricks.length));
+    const currentTrick = handReviewStep ? tricks[handReviewStep - 1] : null;
+    const tablePlays = currentTrick?.plays || [];
+    const playedIds = new Set(tricks.slice(0, handReviewStep).flatMap(trick => trick.plays).map(play => play.card.id));
+    const points = handReviewStep ? currentTrick.team_points : { "0": 0, "1": 0 };
+    const counter = team => '<aside class="review-team-score" data-team="' + team +
+      '" aria-label="Points de la donne, équipe ' + (team === 0 ? 'A' : 'B') + '">' +
+      '<small>Équipe ' + (team === 0 ? 'A' : 'B') + '</small><b>' + (points?.[String(team)] ?? '—') + '</b><small>points</small></aside>';
+    document.getElementById("hand-review-title").textContent = "Mains et plis";
+    document.getElementById("hand-review-prev").disabled = handReviewStep === 0;
+    document.getElementById("hand-review-next").disabled = handReviewStep === tricks.length;
+    const status = handReviewStep === 0 ? "Mains de départ" :
+      "Pli " + handReviewStep + " / " + tricks.length + " · Remporté par " + nameOf(state, currentTrick.winner) +
+      " · Équipe " + (currentTrick.winner % 2 === 0 ? "A" : "B");
+    document.getElementById("hand-review-status").textContent = status;
     document.getElementById("hand-review-contract").textContent =
-      "Contrat : " + (c.is_capot ? "Capot" : c.points) + " " + c.symbol + " · " + nameOf(state, c.player);
+      "Contrat : " + (c.is_capot ? "Capot" : c.points) + " " + c.symbol + " · " + nameOf(state, c.player) +
+      (deal.claimed ? " · Fin tablée : les derniers plis sont résolus automatiquement." : "");
     const viewer = Number.isInteger(state.your_seat) ? state.your_seat : 0;
     const symbols = { PIQUE: "♠", COEUR: "♥", TREFLE: "♣", CARREAU: "♦" };
     const ranks = { V: "J", D: "Q", R: "K" };
     const panels = [0, 1, 2, 3].map(seat => {
-      const hand = deal.hands[String(seat)] || [];
-      const suits = [...new Set([...hand.map(card => card.suit), ...Object.keys(symbols)])];
+      const initialHand = deal.hands[String(seat)] || [];
+      const hand = initialHand.filter(card => !playedIds.has(card.id));
+      const suits = [...new Set([...initialHand.map(card => card.suit), ...Object.keys(symbols)])];
       const rows = suits.map(suit => {
         const cards = hand.filter(card => card.suit === suit);
         const red = suit === "COEUR" || suit === "CARREAU";
         return '<div class="review-suit' + (red ? ' review-red' : '') +
-          (suit === c.suit ? ' review-trump' : '') + '">' +
+          (suit === c.suit || c.suit === "TOUT_ATOUT" ? ' review-trump' : '') + '">' +
           '<span class="review-symbol" title="' + suit + '">' + symbols[suit] + '</span>' +
           '<span class="review-ranks">' +
           (cards.length ? cards.map(card => '<span>' + escapeHtml(ranks[card.rank] || card.rank) + '</span>').join("")
             : '<span class="review-void">—</span>') + '</span></div>';
       }).join("");
-      return '<section class="review-hand" data-position="' + ((seat - viewer + 4) % 4) +
+      const panel = '<section class="review-hand" data-position="' + ((seat - viewer + 4) % 4) +
         '" data-team="' + (seat % 2) + '"><h3>' +
         escapeHtml(nameOf(state, seat) + (seat === state.your_seat ? " (toi)" : "")) + '</h3>' + rows + '</section>';
+      return (seat - viewer + 4) % 4 === 2
+        ? '<div class="review-north-row">' + counter(0) + panel + counter(1) + '</div>' : panel;
     }).join("");
-    document.getElementById("hand-review-table").innerHTML = panels +
-      '<div class="review-centre"><small>Atout</small><strong>' + c.symbol + '</strong></div>';
+    const centre = '<div class="review-trick" aria-label="Cartes du pli">' +
+      tablePlays.map(({ seat, card }, index) =>
+        '<div class="review-play' + (card.color === "red" ? ' review-red' : '') +
+        (seat === currentTrick.winner ? ' review-winning' : '') +
+        '" data-position="' + ((seat - viewer + 4) % 4) +
+        '" title="' + escapeHtml(nameOf(state, seat)) + '"><small>' + (index + 1) +
+        '</small><b>' + escapeHtml(ranks[card.rank] || card.rank) + '</b><span>' + card.symbol + '</span></div>'
+      ).join("") + (tablePlays.length ? '' : '<small>Pli suivant pour voir<br>les cartes jouées</small>') + '</div>';
+    const table = document.getElementById("hand-review-table");
+    table.classList.add("review-replaying");
+    table.innerHTML = panels + '<div class="review-centre">' + centre + '</div>';
   }
 
-  document.getElementById("hand-review-deal").addEventListener("change", renderHandReview);
+  function resetHandReview() {
+    handReviewStep = 0;
+    renderHandReview();
+  }
+  document.getElementById("hand-review-deal").addEventListener("change", resetHandReview);
+  document.getElementById("hand-review-prev").addEventListener("click", () => {
+    handReviewStep--;
+    renderHandReview();
+  });
+  document.getElementById("hand-review-next").addEventListener("click", () => {
+    handReviewStep++;
+    renderHandReview();
+  });
   document.getElementById("hand-review").addEventListener("click", event => {
     event.stopPropagation(); // Reviewing must not dismiss the underlying recap.
     if (event.target.id === "hand-review" || event.target.closest("#hand-review-close")) closeHandReview();
@@ -1434,7 +1500,7 @@
     select.innerHTML = handReviewState.completed_deals.map(deal =>
       '<option value="' + deal.number + '">Donne n°' + deal.number + '</option>').join("");
     select.value = String(handReviewState.completed_deals.at(-1).number);
-    renderHandReview();
+    resetHandReview();
     document.getElementById("hand-review").classList.remove("hidden");
     select.focus();
   });
@@ -1444,8 +1510,10 @@
       event.preventDefault();
       closeHandReview();
     } else if (event.key === "Tab") {
-      const first = document.getElementById("hand-review-close");
-      const last = document.getElementById("hand-review-deal");
+      const controls = [...document.getElementById("hand-review").querySelectorAll("button, select, input")]
+        .filter(control => !control.disabled && !control.closest(".hidden"));
+      const first = controls[0];
+      const last = controls.at(-1);
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
@@ -1489,17 +1557,31 @@
       ).join("");
       const dixVal = r.dix_de_der_value || 10;
       const belVal = r.belote_bonus || 20;
+      const beloteOf = tk => r.belote_points?.[tk] ?? (String(r.belote_team) === tk ? belVal : 0);
       const totalOf = (tk) => (r.total_points ? r.total_points[tk]
         : (r.raw_points[tk] + ((r.dix_de_der_team !== null && String(r.dix_de_der_team) === tk) ? dixVal : 0)
-          + ((r.belote_team !== null && String(r.belote_team) === tk) ? belVal : 0)));
+          + beloteOf(tk)));
       const detailTextOf = (tk) => {
         let txt = "Plis " + r.raw_points[tk];
         if (r.dix_de_der_team !== null && String(r.dix_de_der_team) === tk) txt += " + dix de der " + dixVal;
-        if (r.belote_team !== null && String(r.belote_team) === tk) txt += " + belote " + belVal;
+        if (beloteOf(tk)) txt += " + belote " + beloteOf(tk);
         txt += " = " + totalOf(tk);
         return txt;
       };
       const preneurLabel = "Équipe " + (String(r.preneur_team) === "0" ? "A" : "B");
+      const failureReasons = [];
+      if (!r.contract_reached) {
+        const attack = totalOf(String(r.preneur_team));
+        const defense = totalOf(String(r.defense_team));
+        if (c?.is_capot && r.capot_team !== r.preneur_team) {
+          failureReasons.push("Les huit plis du capot n’ont pas été remportés.");
+        } else if (c && !c.is_capot && attack < c.points) {
+          failureReasons.push("Enchère non atteinte : " + attack + " points pour " + c.points + " demandés.");
+        }
+        if (attack <= defense) {
+          failureReasons.push("Majorité non atteinte : " + attack + " points contre " + defense + " pour la défense.");
+        }
+      }
       const f0 = r.final_scores ? r.final_scores["0"] : 0;
       const f1 = r.final_scores ? r.final_scores["1"] : 0;
       const markedLine = "Points marqués : Équipe A +" + f0 + " · Équipe B +" + f1;
@@ -1513,20 +1595,22 @@
         '<p class="result-line">Équipe B — <span class="pts-toggle" data-team="1" title="' + detailTextOf("1") + '"><strong>' + totalOf("1") + "</strong></span></p>" +
         '<div class="pts-detail hidden" id="pts-detail"></div>' +
         '<p class="result-line result-outcome ' + (r.contract_reached ? "success" : "failed") + '">' +
-        (r.contract_reached ? "Contrat réussi (" + preneurLabel + ")" : "Contrat raté (" + preneurLabel + " : 0)") + "</p>" +
+        (r.contract_reached ? "Contrat réussi (" + preneurLabel + ")" : "Contrat chuté (" + preneurLabel + ")") + "</p>" +
+        (failureReasons.length ? '<p class="result-line">' + escapeHtml(failureReasons.join(" ")) + '</p>' : "") +
         '<p class="result-line">' + markedLine + "</p>" +
         '<div class="score-teams"><strong>' + escapeHtml(teamA) + '</strong><span>vs</span><strong>' + escapeHtml(teamB) + '</strong></div>' +
         '<div class="score-head"><span>Équipe A</span><span>Équipe B</span></div>' +
         '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
         '<div class="score-caption">Total</div>' +
         (recapState.completed_deals?.length
-          ? '<button id="btn-hand-review" class="btn btn-secondary" type="button">Voir les mains de départ</button>'
+          ? '<button id="btn-hand-review" class="btn btn-secondary" type="button">Voir les mains</button>'
           : "") +
         (finalRecap
           ? '<p class="recap-hint">Touchez les points pour voir le détail de la dernière donne.</p>' +
             '<button id="btn-new-game" class="btn btn-primary"' +
             (recapState.game_over ? "" : " disabled") + ">Retour au salon</button>"
-          : '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote) — cliquez n’importe où pour continuer</p>');
+          : '<p class="recap-hint">Touchez les points pour voir le détail (plis, dix de der, belote).</p>' +
+            '<button id="btn-continue-donne" class="btn btn-primary" type="button">Donne suivante</button>');
       content.querySelectorAll(".pts-toggle").forEach(el => {
         el.addEventListener("click", ev => {
           ev.stopPropagation();
@@ -1547,7 +1631,11 @@
     }
   }
 
-  document.addEventListener("click", () => {
+  document.addEventListener("click", event => {
+    const recap = document.getElementById("donne-recap");
+    if (recap.classList.contains("hidden")) return;
+    // Native scrollbar clicks and scrolling inside the recap must not dismiss it.
+    if (event.target.closest("#donne-recap-content") && !event.target.closest("#btn-continue-donne")) return;
     const canDismiss = lastRenderedState &&
       (!lastRenderedState.board_present || lastRenderedState.your_seat === "board");
     if (canDismiss && (recapState || (lastRenderedState.phase === "donne_annulee"))) {

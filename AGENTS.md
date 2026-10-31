@@ -52,8 +52,6 @@
 
 ## TODO — bidding variants (deferred)
 
-- Add Tout Atout (TA) and Sans Atout (SA): define contract modes, card strength
-  and values, legal play, scoring, bot behavior and UI together.
 - Générale means all eight tricks won by the bidder alone, rather than by
   their team. Keep its selector entry commented out after Capot until the
   contract rules, validation and scoring are specified and implemented.
@@ -110,7 +108,13 @@ python -m venv .venv
 ```
 
 Ouvrir `http://localhost:5000`. Le serveur écoute sur `0.0.0.0` ; le port est
-configurable avec `PORT`. Pour la console :
+configurable avec `PORT`.
+Le lancement direct local active `app.jinja_env.auto_reload` : les modèles
+HTML sont relus à l'actualisation, sans interrompre les parties pour une
+simple modification d'interface. Le code Python des bots/moteurs nécessite
+toujours un redémarrage ; les imports en production gardent le cache Flask.
+
+Pour la console :
 
 ```powershell
 python -B cli.py
@@ -395,7 +399,19 @@ les enchères adverses. Sans couleur annoncée par l'équipe, ou si elle n'est p
 la première couleur autorisée (pique normalement). Le joueur reste libre de
 changer ce choix ; le montant initial reste le minimum légal.
 L'entrée Générale reste commentée après Capot dans
-les deux interfaces ; TA/SA et Générale sont suivis dans les TODO ci-dessus.
+les deux interfaces ; la Générale reste suivie dans les TODO ci-dessus.
+Le panneau d'enchères utilise trois lignes compactes : six choix de contrat,
+montant −/+ sur toute la largeur, puis Confirmer/Passer/Coincher sur la même
+ligne. Les trois boutons restent présents, grisés quand l'action est illégale ;
+le dernier devient Surcoincher lorsque cette action est légale. Le titre reste
+accessible aux lecteurs d'écran. Taille et position sont choisies UNE FOIS
+au chargement à partir de la taille de l'écran, puis verrouillées en pixels
+pour toute la page, même quand annonces, actions ou tours changent. Ne pas
+replacer/redimensionner le panneau à chaque état ni selon les bulles.
+La fenêtre est attachée directement à `screen-game`, en position fixe
+(hors du conteneur de taille du tapis). Sous 640 px de hauteur initiale,
+les trois lignes sont plus compactes ; si nécessaire, leur contenu défile
+dans le cadre fixe. Le mode manette garde ce même cadre dans le flux.
 
 `serialize.sorted_hand` trie les mains affichées sans modifier les mains du
 moteur : force décroissante, ordre d'atout seulement après la fin des enchères,
@@ -411,8 +427,58 @@ animent les changements d'ordre sur 420 ms. Respecter la préférence de mouveme
 réduit et vérifier les actions sur l'état courant, sans accumuler de gestionnaires
 de clic/glissement lors des mises à jour Socket.IO.
 
-Les annonces (tierce, cinquante, cent, carré) et les variantes Sans Atout /
-Tout Atout ne sont pas implémentées. La belote/rebelote est attribuée
+Les annonces (tierce, cinquante, cent, carré) ne sont pas implémentées.
+Sans Atout et Tout Atout suivent le §11 du PDF du dépôt : `ContractMode`
+est distinct de `Suit` (le paquet garde 32 cartes). `Contract.suit`,
+`BidAction.suit` et `TrickState.atout` acceptent une couleur ou un mode ;
+les identifiants réseau sont `SANS_ATOUT` / `TOUT_ATOUT`, symboles SA / TA.
+Les deux modes interdisent les coupes ; TA impose de monter dans la couleur
+demandée, même sur le partenaire. SA utilise l'ordre hors atout, avec l'as
+à 19 ; TA l'ordre atout, valeurs V=13, 9=9, A=6, 10=5, R=3, D=2.
+`Card.strength_index` centralise le tri par mode. Le tablage sans coupe
+compare aussi cette force. Les plafonds numériques sont 160 SA, 180 couleur,
+240 TA, puis Capot ; les boutons −/+ suivent les actions de la couleur/mode.
+SA n'a pas de belote ; TA admet les quatre paires, y compris dans les deux
+équipes. `find_belotes` renvoie couleur→siège ; `DonneResult.belote_points`
+et les états web portent les montants par équipe. Les anciens champs
+`belote_team` / `belote_holder_seat` restent compatibles quand uniques.
+Ne révéler que chaque paire déjà annoncée (ou toutes au bilan), jamais
+les autres paires parce que l'une vient de l'être. Les bulles TA précisent
+la couleur et leur compteur Belote/Rebelote est propre à chaque paire.
+Les bots utilisent un jeu SA/TA commun dans `belote/bots/contract_modes.py`
+sans passer dans leur ancienne chasse ni dans les simulations Spark prévues
+pour une couleur d'atout unique. Les règles des contrats à une couleur
+restent inchangées. `tests/test_contract_modes.py` couvre deux parcours :
+règles/enchères et donnes complètes console/web avec tous les bots,
+confidentialité des belotes et historique consultable.
+Brooklyn v1/v2/v3/v4 peuvent aussi ouvrir et soutenir SA/TA via
+`brooklyn_modes.py`. Ce module ne remplace pas leurs évaluations à une
+couleur. Il exige deux cartes immédiatement maîtresses (séquences depuis
+l'as en SA, depuis le valet en TA), estime les survivantes après sacrifice
+aux honneurs absents (85 % immédiates, 55 % à établir), ajoute les belotes
+TA, sans crédit de coupe. 30 points estimés donnent 80, puis +10 d'enchère
+par tranche de 10 estimés ; ce sont des paramètres initiaux non calibrés.
+Soutien : +10 par carte d'une séquence immédiatement maîtresse, +20 par
+belote TA ; crédits dépensés une seule fois depuis la dernière enchère
+de l'équipe, remis à zéro sur changement de mode/couleur. L'ouvreur ne
+recompte pas sa propre belote au rebid. À montant égal garder son choix
+historique ; une coinche évaluée pour une couleur n'est pas utilisée pour
+SA/TA. Un capot SA/TA n'est annoncé que si les huit cartes sont maîtresses.
+Les historiques de benchmark antérieurs à SA/TA ne mesurent pas ce choix
+de six contrats ; conserver leur révision et ne pas les présenter comme
+les performances actuelles. Au jeu SA/TA, Brooklyn conserve les maîtresses
+courtes à l'entame. Il lance une purge avec trois cartes et les deux plus
+fortes restantes, ou quatre cartes et la plus forte (A/10 en SA, J/9 en TA
+au départ). Il mémorise la couleur à travers les pertes et reprises de main :
+rejouer sa plus forte si elle est maîtresse, sinon une petite pour faire
+tomber les honneurs absents et établir le reste. Continuer aussi une couleur
+où les DEUX adversaires sont publiquement sans carte et le partenaire peut
+encore fournir ; une seule coupe franche adverse ne suffit pas. La mémoire
+`mode_purge_suits` est réinitialisée à chaque donne/contrat. Sinon, entamer
+un déchet pour établir une couleur, sans encaisser systématiquement un
+as SA/valet TA court. Le jeu en fourniture et les obligations TA restent
+inchangés. Les autres familles gardent leur jeu SA/TA initial.
+La belote/rebelote est attribuée
 automatiquement au détenteur du roi et de la dame d'atout en main initiale.
 Cette détection reste privée : envoyer `belote_team` et `belote_holder_seat`
 à `null` tant qu'aucune carte de la paire n'a été annoncée et que le bilan
@@ -477,7 +543,7 @@ manette ; le tablage reste consultable avant les scores sur le plateau.
 Le bouton de retour est activé une fois `game_over` reçu, lorsque la session
 est effectivement terminée et peut être libérée par `new_game`.
 
-Le bouton « Voir les mains de départ » du récapitulatif ouvre une vue de
+Le bouton « Voir les mains et les plis » du récapitulatif ouvre une vue de
 consultation : quatre mains initiales autour d'un carré, regroupées par
 couleur et triées selon l'atout du contrat, avec le joueur courant en bas.
 Un sélecteur permet de revoir les donnes terminées de la partie en cours ;
@@ -486,6 +552,24 @@ que des logs avec résultat et contrat, et n'est envoyé qu'en `donne_end` ou
 `game_end` (liste vide pendant le jeu). Ne jamais y inclure la donne courante
 inachevée. Fermer la consultation ne valide pas le récapitulatif ; conserver
 les contrôles clavier, les couleurs d'équipe et les deux frontends.
+Le récapitulatif capture ses interactions et son défilement vertical
+(souris/tactile), même entre deux donnes. Un clic dans son contenu ou sa
+barre de défilement ne valide jamais la donne ; utiliser « Donne suivante »
+ou le fond extérieur. La fin de partie garde uniquement le retour au salon.
+Le bilan explique une chute (montant insuffisant, majorité non atteinte,
+capot non réalisé) sans annoncer un zéro fictif quand la belote est conservée.
+La consultation parcourt directement les plis : deux flèches ← / → de 0 à 8,
+sans case à cocher ni curseur. Un clic affiche les quatre cartes, numérotées
+dans l'ordre réel de jeu, avec une aura dorée autour de la gagnante.
+Les mains restantes conservent leur tri initial. Changer de donne revient
+aux mains initiales. Les compteurs A/B entourent la main du partenaire ;
+ils indiquent les points de la donne après le pli affiché, belotes et dix
+de der compris (100 en cas de capot), sans les primes de contrat.
+`completed_deals.tricks` contient cartes, gagnant, points des cartes et
+`team_points` cumulés côté serveur ; ne pas dupliquer les règles de score
+dans le frontend. Ces données ne sont envoyées qu'au récapitulatif.
+Le champ `claimed` signale les fins tablées dont les derniers plis ont été
+résolus automatiquement, afin de distinguer cette résolution du jeu effectif.
 
 Les salons et parties sont stockés en mémoire : un redémarrage perd leur
 état ; l'architecture actuelle suppose un seul processus serveur. Variables

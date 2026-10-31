@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from itertools import permutations
 
-from belote.cards import Card, Suit
+from belote.cards import Card, Suit, Trump
 
 RED_SUITS = {"COEUR", "CARREAU"}
 
@@ -32,7 +32,7 @@ def card_from_id(cid: str, pool):
     return None
 
 
-def sorted_hand(hand: list[Card], atout: Suit | None = None,
+def sorted_hand(hand: list[Card], atout: Trump | None = None,
                 previous_suits: list[Suit] | None = None) -> list[Card]:
     """Trie pour l'affichage : couleurs alternées et cartes les plus fortes d'abord.
 
@@ -55,7 +55,7 @@ def sorted_hand(hand: list[Card], atout: Suit | None = None,
     suit_indices = {suit: index for index, suit in enumerate(suit_order)}
     return sorted(hand, key=lambda card: (
         suit_indices[card.suit],
-        card.atout_strength_index() if card.suit == atout else card.nonatout_strength_index(),
+        card.strength_index(atout),
     ))
 
 

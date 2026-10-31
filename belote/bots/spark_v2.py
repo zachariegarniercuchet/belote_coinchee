@@ -23,7 +23,8 @@ from __future__ import annotations
 import random
 
 from ..bidding import BiddingState, BidAction
-from ..cards import Card, Suit, full_deck
+from ..cards import Card, Suit, full_deck, ContractMode
+from .contract_modes import choose_mode_card
 from .spark_v1 import SparkBotV1
 from ..scoring import compute_donne_score
 from ..trick import TrickState, team_of
@@ -227,6 +228,8 @@ class SparkBotV2(SparkBotV1):
 
     def choose_card(self, hand: list[Card], trick_state: TrickState,
                     legal_cards: list[Card]) -> Card:
+        if isinstance(trick_state.atout, ContractMode):
+            return choose_mode_card(self, hand, trick_state, legal_cards)
         if len(legal_cards) == 1 or self.contract is None:
             return super().choose_card(list(hand), trick_state, list(legal_cards))
         cands = self._shortlist(list(hand), trick_state, list(legal_cards))

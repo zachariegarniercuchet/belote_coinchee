@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from belote.bidding import ActionType
-from belote.cards import Rank
+from belote.cards import Rank, Suit, ContractMode
+from belote.scoring import find_belotes
 from game_session import GameSession
 from rooms import Room
 
@@ -45,7 +46,7 @@ def play_pair(task):
                 card = choose(hand, trick, legal)
                 assert card in legal
                 # Analyze AFTER the choice: no hidden information reaches bots.
-                if not trick.plays and session.players[seat].is_attacking:
+                if not trick.plays and session.players[seat].is_attacking and isinstance(trick.atout, Suit):
                     enemy_trumps = any(c.suit == trick.atout
                                        for p, cards in session.ctx.hands.items()
                                        if p % 2 != seat % 2 for c in cards)
@@ -89,11 +90,16 @@ def play_pair(task):
                 "number": number, "bot": ids[contract.player],
                 "bid": contract.points, "made": result.contract_reached,
                 "capot": result.capot_team is not None,
+                "capot_bid": contract.is_capot,
+                "contract_suit": contract.suit.name,
                 "margin": None if contract.is_capot else result.total_points[contract.team] - contract.points,
                 "failure_net_loss": (result.final_scores[1 - contract.team] - result.final_scores[contract.team]
                                      if not result.contract_reached else None),
-                "opening_trumps": len(trumps), "opening_honours": honours,
-                "opening_belote": {Rank.ROI, Rank.DAME} <= ranks,
+                "opening_trumps": len(trumps) if isinstance(contract.suit, Suit) else None,
+                "opening_honours": honours if isinstance(contract.suit, Suit) else None,
+                "opening_belote": bool(find_belotes({opener: hand}, contract.suit)),
+                "opening_belotes": len(find_belotes({opener: hand}, contract.suit)),
+                "belote_points": result.belote_points,
             })
         records.append({
             "brooklyn": brooklyn, "opponent": opponent, "seed": seed,
@@ -142,15 +148,16 @@ def summarize(records):
         for bot in (brooklyn, opponent):
             own = [d for d in all_deals if d["bot"] == bot]
             numeric = [d for d in own if d["bid"] is not None]
+            suited = [d for d in own if d["opening_trumps"] is not None]
             leads = sum((Counter(r["leads"][bot]) for r in games), Counter())
             by_bid = {}
             by_opening = {}
             for key, selected in (
                 ("by_bid", [(str(bid), [d for d in numeric if d["bid"] == bid])
                             for bid in sorted({d["bid"] for d in numeric})]),
-                ("by_opening", [(group, [d for d in own if
+                ("by_opening", [(group, [d for d in suited if
                                          f'{d["opening_trumps"]}:{d["opening_honours"]}' == group])
-                                for group in sorted({f'{d["opening_trumps"]}:{d["opening_honours"]}' for d in own})]),
+                                for group in sorted({f'{d["opening_trumps"]}:{d["opening_honours"]}' for d in suited})]),
             ):
                 dest = by_bid if key == "by_bid" else by_opening
                 for group, deals in selected:
@@ -161,6 +168,22 @@ def summarize(records):
             if bot != brooklyn and ci is not None:
                 ci = [round(100 - ci[1], 1), round(100 - ci[0], 1)]
             losses = [d["failure_net_loss"] for d in own if not d["made"]]
+            by_mode = {}
+            for mode in ("SUIT", "SANS_ATOUT", "TOUT_ATOUT"):
+                deals = [d for d in own if (d.get("contract_suit") if d.get("contract_suit") in ContractMode.__members__
+                                            else "SUIT") == mode]
+                bids = [d for d in deals if d["bid"] is not None]
+                by_mode[mode] = {
+                    "n": len(deals), "made": sum(d["made"] for d in deals),
+                    "made_pct": pct(sum(d["made"] for d in deals), len(deals)),
+                    "share_of_takes_pct": pct(len(deals), len(own)),
+                    "take_pct": pct(len(deals), len(all_deals)),
+                    "mean_bid": round(statistics.mean(d["bid"] for d in bids), 2) if bids else None,
+                    "margin_all": margin_stats([d["margin"] for d in bids]),
+                    "margin_no_capot": margin_stats([d["margin"] for d in bids if not d["capot"]]),
+                    "capot_bids": sum(d.get("capot_bid", False) for d in deals),
+                    "capot_deals": sum(d["capot"] for d in deals),
+                }
             rows.append({
                 "bot": bot, "against": opponent if bot == brooklyn else brooklyn,
                 "games": len(games), "wins": wins, "win_pct": pct(wins, len(games)),
@@ -173,6 +196,7 @@ def summarize(records):
                 "margin_no_capot": margin_stats([d["margin"] for d in numeric if not d["capot"]]),
                 "mean_failed_net_loss": round(statistics.mean(losses), 2) if losses else None,
                 "by_bid": by_bid, "by_opening": by_opening,
+                "by_mode": by_mode,
                 "attack_leads": dict(leads),
                 "trump_lead_pct": pct(leads["trump"], leads["opportunities"]),
                 "side_ace_lead_pct": pct(leads["side_ace"], leads["opportunities"]),

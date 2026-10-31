@@ -3,6 +3,47 @@
 Rule-based card play, with Spark's existing bidding policy. No hidden hands,
 Monte Carlo search or changes to the existing bots/default bot.
 
+## Sans Atout / Tout Atout
+
+All four Brooklyn versions now also consider SA/TA, without replacing their
+historical suited bidding/playing policies. This changes the auction space:
+older benchmark snapshots do not measure the current six-contract game.
+Rules and values follow §11 of the repository's FFB PDF.
+
+- Open with at least two immediate controls, counted as uninterrupted
+  sequences from A at SA or J at TA. Value plausible survivors after
+  sacrificing small cards to absent honours: 85% for immediate controls,
+  55% for cards requiring establishment, plus 20 per TA belote.
+- A recoverable value of 30 opens 80, then each further 10 funds another 10.
+  These initial thresholds are not calibrated success probabilities.
+  SA has no belote and neither mode receives void/cutting credits.
+- Support with +10 per immediate control, +20 per TA belote. Spend each
+  contribution once, measured from the last team bid, ignoring enemy
+  overcalls. Suit/mode switches start a fresh budget. Do not add opener's
+  belote again at rebid. Prefer the existing suited choice on equal value.
+- Bid a mode capot only when all eight own cards are immediate controls.
+  Do not coinche SA/TA using the old single-trump-suit evaluator.
+- On lead, retain short masters. Start a purge with at least three cards
+  and the top two remaining cards (initially A/10 at SA, J/9 at TA), or four
+  cards and the top remaining card. Retain this intent across losses and
+  side-suit re-entries even when the remaining length drops.
+- During a purge, lead the highest card if publicly master; otherwise force
+  the missing honours with a small card, then resume cashing when master.
+  Also continue if both opponents are publicly void in the suit and partner
+  may still follow. One enemy void is insufficient. All inference uses
+  public plays only. Reset purge intent at every new deal/accepted contract.
+- Otherwise establish a suit with waste instead of automatically cashing a
+  short SA ace / TA jack. Following-suit play is unchanged: feed a safe
+  partner with non-master points; take with a safe winner or the weakest
+  current winner when overtaking remains possible. TA still requires climbing.
+
+The [800-game snapshot](../../benchmarks/2026-10-29-sa-ta.md) predates this
+follow-up purge policy and does not measure its performance.
+
+Other non-random families retain the initial SA/TA master-cashing fallback;
+their bidding remains suited. Spark's single-trump simulations are not used
+for mode contracts. The follow-up purge policy is Brooklyn-only.
+
 ## Playing style
 
 Latest shared-policy benchmark: [weakest winning trump in attack](../../benchmarks/2026-10-26-trump-control.md),

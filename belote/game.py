@@ -12,7 +12,7 @@ from .bidding import ActionType, BiddingState, Contract
 from .cards import Card, Suit, cut_deck, deal, new_shuffled_deck
 from .claim import Claim, find_claim, play_claim
 from .player import Player
-from .scoring import DonneResult, compute_donne_score, find_belote_holder, BELOTE_BONUS
+from .scoring import DonneResult, compute_donne_score, find_belotes, belote_points_by_team, BELOTE_BONUS
 from .trick import TrickState, team_of
 
 
@@ -114,15 +114,15 @@ class Donne:
                 pl.notify_trick_result(list(trick.plays), winner)
 
         capot_team = 0 if tricks_won_by_team[0] == 8 else (1 if tricks_won_by_team[1] == 8 else None)
-        belote_holder = find_belote_holder(initial_hands, atout)
-        belote_team = team_of(belote_holder) if belote_holder is not None else None
+        bonuses = belote_points_by_team(find_belotes(initial_hands, atout))
 
         result = compute_donne_score(
             contract=contract,
             trick_points=trick_points,
             last_trick_winner=last_trick_winner,
             capot_team=capot_team,
-            belote_team=belote_team,
+            belote_team=None,
+            belote_points=bonuses,
         )
         log.result = result
         return log
@@ -173,9 +173,12 @@ class Game:
         # Cas particulier (10.4) : une équipe capot/chute qui ne franchit le score
         # cible que grâce aux 20 points « imprenables » de la belote n'a pas
         # encore gagné : il lui faut un pli supplémentaire pour valider la partie.
-        # Simplification : on détecte ce cas quand le seul point marqué par
-        # l'équipe sur cette donne provient de la belote (score brut == 20).
-        blocked = any(result.score_before_rounding[t] == BELOTE_BONUS for t in over)
+        # Le seul montant marqué sur cette donne provient alors des belotes
+        # (20 à une couleur, potentiellement plusieurs paires en TA).
+        blocked = any(result.score_before_rounding[t] > 0 and
+                      result.score_before_rounding[t] == (result.belote_points[t] if result.belote_points is not None
+                                                          else BELOTE_BONUS if result.belote_team == t else 0)
+                      for t in over)
         if blocked:
             return  # la partie continue
 

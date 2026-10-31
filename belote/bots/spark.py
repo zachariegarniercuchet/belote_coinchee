@@ -20,7 +20,8 @@ from __future__ import annotations
 import random
 
 from ..bidding import ActionType, BidAction, BiddingState
-from ..cards import ATOUT_ORDER, ATOUT_POINTS, NONATOUT_ORDER, Card, Rank, Suit
+from ..cards import ATOUT_ORDER, ATOUT_POINTS, NONATOUT_ORDER, Card, Rank, Suit, ContractMode
+from .contract_modes import choose_mode_card
 from ..player import Player
 from ..trick import TrickState, partner_of, team_of, trick_winner
 
@@ -80,7 +81,7 @@ class SparkBot(Player):
             prior = plays[:i]
             if card.suit != suit_led:
                 voids.append((player, suit_led))
-            if suit_led != atout and card.suit != atout:
+            if isinstance(atout, Suit) and suit_led != atout and card.suit != atout:
                 atout_prior = [(p, c) for p, c in prior if c.suit == atout]
                 if atout_prior:
                     best_is_atout = True
@@ -443,6 +444,8 @@ class SparkBot(Player):
 
     def choose_card(self, hand: list[Card], trick_state: TrickState,
                     legal_cards: list[Card]) -> Card:
+        if isinstance(trick_state.atout, ContractMode):
+            return choose_mode_card(self, hand, trick_state, legal_cards)
         if len(legal_cards) == 1:
             return legal_cards[0]
         atout = trick_state.atout

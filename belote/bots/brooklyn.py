@@ -6,13 +6,33 @@ Existing Spark versions are deliberately left unchanged.
 
 from __future__ import annotations
 
-from ..cards import Card, Rank
+from ..cards import Card, Rank, ContractMode
+from .contract_modes import choose_mode_card, qualified_purges
+from .brooklyn_modes import choose_mode_bid
 from ..trick import TrickState, partner_of, team_of, trick_winner
 from .spark import SparkBot
 
 
 class BrooklynBot(SparkBot):
     """Cash valuable winners; draw opponents' trumps on the declaring team."""
+
+    def _reset_donne_state(self):
+        super()._reset_donne_state()
+        self.mode_purge_suits = set()
+
+    def notify_donne_start(self):
+        super().notify_donne_start()
+        self.mode_purge_suits.clear()
+
+    def notify_contract(self, contract):
+        super().notify_contract(contract)
+        if isinstance(contract.suit, ContractMode) and self._full_hand is not None:
+            self.mode_purge_suits = qualified_purges(self._full_hand, contract.suit)
+
+    def choose_bid(self, hand, bidding_state, legal_actions):
+        suited = [a for a in legal_actions if not isinstance(a.suit, ContractMode)]
+        action = super().choose_bid(hand, bidding_state, suited)
+        return choose_mode_bid(self, hand, bidding_state, legal_actions, action)
 
     def _infer_voids(self, plays):
         voids = []
@@ -23,7 +43,7 @@ class BrooklynBot(SparkBot):
             if card.suit == led:
                 continue  # Following suit says nothing about the player's trumps.
             voids.append((seat, led))
-            if led != self.atout and card.suit != self.atout:
+            if not isinstance(self.atout, ContractMode) and led != self.atout and card.suit != self.atout:
                 winner = trick_winner(plays[:i], self.atout)
                 winner_card = next(c for p, c in plays[:i] if p == winner)
                 # No cut while an opponent wins WITHOUT trump proves no trump.
@@ -169,6 +189,8 @@ class BrooklynBot(SparkBot):
 
     def choose_card(self, hand: list[Card], trick_state: TrickState,
                     legal_cards: list[Card]) -> Card:
+        if isinstance(trick_state.atout, ContractMode):
+            return choose_mode_card(self, hand, trick_state, legal_cards, self.mode_purge_suits)
         if len(legal_cards) == 1:
             return legal_cards[0]
         trick, atout = trick_state, trick_state.atout

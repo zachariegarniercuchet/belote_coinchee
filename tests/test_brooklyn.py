@@ -3,7 +3,7 @@
 import random
 import unittest
 from itertools import product
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from belote.bidding import ActionType, BidAction, BiddingState, Contract
 from belote.bots import create_bot, get_bot_info
@@ -28,6 +28,9 @@ def contract(team=0):
 
 
 class BrooklynTests(unittest.TestCase):
+    # This regression journey isolates the historical suited-bidding policy;
+    # ace-rich "weak trump" hands may now legitimately open SA instead.
+    @patch("belote.bidding.CONTRACT_SUITS", tuple(Suit))
     def test_partnership_auction_counts_each_contribution_once(self):
         for opener_hand, support_hand, expected in [
             (cards("V_PIQUE", "R_PIQUE", "D_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "10_TREFLE", "7_TREFLE"),
@@ -442,6 +445,15 @@ class BrooklynTests(unittest.TestCase):
                     str(seat): [card_to_dict(card) for card in sorted_hand(hand, completed.contract.suit)]
                     for seat, hand in completed.initial_hands.items()
                 })
+                self.assertEqual([{"plays": t["plays"], "winner": t["winner"]} for t in review["tricks"]], [
+                    {"plays": [{"seat": seat, "card": card_to_dict(card)} for seat, card in plays],
+                     "winner": winner}
+                    for plays, winner in zip(completed.tricks, completed.trick_winners)
+                ])
+                self.assertEqual(len(review["tricks"]), 8)
+                self.assertEqual(review["tricks"][-1]["team_points"],
+                                 {str(t): completed.result.total_points[t] for t in (0, 1)})
+                self.assertEqual(review["claimed"], completed.claim is not None)
             for log in game.donne_logs:
                 if log.annulee:
                     continue
