@@ -454,12 +454,22 @@ confidentialité des belotes et historique consultable.
 Brooklyn v1/v2/v3/v4 peuvent aussi ouvrir et soutenir SA/TA via
 `brooklyn_modes.py`. Ce module ne remplace pas leurs évaluations à une
 couleur. Il exige deux cartes immédiatement maîtresses (séquences depuis
-l'as en SA, depuis le valet en TA), estime les survivantes après sacrifice
-aux honneurs absents (85 % immédiates, 55 % à établir), ajoute les belotes
-TA, sans crédit de coupe. 30 points estimés donnent 80, puis +10 d'enchère
-par tranche de 10 estimés ; ce sont des paramètres initiaux non calibrés.
+l'as en SA, depuis le valet en TA) ; SA accepte aussi trois couleurs arrêtées
+par un as, un dix au moins second ou un roi au moins troisième. Il estime les
+survivantes après sacrifice aux honneurs absents : 85 % immédiates, 55 % à
+établir, ou 65 % pour les dix protégés / rois au moins troisièmes en SA.
+SA retire 10 par couleur vide, 4 par singleton sans as, 2 par autre couleur
+sans arrêt. Cinq cartes immédiatement maîtresses divisent ces pénalités par
+deux ; une séquence maîtresse d'au moins cinq cartes les annule si le joueur
+est lui-même à l'entame initiale (information publique issue du donneur).
+Une coupe franche n'est donc pas une interdiction absolue. TA garde son
+évaluation et ses belotes, sans crédit de coupe. 30 points estimés donnent
+80, puis +10 d'enchère par tranche de 10 estimés ; ce sont des paramètres
+de développement, pas des probabilités calibrées.
 Soutien : +10 par carte d'une séquence immédiatement maîtresse, +20 par
-belote TA ; crédits dépensés une seule fois depuis la dernière enchère
+belote TA. SA ajoute +10 par dix exactement second sans as et +10 par paire
+de rois au moins troisièmes hors séquence déjà comptée ; ne jamais compter
+deux fois un honneur de la même main. Ces crédits sont dépensés une seule fois depuis la dernière enchère
 de l'équipe, remis à zéro sur changement de mode/couleur. L'ouvreur ne
 recompte pas sa propre belote au rebid. À montant égal garder son choix
 historique ; une coinche évaluée pour une couleur n'est pas utilisée pour

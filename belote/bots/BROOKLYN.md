@@ -11,9 +11,17 @@ older benchmark snapshots do not measure the current six-contract game.
 Rules and values follow §11 of the repository's FFB PDF.
 
 - Open with at least two immediate controls, counted as uninterrupted
-  sequences from A at SA or J at TA. Value plausible survivors after
-  sacrificing small cards to absent honours: 85% for immediate controls,
-  55% for cards requiring establishment, plus 20 per TA belote.
+  sequences from A at SA or J at TA. SA also accepts three suits stopped
+  by an ace, at least second ten, or at least third king. Value plausible
+  survivors after sacrificing small cards to absent honours: 85% for
+  immediate controls, 55% for cards requiring establishment, or 65% for
+  protected SA tens / at least third kings. TA adds 20 per belote.
+- SA shape penalties: 10 per void, 4 per singleton without an ace, 2 per
+  other suit without a stopper. Five immediate controls halve those
+  penalties; a master sequence of at least five waives them when the player
+  has the opening lead (public dealer information). A void is not an absolute
+  ban: exceptional hands can compensate. These are development parameters,
+  fixed before the comparison rather than fitted success probabilities.
 - A recoverable value of 30 opens 80, then each further 10 funds another 10.
   These initial thresholds are not calibrated success probabilities.
   SA has no belote and neither mode receives void/cutting credits.
@@ -21,6 +29,11 @@ Rules and values follow §11 of the repository's FFB PDF.
   contribution once, measured from the last team bid, ignoring enemy
   overcalls. Suit/mode switches start a fresh budget. Do not add opener's
   belote again at rebid. Prefer the existing suited choice on equal value.
+- SA support also adds +10 per exactly second ten without its ace, and +10
+  for every two at least third kings outside the already counted prefix.
+  Never count an honour both as an immediate winner and a protected card.
+  These support credits describe the partner's hand; they do not repeat
+  the opener's own evaluation at a rebid.
 - Bid a mode capot only when all eight own cards are immediate controls.
   Do not coinche SA/TA using the old single-trump-suit evaluator.
 - On lead, retain short masters. Start a purge with at least three cards

@@ -1,7 +1,8 @@
 """Brooklyn SA/TA bidding: recoverable cards, controls and public support.
 
-Initial rule-based estimates, not calibrated probabilities. No cutting/void
-credit, no imaginary trump suit and no transfer of another contract's credits.
+Rule-based estimates, not calibrated probabilities. SA accounts for exposed
+suits and protected honours; neither mode gives cutting/void credit or
+transfers another contract's partnership credits.
 """
 
 from ..bidding import ActionType
@@ -9,9 +10,16 @@ from ..cards import ATOUT_ORDER, NONATOUT_ORDER, ContractMode, Rank, Suit
 from ..trick import partner_of, team_of
 
 
-def mode_value(hand, mode):
+def _sa_stopped(held):
+    """An ace, guarded ten or at least third king can stop an enemy run."""
+    return (Rank.AS in held or (Rank.DIX in held and len(held) >= 2)
+            or (Rank.ROI in held and len(held) >= 3))
+
+
+def mode_value(hand, mode, *, on_lead=False):
     order = ATOUT_ORDER if mode is ContractMode.TOUT_ATOUT else NONATOUT_ORDER
     value, controls, pairs = 0.0, 0, 0
+    exposed, longest_run = 0, 0
     for suit in Suit:
         held = {c.rank: c for c in hand if c.suit == suit}
         survivors = dict(held)
@@ -21,23 +29,43 @@ def mode_value(hand, mode):
                 break
             prefix.append(rank)
         controls += len(prefix)
+        longest_run = max(longest_run, len(prefix))
+        if mode is ContractMode.SANS_ATOUT:
+            if not held:
+                exposed += 10
+            elif not _sa_stopped(held):
+                exposed += 4 if len(held) == 1 else 2
         # Establishment sacrifices low cards to the absent higher honours.
         for rank in order:
             if rank not in held:
                 weaker = [r for r in survivors if order.index(r) > order.index(rank)]
                 if weaker:
                     survivors.pop(max(weaker, key=order.index))
-        value += sum(c.points(mode) * (.85 if c.rank in prefix else .55)
-                     for c in survivors.values())
+        for card in survivors.values():
+            protected = (mode is ContractMode.SANS_ATOUT
+                         and ((card.rank is Rank.DIX and len(held) >= 2)
+                              or (card.rank is Rank.ROI and len(held) >= 3)))
+            weight = .85 if card.rank in prefix else .65 if protected else .55
+            value += card.points(mode) * weight
         if mode is ContractMode.TOUT_ATOUT and {Rank.ROI, Rank.DAME} <= held.keys():
             pairs += 1
+    if mode is ContractMode.SANS_ATOUT:
+        # Exceptional hands can compensate for shape. A long master sequence
+        # is immediately runnable only when this seat has the opening lead.
+        if on_lead and longest_run >= 5:
+            exposed = 0
+        elif controls >= 5:
+            exposed *= .5
+        value = max(0, value - exposed)
     return round(value + pairs * 20, 2), controls
 
 
-def mode_opening(hand, mode):
-    value, controls = mode_value(hand, mode)
+def mode_opening(hand, mode, *, on_lead=False):
+    value, controls = mode_value(hand, mode, on_lead=on_lead)
+    protected_suits = sum(_sa_stopped({c.rank for c in hand if c.suit == suit})
+                          for suit in Suit) if mode is ContractMode.SANS_ATOUT else 0
     # Belotes alone must not finance a bid without plausible tricks.
-    if controls < 2 or value < 30:
+    if (controls < 2 and protected_suits < 3) or value < 30:
         return 0
     return min(160 if mode is ContractMode.SANS_ATOUT else 240,
                80 + 10 * int((value - 30) // 10))
@@ -45,18 +73,27 @@ def mode_opening(hand, mode):
 
 def mode_support(hand, mode):
     order = ATOUT_ORDER if mode is ContractMode.TOUT_ATOUT else NONATOUT_ORDER
-    credits = 0
+    credits, protected_kings = 0, 0
     for suit in Suit:
         held = {c.rank for c in hand if c.suit == suit}
         # Only contiguous winners from A in SA / J in TA. A TA ace without
         # its J/9 is not an immediate master and must not get an ace bonus.
+        prefix = set()
         for rank in order:
             if rank not in held:
                 break
             credits += 10
+            prefix.add(rank)
+        if mode is ContractMode.SANS_ATOUT:
+            if Rank.DIX in held and len(held) == 2 and Rank.AS not in held:
+                credits += 10
+            if Rank.ROI in held and len(held) >= 3 and Rank.ROI not in prefix:
+                protected_kings += 1
         if mode is ContractMode.TOUT_ATOUT and {Rank.ROI, Rank.DAME} <= held:
             credits += 20
-    return credits
+    # A king needs two honours established: two protected kings fund one
+    # increment. Prefix winners and protected honours are never counted twice.
+    return credits + 10 * (protected_kings // 2)
 
 
 def choose_mode_bid(bot, hand, state, legal, suited_action):
@@ -84,7 +121,8 @@ def choose_mode_bid(bot, hand, state, legal, suited_action):
         # A guaranteed TA capot can additionally retain its belotes.
         return max(certain_capots, key=lambda a: a.suit is ContractMode.TOUT_ATOUT)
     for mode in ContractMode:
-        ceiling = mode_opening(hand, mode)
+        ceiling = mode_opening(hand, mode,
+                               on_lead=bot.player_id == (state.dealer - 1) % 4)
         supporting = bool(episode and episode[-1][1].suit is mode)
         if supporting:
             latest = episode[-1][1]

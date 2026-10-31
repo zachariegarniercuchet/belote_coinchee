@@ -102,6 +102,45 @@ class ContractModeTests(unittest.TestCase):
                 only_mode = [a for a in fresh.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
                 self.assertEqual(bot.choose_bid(certain, fresh, only_mode), BidAction.capot(mode))
 
+        # SA selection and partnership: refuse the reported exposed hand,
+        # retain regular protected honours and exceptional irregular games.
+        for version in range(1, 5):
+            for hand, dealer, expected in (
+                (cards('10_PIQUE', 'R_PIQUE', '9_PIQUE', 'D_COEUR', '7_COEUR',
+                       'A_TREFLE', '10_TREFLE', '8_TREFLE'), 1, BidAction.passe()),
+                (cards('A_PIQUE', '10_COEUR', '7_COEUR', '10_TREFLE', '7_TREFLE',
+                       'R_CARREAU', '8_CARREAU', '7_CARREAU'), 1, BidAction.enchere(80, SA)),
+                (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'A_COEUR', '10_COEUR',
+                       'R_TREFLE', '8_TREFLE', '7_TREFLE'), 1, BidAction.enchere(100, SA)),
+                (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
+                       '9_COEUR', '8_COEUR', '7_COEUR'), 1, BidAction.enchere(80, SA)),
+                (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
+                       '9_COEUR', '8_COEUR', '7_COEUR'), 2, BidAction.passe()),
+            ):
+                bot = create_bot('brooklyn_v' + str(version), 0)
+                state = BiddingState(dealer=dealer)
+                if dealer == 2:
+                    for _ in range(3):
+                        state.apply(BidAction.passe())
+                legal = [a for a in state.legal_actions()
+                         if a.type is not ActionType.ENCHERE or a.suit is SA]
+                self.assertEqual(bot.choose_bid(hand, state, legal), expected)
+            # Two protected kings fund +10 together, a ten second another +10.
+            state = BiddingState(dealer=1)
+            state.apply(BidAction.enchere(80, SA))
+            state.apply(BidAction.passe())
+            supporter = create_bot('brooklyn_v' + str(version), 2)
+            support = cards('10_PIQUE', '7_PIQUE', 'R_COEUR', '8_COEUR', '9_COEUR',
+                            'R_TREFLE', '8_TREFLE', '9_TREFLE')
+            only_sa = lambda: [a for a in state.legal_actions()
+                               if a.type is not ActionType.ENCHERE or a.suit is SA]
+            self.assertEqual(supporter.choose_bid(support, state, only_sa()), BidAction.enchere(100, SA))
+            state.apply(BidAction.enchere(100, SA))
+            state.apply(BidAction.passe())
+            state.apply(BidAction.passe())
+            state.apply(BidAction.enchere(110, SA))
+            self.assertEqual(supporter.choose_bid(support, state, only_sa()), BidAction.passe())
+
         # Follow a purge across losses and re-entries; short masters stay in hand.
         for version in range(1, 5):
             for mode, top, middle, missing, first_followers in (
@@ -204,7 +243,7 @@ class ContractModeTests(unittest.TestCase):
                     with patch('belote.game.deal', side_effect=lambda *_: copy.deepcopy(hands)):
                         console = Donne(players(), dealer=0).play()
                     session = GameSession(Room('MODES'), target_score=1000)
-                    session.game.players = players()
+                    session.players = session.game.players = players()
                     session.game.dealer = 0
                     session.sleep = Mock()
                     states = []
