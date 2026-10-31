@@ -19,6 +19,15 @@ from belote.bots import DEFAULT_BOT_ID, is_valid_bot, list_bots
 SEATS = (0, 1, 2, 3, "board")
 PLAYER_SEATS = (0, 1, 2, 3)
 
+# Fermeture automatique d'un salon inactif, en secondes, mesurée depuis la
+# dernière interaction humaine (création, jonction, prise/quitus de siège,
+# déconnexion). Un salon n'est jamais fermé pendant une partie en cours ni
+# tant qu'au moins une connection humaine lui est attachée. Deux seuils :
+# un salon « nu » (aucun siège occupé, aucune partie) est réclamé plus vite
+# qu'un salon qui a servi (sièges réservés ou partie déjà jouée).
+EMPTY_ROOM_IDLE = 30 * 60     # salon nu : 30 min
+NO_HUMAN_IDLE = 2 * 60 * 60   # salon marqué mais sans humain : 2 h
+
 # Échiquiers de temps proposés dans le salon, en secondes. 0 = illimité.
 # Les deux listes servent de liste blanche côté serveur et de propositions
 # côté client : le sélecteur du lobby est construit à partir d'ici.
@@ -54,6 +63,10 @@ class Room:
     def __init__(self, code: str, visibility: str = "public", created_by: str | None = None):
         self.code = code
         self.created_at = time.time()
+        # Dernière interaction humaine dans ce salon (création, jonction,
+        # prise/quitus de siège, coup, déconnexion). Sert de base à la
+        # fermeture automatique des salons abandonnés (voir server.purge).
+        self.last_activity = time.time()
         # Prénom du créateur, affiché dans l'annuaire public.
         self.created_by = created_by
         self.lock = threading.RLock()
@@ -78,6 +91,28 @@ class Room:
         # Bot choisi par siège (siège vide au démarrage -> rempli par ce bot).
         # Modifiable depuis le lobby par n'importe quel membre du salon.
         self.bot_choices: dict[int, str] = {p: DEFAULT_BOT_ID for p in PLAYER_SEATS}
+
+    def touch(self) -> None:
+        """Marque une activité humaine récente dans ce salon (repousse l'expiration)."""
+        with self.lock:
+            self.last_activity = time.time()
+
+    def idle_seconds(self, now: float | None = None) -> float:
+        """Secondes écoulées depuis la dernière activité humaine."""
+        with self.lock:
+            base = self.last_activity
+        return (now if now is not None else time.time()) - base
+
+    def is_vacant(self) -> bool:
+        """Vrai si le salon est nu : aucun siège occupé et aucune partie.
+
+        Sert à choisir le seuil de fermeture : un salon nu est fermé plus
+        vite (EMPTY_ROOM_IDLE) qu'un salon qui a accueilli des joueurs ou une
+        partie (NO_HUMAN_IDLE), même sans humain connecté.
+        """
+        with self.lock:
+            occupied = any(self.seats[s].occupied for s in PLAYER_SEATS)
+            return not occupied and self.game_session is None
 
     def set_bot_choice(self, seat_key, bot_id: str) -> bool:
         """Mémorise le bot qui occupera `seat_key` si un humain ne le prend pas."""
@@ -322,6 +357,11 @@ class RoomManager:
             return None
         with self._lock:
             return self._rooms.get(code.upper())
+
+    def all_rooms(self) -> list[Room]:
+        """Copie de la liste des salons, pour un balayage sans retenir le verrou."""
+        with self._lock:
+            return list(self._rooms.values())
 
     def remove(self, code: str) -> None:
         with self._lock:

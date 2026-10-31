@@ -20,6 +20,7 @@ import os
 import socket
 import sys
 import threading
+import time
 
 # Permet `import belote` quel que soit le répertoire
 # depuis lequel ce script est lancé.
@@ -33,7 +34,7 @@ from flask_socketio import join_room as sio_join_room
 
 from extensions import socketio
 from game_session import GameSession
-from rooms import PLAYER_SEATS, RoomManager
+from rooms import EMPTY_ROOM_IDLE, NO_HUMAN_IDLE, PLAYER_SEATS, RoomManager
 from belote.bots import is_valid_bot, list_bots
 
 app = Flask(__name__, template_folder=".", static_folder=None)
@@ -181,6 +182,66 @@ def _seat_key(raw):
     return "board"
 
 
+def _room_has_human(code: str) -> bool:
+    """Vrai si au moins une connection humaine pointe encore vers ce salon.
+
+    `sid_info` est la source fiable : tout client connecté (joueur assis ou
+    spectateur) y a une entrée dont `code` désigne son salon. On ne regarde
+    pas les seats ni les spectateurs, qui peuvent garder un nom après une
+    déconnexion le temps d'une reprise.
+    """
+    with sid_lock:
+        return any(info["code"] == code for info in sid_info.values())
+
+
+def purge_expired_rooms(now: float | None = None) -> list[str]:
+    """Ferme les salons abandonnés et retourne leurs codes.
+
+    Ne ferme jamais un salon :
+    - avec une partie en cours (un humain peut encore y être, ou les bots
+      jouent — on ne touche pas à un thread de jeu) ;
+    - auquel au moins une connection humaine est encore attachée.
+
+    Sinon, un salon « nu » (aucun siège occupé, aucune partie) est fermé au
+    bout de `EMPTY_ROOM_IDLE`, et un salon qui a accueilli des joueurs ou une
+    partie au bout de `NO_HUMAN_IDLE`, mesurés depuis la dernière activité
+    humaine. La décision et la suppression se font sous le verrou de chaque
+    salon puis celui du gestionnaire, pour ne pas fermer un salon qu'un
+    humain vient de rejoindre.
+    """
+    now = time.time() if now is None else now
+    closed: list[str] = []
+    for room in rooms.all_rooms():
+        with room.lock:
+            # Partie en cours : jamais purgé (le thread de jeu continue).
+            if room.game_session is not None and not room.game_session.finished:
+                continue
+            threshold = EMPTY_ROOM_IDLE if room.is_vacant() else NO_HUMAN_IDLE
+            if room.idle_seconds(now) < threshold:
+                continue
+        # Re-vérifie l'absence d'humain juste avant suppression, puis ferme.
+        if _room_has_human(room.code):
+            continue
+        rooms.remove(room.code)
+        closed.append(room.code)
+    return closed
+
+
+def _purge_loop(interval: float = 60.0):
+    """Tâche de fond : ferme périodiquement les salons abandonnés.
+
+    Lance via `socketio.start_background_task` uniquement au démarrage réel du
+    serveur (`__main__`), jamais à l'import, pour ne pas tourner dans les tests.
+    """
+    while True:
+        time.sleep(interval)
+        try:
+            purge_expired_rooms()
+        except Exception:
+            # Une erreur de balayage ne doit jamais tuer la tâche de fond.
+            pass
+
+
 @socketio.on("create_room")
 def on_create_room(data):
     name = ((data or {}).get("name") or "").strip()[:20] or "Hôte"
@@ -201,6 +262,9 @@ def on_create_room(data):
 @socketio.on("list_public_rooms")
 def on_list_public_rooms(_data=None):
     """Annuaire des salons publics, envoyé uniquement au demandeur."""
+    # On en profite pour fermer les salons abandonnés : l'annuaire reste propre
+    # même sans tâche de fond, et un visiteur rafraîchit souvent la liste.
+    purge_expired_rooms()
     socketio.emit("public_rooms", {"rooms": rooms.public_rooms()}, to=request.sid)
 
 
@@ -216,6 +280,7 @@ def on_join_lobby(data):
     sio_join_room(room.code)
     with sid_lock:
         sid_info[request.sid] = {"code": room.code, "name": name}
+    room.touch()
 
     # Reconnexion : un siège porte déjà ce nom mais est actuellement sans connexion.
     with room.lock:
@@ -257,6 +322,7 @@ def on_take_seat(data):
         socketio.emit("error_message", {"message": message}, to=request.sid)
         socketio.emit("lobby_update", room.lobby_state(request.sid), to=request.sid)
         return
+    room.touch()
     _emit_lobby_update(room)
     room.remove_spectator(request.sid)
     if room.game_session:
@@ -276,6 +342,7 @@ def on_leave_seat(data):
         seat = room.seat_of_sid(request.sid)
         if seat is not None:
             room.free_seat(seat)
+    room.touch()
     _emit_lobby_update(room)
 
 
@@ -314,6 +381,7 @@ def on_request_takeover(data):
     if not room.request_takeover(seat, request.sid, name):
         socketio.emit("error_message", {"message": "Ce siège est déjà pris."}, to=request.sid)
         return
+    room.touch()
     _emit_lobby_update(room)
     session.broadcast()
 
@@ -386,6 +454,7 @@ def on_start_game(data):
         return
 
     room.target_score = target_score
+    room.touch()
     # Mémorise les choix dans la room pour cohérence (lobby + reconnexion).
     with room.lock:
         for seat, bid in bot_ids.items():
@@ -411,6 +480,7 @@ def on_bid_choice(data):
         index = int((data or {}).get("index"))
     except (TypeError, ValueError):
         return
+    room.touch()
     room.game_session.submit_bid(seat, index)
 
 
@@ -425,6 +495,7 @@ def on_play_card(data):
     card_id = (data or {}).get("card_id")
     if not card_id:
         return
+    room.touch()
     room.game_session.submit_card(seat, card_id)
 
 
@@ -475,6 +546,9 @@ def on_disconnect():
             if seat.sid == request.sid:
                 seat.sid = None
         room.remove_spectator(request.sid)
+    # Redémarre l'horloge d'inactivité : si c'était le dernier humain, le
+    # salon commence alors son compte à rebours de fermeture.
+    room.touch()
     _emit_lobby_update(room)
 
 
@@ -483,6 +557,8 @@ if __name__ == "__main__":
     # Production imports keep Flask's usual template caching.
     app.jinja_env.auto_reload = True
     port = int(os.environ.get("PORT", 5000))
+    # Balayage périodique des salons abandonnés (fermeture automatique).
+    socketio.start_background_task(_purge_loop)
     print("=" * 60)
     print("  Belote Coinchée — serveur local")
     print("=" * 60)

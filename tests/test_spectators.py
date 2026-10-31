@@ -123,6 +123,50 @@ class SpectatorTests(unittest.TestCase):
                     if client.is_connected():
                         client.disconnect()
 
+    def test_purge_closes_abandoned_rooms_only(self):
+        """Fermeture automatique : un salon abandonné est fermé, pas les autres."""
+        import time as _time
+
+        from rooms import EMPTY_ROOM_IDLE, NO_HUMAN_IDLE
+        with patch.object(server, "rooms", RoomManager()), patch.object(server, "sid_info", {}):
+            now = _time.time()
+
+            # Salon nu (aucun siège, aucune partie) abandonné depuis > EMPTY_ROOM_IDLE.
+            vacant = server.rooms.create_room(visibility="public")
+            vacant.last_activity = now - EMPTY_ROOM_IDLE - 1
+            # Témoin : même âge, mais un humain y est encore connecté.
+            busy = server.rooms.create_room(visibility="public")
+            busy.last_activity = now - EMPTY_ROOM_IDLE - 1
+            server.sid_info["sid-humain"] = {"code": busy.code, "name": "Zoé"}
+            # Témoin : salon qui a accueilli un joueur (siège nommé), sans humain,
+            # inactif depuis > EMPTY_ROOM_IDLE mais < NO_HUMAN_IDLE -> conservé.
+            seated = server.rooms.create_room(visibility="public")
+            seated.take_seat(0, "sid-parti", "Bob")
+            seated.last_activity = now - EMPTY_ROOM_IDLE - 1
+
+            closed = server.purge_expired_rooms(now=now)
+
+            self.assertIn(vacant.code, closed)           # nu + inactif -> fermé
+            self.assertIsNone(server.rooms.get(vacant.code))
+            self.assertNotIn(busy.code, closed)          # humain encore connecté
+            self.assertIsNotNone(server.rooms.get(busy.code))
+            self.assertNotIn(seated.code, closed)        # pas encore le délai long
+            self.assertIsNotNone(server.rooms.get(seated.code))
+
+            # Après le délai long (2 h) sans humain, le salon qui a servi est fermé.
+            seated.last_activity = now - NO_HUMAN_IDLE - 1
+            closed2 = server.purge_expired_rooms(now=now)
+            self.assertIn(seated.code, closed2)
+            self.assertIsNone(server.rooms.get(seated.code))
+
+            # Une partie en cours n'est jamais fermée, même très inactif.
+            playing = server.rooms.create_room(visibility="public")
+            playing.last_activity = now - NO_HUMAN_IDLE - 1
+            playing.game_session = server.GameSession(playing, target_score=1000)
+            closed3 = server.purge_expired_rooms(now=now)
+            self.assertNotIn(playing.code, closed3)
+            self.assertIsNotNone(server.rooms.get(playing.code))
+
 
 if __name__ == "__main__":
     unittest.main()
