@@ -101,6 +101,36 @@ class BrooklynTests(unittest.TestCase):
             self.assertEqual(BrooklynBotV2(0).choose_bid(hand, state, state.legal_actions()),
                              BidAction.enchere(amount, Suit.PIQUE))
 
+        # A trump void deducts ten from the total partner-support budget,
+        # once per suit episode, rather than once per raise or per ace.
+        for version in ("brooklyn_v2", "brooklyn_v3", "brooklyn_v4"):
+            for support_hand, raise_points in (
+                (cards("A_COEUR", "R_COEUR", "A_TREFLE", "R_TREFLE", "D_TREFLE",
+                       "R_CARREAU", "D_CARREAU", "8_CARREAU"), 10),
+                (cards("A_COEUR", "R_COEUR", "D_TREFLE", "R_TREFLE", "8_TREFLE",
+                       "R_CARREAU", "D_CARREAU", "8_CARREAU"), 0),
+                (cards("D_COEUR", "R_COEUR", "D_TREFLE", "R_TREFLE", "8_TREFLE",
+                       "R_CARREAU", "D_CARREAU", "8_CARREAU"), 0),
+                (cards("7_PIQUE", "A_COEUR", "R_COEUR", "A_TREFLE", "R_TREFLE",
+                       "D_TREFLE", "R_CARREAU", "D_CARREAU"), 20),
+            ):
+                state = BiddingState(dealer=1)
+                state.apply(BidAction.enchere(80, Suit.PIQUE))
+                state.apply(BidAction.passe())
+                bot = create_bot(version, 2)
+                only_spades = lambda: [a for a in state.legal_actions()
+                                      if a.type is not ActionType.ENCHERE or a.suit is Suit.PIQUE]
+                expected = (BidAction.enchere(80 + raise_points, Suit.PIQUE)
+                            if raise_points else BidAction.passe())
+                self.assertEqual(bot.choose_bid(support_hand, state, only_spades()), expected)
+                self.assertEqual(bot.choose_bid(support_hand, state, only_spades()), expected)
+                if raise_points:
+                    state.apply(expected)
+                    state.apply(BidAction.passe())
+                    state.apply(BidAction.passe())
+                    state.apply(BidAction.enchere(90 + raise_points, Suit.PIQUE))
+                    self.assertEqual(bot.choose_bid(support_hand, state, only_spades()), BidAction.passe())
+
         # Initial overcalls now include extra aces, not just the trump description.
         state = BiddingState(dealer=0)  # seat 3 opens, then Brooklyn at seat 0
         state.apply(next(a for a in state.legal_actions() if a.type == ActionType.ENCHERE

@@ -274,6 +274,11 @@ moins un as hors atout OU deux dix seconds. Base 80 avec un des J/9, 90
 avec les deux ; le premier as hors atout est inclus dans la base, chaque
 as supplémentaire ajoute +10 dès l'ouverture ou la surenchère d'entrée.
 Le partenaire soutient de +10 par J/9 manquant détenu et par as hors atout.
+Sans aucun atout dans la couleur du partenaire, retirer 10 au crédit total
+de soutien, avec un plancher à zéro, avant de déduire les hausses déjà
+dépensées. Cette décote commune à v2/v3/v4 est propre à la couleur soutenue ;
+elle ne concerne ni une ouverture/changement de couleur, ni SA/TA. V1 exige
+déjà au moins trois atouts pour soutenir et ne relance donc pas sans atout.
 La belote compte aussi dès l'entrée. Distribution/dix seconds du premier
 enchérisseur restent des crédits de rebid, comptés une seule fois.
 L'as d'atout est inclus dans la base 80/90, jamais crédité de +10, ni en

@@ -61,6 +61,14 @@ for mode contracts. The follow-up purge policy is Brooklyn-only.
 
 ## Playing style
 
+For suited partnership bidding, v2/v3/v4 subtract 10 from the supporter's
+total credit when holding no trump in partner's suit, floored at zero.
+Apply this once before subtracting credits already spent, and reset it with
+the suit episode. Two side aces with no trump therefore support +10, one ace
+supports zero; holding even one trump avoids this deduction. Independent
+openings, suit changes and SA/TA budgets keep their own evaluations. V1
+already requires at least three trumps to support a suited contract.
+
 Latest shared-policy benchmark: [weakest winning trump in attack](../../benchmarks/2026-10-26-trump-control.md),
 all three versions rerun at `8f02342`. V1/v2/v3 retain their published playing
 policies; the clarification separating strongest trump FOLLOW from cheapest

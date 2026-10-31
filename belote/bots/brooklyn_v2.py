@@ -160,7 +160,12 @@ class BrooklynBotV2(BrooklynBot):
                     ceiling = (base + self._rebid_bonus(hand, suit) + self.partner_raise_points
                                if base is not None else 0)
                 else:
-                    unused = max(0, self._partner_support(hand, suit) - spent[self.player_id])
+                    support = self._partner_support(hand, suit)
+                    if not any(card.suit == suit for card in hand):
+                        # No trump support: deduct once from the whole hand's
+                        # credit, before removing raises already spent.
+                        support = max(0, support - 10)
+                    unused = max(0, support - spent[self.player_id])
                     ceiling = latest.points + unused
                 consider(suit, ceiling)
 
