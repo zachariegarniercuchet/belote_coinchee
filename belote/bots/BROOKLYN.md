@@ -18,7 +18,7 @@ Rules and values follow §11 of the repository's FFB PDF.
   protected SA tens / at least third kings. TA adds 20 per belote.
 - SA shape penalties: 10 per void, 4 per singleton without an ace, 2 per
   other suit without a stopper. Five immediate controls halve those
-  penalties; a master sequence of at least five waives them when the player
+  penalties; a master sequence of at least seven waives them when the player
   has the opening lead (public dealer information). A void is not an absolute
   ban: exceptional hands can compensate. These are development parameters,
   fixed before the comparison rather than fitted success probabilities.
@@ -50,8 +50,10 @@ Rules and values follow §11 of the repository's FFB PDF.
   partner with non-master points; take with a safe winner or the weakest
   current winner when overtaking remains possible. TA still requires climbing.
 
-The [800-game snapshot](../../benchmarks/2026-10-29-sa-ta.md) predates this
-follow-up purge policy and does not measure its performance.
+The [SA before/after comparison](../../benchmarks/2026-10-30-sa-bidding.md)
+uses 800 games per policy and includes the follow-up purge play in both
+policies. The [older 800-game snapshot](../../benchmarks/2026-10-29-sa-ta.md)
+predates that purge policy and does not measure its performance.
 
 Other non-random families retain the initial SA/TA master-cashing fallback;
 their bidding remains suited. Spark's single-trump simulations are not used

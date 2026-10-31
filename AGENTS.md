@@ -460,7 +460,7 @@ survivantes après sacrifice aux honneurs absents : 85 % immédiates, 55 % à
 établir, ou 65 % pour les dix protégés / rois au moins troisièmes en SA.
 SA retire 10 par couleur vide, 4 par singleton sans as, 2 par autre couleur
 sans arrêt. Cinq cartes immédiatement maîtresses divisent ces pénalités par
-deux ; une séquence maîtresse d'au moins cinq cartes les annule si le joueur
+deux ; une séquence maîtresse d'au moins sept cartes les annule si le joueur
 est lui-même à l'entame initiale (information publique issue du donneur).
 Une coupe franche n'est donc pas une interdiction absolue. TA garde son
 évaluation et ses belotes, sans crédit de coupe. 30 points estimés donnent

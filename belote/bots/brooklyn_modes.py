@@ -52,7 +52,9 @@ def mode_value(hand, mode, *, on_lead=False):
     if mode is ContractMode.SANS_ATOUT:
         # Exceptional hands can compensate for shape. A long master sequence
         # is immediately runnable only when this seat has the opening lead.
-        if on_lead and longest_run >= 5:
+        # Five/six winners can leave most points to defence; seven leave only
+        # three enemy cards and secure at least 85 card points in SA.
+        if on_lead and longest_run >= 7:
             exposed = 0
         elif controls >= 5:
             exposed *= .5

@@ -113,9 +113,15 @@ class ContractModeTests(unittest.TestCase):
                 (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'A_COEUR', '10_COEUR',
                        'R_TREFLE', '8_TREFLE', '7_TREFLE'), 1, BidAction.enchere(100, SA)),
                 (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
-                       '9_COEUR', '8_COEUR', '7_COEUR'), 1, BidAction.enchere(80, SA)),
+                       '9_COEUR', '8_COEUR', '7_COEUR'), 1, BidAction.passe()),
                 (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
                        '9_COEUR', '8_COEUR', '7_COEUR'), 2, BidAction.passe()),
+                (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
+                       '9_PIQUE', '8_COEUR', '7_COEUR'), 1, BidAction.passe()),
+                (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
+                       '9_PIQUE', '8_PIQUE', '7_COEUR'), 1, BidAction.enchere(80, SA)),
+                (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
+                       '9_PIQUE', '8_PIQUE', '7_COEUR'), 2, BidAction.passe()),
             ):
                 bot = create_bot('brooklyn_v' + str(version), 0)
                 state = BiddingState(dealer=dealer)
