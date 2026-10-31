@@ -87,8 +87,6 @@
       btn.classList.add("active");
       document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
       document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
-      // On demande la liste à chaque ouverture : elle change tout le temps.
-      if (btn.dataset.tab === "public") requestPublicRooms();
     });
   });
 
@@ -139,6 +137,7 @@
       const meta = document.createElement("span");
       meta.className = "public-room-meta";
       meta.textContent = room.player_count + "/4 joueurs · " + room.target_score + " pts" +
+        (room.created_by ? " · par " + room.created_by : "") +
         (room.spectator_count ? " · " + room.spectator_count + " spectateur" +
           (room.spectator_count > 1 ? "s" : "") : "");
       row.append(code, phase, meta);

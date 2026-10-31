@@ -51,9 +51,11 @@ class Seat:
 
 
 class Room:
-    def __init__(self, code: str, visibility: str = "public"):
+    def __init__(self, code: str, visibility: str = "public", created_by: str | None = None):
         self.code = code
         self.created_at = time.time()
+        # Prénom du créateur, affiché dans l'annuaire public.
+        self.created_by = created_by
         self.lock = threading.RLock()
         self.seats: dict = {s: Seat() for s in SEATS}
         self.game_session = None  # web.game_session.GameSession, une fois la partie lancée
@@ -280,10 +282,10 @@ class RoomManager:
             if code not in self._rooms:
                 return code
 
-    def create_room(self, visibility: str = "public") -> Room:
+    def create_room(self, visibility: str = "public", created_by: str | None = None) -> Room:
         with self._lock:
             code = self._generate_code()
-            room = Room(code, visibility=visibility)
+            room = Room(code, visibility=visibility, created_by=created_by)
             self._rooms[code] = room
             return room
 
@@ -307,6 +309,7 @@ class RoomManager:
                 listing.append({
                     "code": room.code,
                     "phase": phase,
+                    "created_by": room.created_by,
                     "target_score": room.target_score,
                     "player_count": sum(1 for p in PLAYER_SEATS if room.seats[p].occupied),
                     "spectator_count": len(room.spectators),

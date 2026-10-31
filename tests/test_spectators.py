@@ -58,6 +58,7 @@ class SpectatorTests(unittest.TestCase):
                 self.assertNotIn(private_code, listed)
                 self.assertEqual(listed[public_code]["phase"], "lobby")
                 self.assertEqual(listed[public_code]["player_count"], 2)
+                self.assertEqual(listed[public_code]["created_by"], "Hôte")
 
                 room = server.rooms.get(public_code)
                 session = server.GameSession(room, target_score=1000)

@@ -189,7 +189,7 @@ def on_create_room(data):
     visibility = ((data or {}).get("visibility") or "public").strip().lower()
     if visibility not in ("public", "private"):
         visibility = "public"
-    room = rooms.create_room(visibility=visibility)
+    room = rooms.create_room(visibility=visibility, created_by=name)
     sio_join_room(room.code)
     with sid_lock:
         sid_info[request.sid] = {"code": room.code, "name": name}
