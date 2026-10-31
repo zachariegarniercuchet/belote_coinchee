@@ -12,6 +12,9 @@ services:
         generateValue: true
       - key: CORS_ALLOWED_ORIGIN
         value: "*"
+      # QR code / lien de partage : laisser vide, l'URL est deduite de
+      # l'hote de la requete (https://<service>.onrender.com) ; a renseigner
+      # seulement pour viser une autre adresse, ex. le front GitHub Pages.
       - key: PUBLIC_BASE_URL
         value: ""
       # Comptes optionnels (voir SUPABASE.md) : laisser vides pour le

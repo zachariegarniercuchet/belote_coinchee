@@ -16,6 +16,7 @@ QR code affiché dans le salon depuis les téléphones (même réseau Wi-Fi).
 from __future__ import annotations
 
 import io
+import ipaddress
 import os
 import socket
 import sys
@@ -65,16 +66,53 @@ LAN_IP = get_lan_ip()
 
 # En local, on devine l'IP Wi-Fi pour que le QR code pointe vers le bon
 # endroit. Une fois deploye (Render, etc.), l'adresse publique n'a plus
-# rien a voir avec une IP locale : definissez PUBLIC_BASE_URL (ex.
-# "https://belote-coinchee.onrender.com") et elle sera utilisee a la place.
+# rien a voir avec une IP locale : PUBLIC_BASE_URL (ex.
+# "https://belote-coinchee-g77g.onrender.com") permet de forcer l'adresse,
+# et a defaut l'URL est deduite de l'hote de la requete, ce qui convient a
+# un deploiement comme a un acces par IP locale.
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+
+
+def _split_host(host: str) -> tuple[str, str]:
+    """Hôte et port séparés depuis `request.host` (IPv6 entre crochets)."""
+    if host.startswith("["):  # "[::1]:5000"
+        end = host.find("]")
+        name, rest = host[1:end], host[end + 1:]
+        return name, rest[1:] if rest.startswith(":") else ""
+    if host.count(":") == 1:
+        name, port = host.split(":")
+        return name, port
+    return host, ""
+
+
+def _is_local_host(hostname: str) -> bool:
+    """Vrai si l'hôte ne désigne que la machine ou le réseau local.
+
+    Un QR code doit alors viser l'IP Wi-Fi du LAN. Un nom de domaine complet
+    (« belote-coinchee-g77g.onrender.com », une IP publique) est considéré
+    comme joignable tel quel, contrairement à « localhost » ou à un nom de
+    poste sans point (« BUREAU »).
+    """
+    name = hostname.strip("[]").lower()
+    if not name or name == "localhost" or name.endswith(".local"):
+        return True
+    try:
+        addr = ipaddress.ip_address(name)
+    except ValueError:
+        return "." not in name
+    return addr.is_loopback or addr.is_link_local or addr.is_private or addr.is_unspecified
 
 
 def get_base_url(req) -> str:
     if PUBLIC_BASE_URL:
         return PUBLIC_BASE_URL
-    port = req.host.split(":")[1] if ":" in req.host else "80"
-    return f"http://{LAN_IP}:{port}"
+    hostname, port = _split_host(req.host)
+    if _is_local_host(hostname):
+        return f"http://{LAN_IP}:{port or '80'}"
+    # Derrière un proxy (Render envoie X-Forwarded-Proto), l'hôte public est
+    # déjà celui de la requête : on s'y fie plutôt que sur une IP locale.
+    scheme = (req.headers.get("X-Forwarded-Proto") or "").split(",")[0].strip() or req.scheme
+    return f"{scheme}://{req.host}"
 
 
 # --------------------------------------------------------------------------
