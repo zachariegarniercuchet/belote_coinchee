@@ -68,6 +68,9 @@ Do not tune on results and present the same sample as independent validation.
 
 ## Saved comparisons
 
+- [Fresh Brooklyn vs de Belote comparison](2026-10-31-partner-support.md):
+  800 games on seeds 48000–48049 at `50e18f9`, after the no-trump suited
+  support deduction, with direct opponent results and per-mode calibration.
 - [SA distribution and protected honours](2026-10-30-sa-bidding.md): paired
   800-game before/after runs (1,600 total), fresh seeds 46000–46049, all four
   Brooklyn versions, SA selection/support changes and unchanged TA evaluation.

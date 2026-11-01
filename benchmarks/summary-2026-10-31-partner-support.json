@@ -1,0 +1,784 @@
+{
+  "revision": "50e18f9e3a23c7dbf5dfcebb4999c3589037687a",
+  "first_seed": 48000,
+  "pairs_per_matchup": 50,
+  "games": 800,
+  "pooled": {
+    "brooklyn_v1": {
+      "games": 200,
+      "wins": 107,
+      "win_pct": 53.5,
+      "win_ci95_seed_cluster": [
+        46.5,
+        60.5
+      ],
+      "takes": 705,
+      "take_pct": 57.0,
+      "made": 552,
+      "made_pct": 78.3,
+      "by_mode": {
+        "SUIT": {
+          "n": 538,
+          "made": 442,
+          "made_pct": 82.2,
+          "take_pct": 43.5,
+          "share_of_own_takes_pct": 76.3,
+          "mean_bid": 102.6,
+          "margin_all": {
+            "n": 538,
+            "mean": 29.63,
+            "median": 22.5,
+            "sd": 41.2,
+            "buckets": {
+              "below_bid": {
+                "n": 96,
+                "pct": 17.8
+              },
+              "0_to_9": {
+                "n": 65,
+                "pct": 12.1
+              },
+              "10_to_20": {
+                "n": 94,
+                "pct": 17.5
+              },
+              "over_20": {
+                "n": 283,
+                "pct": 52.6
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 495,
+            "mean": 19.46,
+            "median": 20,
+            "sd": 23.3,
+            "buckets": {
+              "below_bid": {
+                "n": 96,
+                "pct": 19.4
+              },
+              "0_to_9": {
+                "n": 65,
+                "pct": 13.1
+              },
+              "10_to_20": {
+                "n": 94,
+                "pct": 19.0
+              },
+              "over_20": {
+                "n": 240,
+                "pct": 48.5
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 43,
+          "majority_only_failures": 0
+        },
+        "SANS_ATOUT": {
+          "n": 101,
+          "made": 63,
+          "made_pct": 62.4,
+          "take_pct": 8.2,
+          "share_of_own_takes_pct": 14.3,
+          "mean_bid": 104.75,
+          "margin_all": {
+            "n": 101,
+            "mean": 15.47,
+            "median": 12,
+            "sd": 48.36,
+            "buckets": {
+              "below_bid": {
+                "n": 36,
+                "pct": 35.6
+              },
+              "0_to_9": {
+                "n": 14,
+                "pct": 13.9
+              },
+              "10_to_20": {
+                "n": 22,
+                "pct": 21.8
+              },
+              "over_20": {
+                "n": 29,
+                "pct": 28.7
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 88,
+            "mean": -0.5,
+            "median": 6.0,
+            "sd": 26.05,
+            "buckets": {
+              "below_bid": {
+                "n": 36,
+                "pct": 40.9
+              },
+              "0_to_9": {
+                "n": 14,
+                "pct": 15.9
+              },
+              "10_to_20": {
+                "n": 22,
+                "pct": 25.0
+              },
+              "over_20": {
+                "n": 16,
+                "pct": 18.2
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 13,
+          "majority_only_failures": 2
+        },
+        "TOUT_ATOUT": {
+          "n": 66,
+          "made": 47,
+          "made_pct": 71.2,
+          "take_pct": 5.3,
+          "share_of_own_takes_pct": 9.4,
+          "mean_bid": 100,
+          "margin_all": {
+            "n": 66,
+            "mean": 13.32,
+            "median": 14.0,
+            "sd": 22.61,
+            "buckets": {
+              "below_bid": {
+                "n": 17,
+                "pct": 25.8
+              },
+              "0_to_9": {
+                "n": 13,
+                "pct": 19.7
+              },
+              "10_to_20": {
+                "n": 8,
+                "pct": 12.1
+              },
+              "over_20": {
+                "n": 28,
+                "pct": 42.4
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 66,
+            "mean": 13.32,
+            "median": 14.0,
+            "sd": 22.61,
+            "buckets": {
+              "below_bid": {
+                "n": 17,
+                "pct": 25.8
+              },
+              "0_to_9": {
+                "n": 13,
+                "pct": 19.7
+              },
+              "10_to_20": {
+                "n": 8,
+                "pct": 12.1
+              },
+              "over_20": {
+                "n": 28,
+                "pct": 42.4
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 0,
+          "majority_only_failures": 2
+        }
+      }
+    },
+    "brooklyn_v2": {
+      "games": 200,
+      "wins": 73,
+      "win_pct": 36.5,
+      "win_ci95_seed_cluster": [
+        29.5,
+        43.5
+      ],
+      "takes": 601,
+      "take_pct": 48.9,
+      "made": 453,
+      "made_pct": 75.4,
+      "by_mode": {
+        "SUIT": {
+          "n": 368,
+          "made": 285,
+          "made_pct": 77.4,
+          "take_pct": 30.0,
+          "share_of_own_takes_pct": 61.2,
+          "mean_bid": 98.59,
+          "margin_all": {
+            "n": 368,
+            "mean": 27.4,
+            "median": 23.0,
+            "sd": 39.24,
+            "buckets": {
+              "below_bid": {
+                "n": 78,
+                "pct": 21.2
+              },
+              "0_to_9": {
+                "n": 37,
+                "pct": 10.1
+              },
+              "10_to_20": {
+                "n": 56,
+                "pct": 15.2
+              },
+              "over_20": {
+                "n": 197,
+                "pct": 53.5
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 345,
+            "mean": 19.1,
+            "median": 21,
+            "sd": 23.02,
+            "buckets": {
+              "below_bid": {
+                "n": 78,
+                "pct": 22.6
+              },
+              "0_to_9": {
+                "n": 37,
+                "pct": 10.7
+              },
+              "10_to_20": {
+                "n": 56,
+                "pct": 16.2
+              },
+              "over_20": {
+                "n": 174,
+                "pct": 50.4
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 23,
+          "majority_only_failures": 5
+        },
+        "SANS_ATOUT": {
+          "n": 121,
+          "made": 78,
+          "made_pct": 64.5,
+          "take_pct": 9.9,
+          "share_of_own_takes_pct": 20.1,
+          "mean_bid": 104.05,
+          "margin_all": {
+            "n": 121,
+            "mean": 16.48,
+            "median": 13,
+            "sd": 46.8,
+            "buckets": {
+              "below_bid": {
+                "n": 41,
+                "pct": 33.9
+              },
+              "0_to_9": {
+                "n": 14,
+                "pct": 11.6
+              },
+              "10_to_20": {
+                "n": 28,
+                "pct": 23.1
+              },
+              "over_20": {
+                "n": 38,
+                "pct": 31.4
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 107,
+            "mean": 2.11,
+            "median": 5,
+            "sd": 25.84,
+            "buckets": {
+              "below_bid": {
+                "n": 41,
+                "pct": 38.3
+              },
+              "0_to_9": {
+                "n": 14,
+                "pct": 13.1
+              },
+              "10_to_20": {
+                "n": 28,
+                "pct": 26.2
+              },
+              "over_20": {
+                "n": 24,
+                "pct": 22.4
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 14,
+          "majority_only_failures": 2
+        },
+        "TOUT_ATOUT": {
+          "n": 112,
+          "made": 90,
+          "made_pct": 80.4,
+          "take_pct": 9.1,
+          "share_of_own_takes_pct": 18.6,
+          "mean_bid": 105.27,
+          "margin_all": {
+            "n": 112,
+            "mean": 23.12,
+            "median": 18.0,
+            "sd": 36.36,
+            "buckets": {
+              "below_bid": {
+                "n": 22,
+                "pct": 19.6
+              },
+              "0_to_9": {
+                "n": 18,
+                "pct": 16.1
+              },
+              "10_to_20": {
+                "n": 19,
+                "pct": 17.0
+              },
+              "over_20": {
+                "n": 53,
+                "pct": 47.3
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 106,
+            "mean": 16.02,
+            "median": 17.0,
+            "sd": 21.1,
+            "buckets": {
+              "below_bid": {
+                "n": 22,
+                "pct": 20.8
+              },
+              "0_to_9": {
+                "n": 18,
+                "pct": 17.0
+              },
+              "10_to_20": {
+                "n": 19,
+                "pct": 17.9
+              },
+              "over_20": {
+                "n": 47,
+                "pct": 44.3
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 6,
+          "majority_only_failures": 0
+        }
+      }
+    },
+    "brooklyn_v3": {
+      "games": 200,
+      "wins": 98,
+      "win_pct": 49.0,
+      "win_ci95_seed_cluster": [
+        40.5,
+        57.5
+      ],
+      "takes": 630,
+      "take_pct": 50.7,
+      "made": 511,
+      "made_pct": 81.1,
+      "by_mode": {
+        "SUIT": {
+          "n": 414,
+          "made": 360,
+          "made_pct": 87.0,
+          "take_pct": 33.3,
+          "share_of_own_takes_pct": 65.7,
+          "mean_bid": 100.89,
+          "margin_all": {
+            "n": 414,
+            "mean": 31.52,
+            "median": 26.0,
+            "sd": 36.26,
+            "buckets": {
+              "below_bid": {
+                "n": 50,
+                "pct": 12.1
+              },
+              "0_to_9": {
+                "n": 38,
+                "pct": 9.2
+              },
+              "10_to_20": {
+                "n": 75,
+                "pct": 18.1
+              },
+              "over_20": {
+                "n": 251,
+                "pct": 60.6
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 384,
+            "mean": 22.92,
+            "median": 24.0,
+            "sd": 19.7,
+            "buckets": {
+              "below_bid": {
+                "n": 50,
+                "pct": 13.0
+              },
+              "0_to_9": {
+                "n": 38,
+                "pct": 9.9
+              },
+              "10_to_20": {
+                "n": 75,
+                "pct": 19.5
+              },
+              "over_20": {
+                "n": 221,
+                "pct": 57.6
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 30,
+          "majority_only_failures": 4
+        },
+        "SANS_ATOUT": {
+          "n": 135,
+          "made": 88,
+          "made_pct": 65.2,
+          "take_pct": 10.9,
+          "share_of_own_takes_pct": 21.4,
+          "mean_bid": 103.26,
+          "margin_all": {
+            "n": 135,
+            "mean": 18.63,
+            "median": 13,
+            "sd": 46.21,
+            "buckets": {
+              "below_bid": {
+                "n": 45,
+                "pct": 33.3
+              },
+              "0_to_9": {
+                "n": 17,
+                "pct": 12.6
+              },
+              "10_to_20": {
+                "n": 26,
+                "pct": 19.3
+              },
+              "over_20": {
+                "n": 47,
+                "pct": 34.8
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 119,
+            "mean": 4.23,
+            "median": 7,
+            "sd": 25.49,
+            "buckets": {
+              "below_bid": {
+                "n": 45,
+                "pct": 37.8
+              },
+              "0_to_9": {
+                "n": 17,
+                "pct": 14.3
+              },
+              "10_to_20": {
+                "n": 26,
+                "pct": 21.8
+              },
+              "over_20": {
+                "n": 31,
+                "pct": 26.1
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 16,
+          "majority_only_failures": 2
+        },
+        "TOUT_ATOUT": {
+          "n": 81,
+          "made": 63,
+          "made_pct": 77.8,
+          "take_pct": 6.5,
+          "share_of_own_takes_pct": 12.9,
+          "mean_bid": 101.36,
+          "margin_all": {
+            "n": 81,
+            "mean": 21.26,
+            "median": 21,
+            "sd": 33.13,
+            "buckets": {
+              "below_bid": {
+                "n": 16,
+                "pct": 19.8
+              },
+              "0_to_9": {
+                "n": 14,
+                "pct": 17.3
+              },
+              "10_to_20": {
+                "n": 10,
+                "pct": 12.3
+              },
+              "over_20": {
+                "n": 41,
+                "pct": 50.6
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 78,
+            "mean": 16.49,
+            "median": 20.0,
+            "sd": 22.73,
+            "buckets": {
+              "below_bid": {
+                "n": 16,
+                "pct": 20.5
+              },
+              "0_to_9": {
+                "n": 14,
+                "pct": 17.9
+              },
+              "10_to_20": {
+                "n": 10,
+                "pct": 12.8
+              },
+              "over_20": {
+                "n": 38,
+                "pct": 48.7
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 3,
+          "majority_only_failures": 2
+        }
+      }
+    },
+    "brooklyn_v4": {
+      "games": 200,
+      "wins": 99,
+      "win_pct": 49.5,
+      "win_ci95_seed_cluster": [
+        41.0,
+        58.0
+      ],
+      "takes": 627,
+      "take_pct": 50.5,
+      "made": 513,
+      "made_pct": 81.8,
+      "by_mode": {
+        "SUIT": {
+          "n": 409,
+          "made": 360,
+          "made_pct": 88.0,
+          "take_pct": 32.9,
+          "share_of_own_takes_pct": 65.2,
+          "mean_bid": 100.95,
+          "margin_all": {
+            "n": 409,
+            "mean": 32.16,
+            "median": 27,
+            "sd": 35.59,
+            "buckets": {
+              "below_bid": {
+                "n": 45,
+                "pct": 11.0
+              },
+              "0_to_9": {
+                "n": 35,
+                "pct": 8.6
+              },
+              "10_to_20": {
+                "n": 76,
+                "pct": 18.6
+              },
+              "over_20": {
+                "n": 253,
+                "pct": 61.9
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 380,
+            "mean": 23.88,
+            "median": 25.0,
+            "sd": 19.74,
+            "buckets": {
+              "below_bid": {
+                "n": 45,
+                "pct": 11.8
+              },
+              "0_to_9": {
+                "n": 35,
+                "pct": 9.2
+              },
+              "10_to_20": {
+                "n": 76,
+                "pct": 20.0
+              },
+              "over_20": {
+                "n": 224,
+                "pct": 58.9
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 29,
+          "majority_only_failures": 4
+        },
+        "SANS_ATOUT": {
+          "n": 135,
+          "made": 89,
+          "made_pct": 65.9,
+          "take_pct": 10.9,
+          "share_of_own_takes_pct": 21.5,
+          "mean_bid": 103.56,
+          "margin_all": {
+            "n": 135,
+            "mean": 18.86,
+            "median": 13,
+            "sd": 46.08,
+            "buckets": {
+              "below_bid": {
+                "n": 44,
+                "pct": 32.6
+              },
+              "0_to_9": {
+                "n": 18,
+                "pct": 13.3
+              },
+              "10_to_20": {
+                "n": 26,
+                "pct": 19.3
+              },
+              "over_20": {
+                "n": 47,
+                "pct": 34.8
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 119,
+            "mean": 4.49,
+            "median": 7,
+            "sd": 25.36,
+            "buckets": {
+              "below_bid": {
+                "n": 44,
+                "pct": 37.0
+              },
+              "0_to_9": {
+                "n": 18,
+                "pct": 15.1
+              },
+              "10_to_20": {
+                "n": 26,
+                "pct": 21.8
+              },
+              "over_20": {
+                "n": 31,
+                "pct": 26.1
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 16,
+          "majority_only_failures": 2
+        },
+        "TOUT_ATOUT": {
+          "n": 83,
+          "made": 64,
+          "made_pct": 77.1,
+          "take_pct": 6.7,
+          "share_of_own_takes_pct": 13.2,
+          "mean_bid": 101.69,
+          "margin_all": {
+            "n": 83,
+            "mean": 22.37,
+            "median": 21,
+            "sd": 36.0,
+            "buckets": {
+              "below_bid": {
+                "n": 17,
+                "pct": 20.5
+              },
+              "0_to_9": {
+                "n": 14,
+                "pct": 16.9
+              },
+              "10_to_20": {
+                "n": 10,
+                "pct": 12.0
+              },
+              "over_20": {
+                "n": 42,
+                "pct": 50.6
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 79,
+            "mean": 16.06,
+            "median": 20,
+            "sd": 22.9,
+            "buckets": {
+              "below_bid": {
+                "n": 17,
+                "pct": 21.5
+              },
+              "0_to_9": {
+                "n": 14,
+                "pct": 17.7
+              },
+              "10_to_20": {
+                "n": 10,
+                "pct": 12.7
+              },
+              "over_20": {
+                "n": 38,
+                "pct": 48.1
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 4,
+          "majority_only_failures": 2
+        }
+      }
+    }
+  },
+  "paired_version_comparison": {
+    "comparison": "brooklyn_v1 minus brooklyn_v4",
+    "win_difference_pp": 4.0,
+    "ci95_seed_cluster_pp": [
+      -3.5,
+      12.5
+    ]
+  }
+}

@@ -50,6 +50,10 @@ Rules and values follow §11 of the repository's FFB PDF.
   partner with non-master points; take with a safe winner or the weakest
   current winner when overtaking remains possible. TA still requires climbing.
 
+The [fresh direct comparison](../../benchmarks/2026-10-31-partner-support.md)
+uses 800 games after the suited support deduction, on seeds 48000–48049.
+It reports V4 at 49.5% wins and 65.9% SA success; the earlier favourable
+SA sample does not establish that the SA policy is reliable on new deals.
 The [SA before/after comparison](../../benchmarks/2026-10-30-sa-bidding.md)
 uses 800 games per policy and includes the follow-up purge play in both
 policies. The [older 800-game snapshot](../../benchmarks/2026-10-29-sa-ta.md)
