@@ -220,6 +220,18 @@ def _seat_key(raw):
     return "board"
 
 
+def _client_token(data) -> str | None:
+    """Jeton d'onglet envoyé par le client pour reprendre sa place à la reconnexion.
+
+    Il identifie la même session d'un onglet à l'autre rechargement, ce que le
+    prénom ne fait pas (un homonyme ne doit pas voler la place) et ce que le
+    sid ne fait pas (l'ancien sid peut être encore vivant côté serveur alors
+    que le client est déjà revenu).
+    """
+    token = ((data or {}).get("token") or "").strip()[:64]
+    return token or None
+
+
 def _room_has_human(code: str) -> bool:
     """Vrai si au moins une connection humaine pointe encore vers ce salon.
 
@@ -320,13 +332,12 @@ def on_join_lobby(data):
         sid_info[request.sid] = {"code": room.code, "name": name}
     room.touch()
 
-    # Reconnexion : un siège porte déjà ce nom mais est actuellement sans connexion.
-    with room.lock:
-        if room.seat_of_sid(request.sid) is None:
-            for seat in room.seats.values():
-                if seat.name == name and seat.sid is None:
-                    seat.sid = request.sid
-                    break
+    # Reconnexion : le jeton d'onglet reprend le siège même si l'ancienne
+    # connexion n'est pas encore expirée ; sans jeton, le prénom ne suffit
+    # que si le siège est libre.
+    token = _client_token(data)
+    if room.seat_of_sid(request.sid) is None:
+        room.reclaim_seat(request.sid, name, token)
 
     # Sans siège, on est spectateur : on suit le salon et la partie sans main.
     with room.lock:
@@ -352,7 +363,7 @@ def on_take_seat(data):
     name = info["name"] if info else "Joueur"
     seat_key = _seat_key((data or {}).get("seat"))
 
-    ok = room.take_seat(seat_key, request.sid, name)
+    ok = room.take_seat(seat_key, request.sid, name, token=_client_token(data))
     if not ok:
         message = ("Les sièges sont verrouillés pendant la partie."
                    if room.game_session and not room.game_session.finished

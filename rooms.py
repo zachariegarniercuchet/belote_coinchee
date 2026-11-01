@@ -48,11 +48,16 @@ CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 
 class Seat:
-    __slots__ = ("sid", "name")
+    __slots__ = ("sid", "name", "token")
 
-    def __init__(self, sid: str | None = None, name: str | None = None):
+    def __init__(self, sid: str | None = None, name: str | None = None,
+                 token: str | None = None):
         self.sid = sid
         self.name = name
+        # Jeton d'onglet du joueur qui occupe la place. Il survit à une
+        # suspension (iOS met Safari en veille sans fermer la WebSocket) et à
+        # un rechargement : voir Room.reclaim_seat.
+        self.token = token
 
     @property
     def occupied(self) -> bool:
@@ -162,6 +167,9 @@ class Room:
             sid, name = slot.sid, slot.name
             slot.sid = None
             slot.name = None
+            # Le siège est abandonné : son jeton ne doit plus permettre de le
+            # reprendre (le joueur a été viré par son temps total épuisé).
+            slot.token = None
             if is_valid_bot(bot_id):
                 self.bot_choices[seat] = bot_id
             if sid is not None:
@@ -258,16 +266,22 @@ class Room:
                 "game_over": self.game_session is not None and self.game_session.finished,
             }
 
-    def take_seat(self, seat_key, sid: str, name: str) -> bool:
+    def take_seat(self, seat_key, sid: str, name: str, token: str | None = None) -> bool:
         with self.lock:
             seat = self.seats.get(seat_key)
             if seat is None:
                 return False
+            # Même onglet (jeton identique) : c'est bien le même joueur qui se
+            # rasseoit, même si son ancien sid est encore attaché au siège
+            # (déconnexion pas encore détectée) ou si son prénom a changé.
+            same_session = bool(token) and seat.token == token
             # Un homonyme connecté n'est pas le propriétaire du siège.
             # Un siège déconnecté reste réservé à son nom pour la reconnexion.
-            if seat.occupied and seat.sid != sid and (seat.sid is not None or seat.name != name):
+            if (seat.occupied and seat.sid != sid and not same_session
+                    and (seat.sid is not None or seat.name != name)):
                 return False
             if (self.game_session and not self.game_session.finished
+                    and not same_session
                     and (not seat.occupied or seat.name != name)):
                 return False
             # Vérifier la destination AVANT de libérer l'ancien siège. Le verrou
@@ -276,9 +290,36 @@ class Room:
                 if s.sid == sid:
                     s.sid = None
                     s.name = None
+                    s.token = None
             seat.sid = sid
             seat.name = name
+            if token:
+                seat.token = token
             return True
+
+    def reclaim_seat(self, sid: str, name: str, token: str | None = None) -> bool:
+        """Reprend le siège d'un joueur qui revient dans le salon.
+
+        Priorité au jeton d'onglet : il désigne la même session même quand
+        l'ancien sid est toujours attaché au siège, car la déconnexion n'est
+        pas encore détectée (Safari en veille sur iOS ne ferme pas la
+        WebSocket). Sans jeton, on retombe sur le prénom, mais uniquement si le
+        siège est libre : on ne prend jamais la place d'un homonyme connecté.
+        """
+        with self.lock:
+            if self.seat_of_sid(sid) is not None:
+                return False
+            if token:
+                for seat in self.seats.values():
+                    if seat.token and seat.token == token:
+                        seat.sid = sid
+                        seat.name = name
+                        return True
+            for seat in self.seats.values():
+                if seat.name == name and seat.sid is None:
+                    seat.sid = sid
+                    return True
+            return False
 
     def rebind_sid(self, seat_key, sid: str) -> None:
         """Reconnexion : on retrouve le même siège via le nom, on met juste à jour le sid."""
@@ -293,6 +334,8 @@ class Room:
             if seat is not None:
                 seat.sid = None
                 seat.name = None
+                # Départ volontaire : le jeton ne doit plus reprendre ce siège.
+                seat.token = None
 
     def seat_of_sid(self, sid: str):
         with self.lock:

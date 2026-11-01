@@ -142,6 +142,70 @@ class LobbyTests(unittest.TestCase):
                     if client.is_connected():
                         client.disconnect()
 
+    def test_stale_seat_is_reclaimed_by_session_token(self):
+        """Un siège dont l'ancien sid n'est pas encore expiré est repris au jeton.
+
+        iOS met Safari en veille sans fermer la WebSocket : le serveur détecte
+        la déconnexion avec retard. Le joueur revient donc avec un nouveau sid
+        alors que le siège porte encore l'ancien, et la reprise par prénom
+        échoue. Sans jeton on reste spectateur (aucun homonyme ne doit voler la
+        place) ; avec le jeton de l'onglet le siège est repris, et la
+        déconnexion tardive de l'ancien sid ne doit pas le libérer.
+        """
+        with patch.object(server, "rooms", RoomManager()), patch.object(server, "sid_info", {}):
+            clients = []
+
+            def connect(name, code=None, token=None):
+                client = server.socketio.test_client(server.app)
+                clients.append(client)
+                payload = {"name": name}
+                if code:
+                    payload["code"] = code
+                if token:
+                    payload["token"] = token
+                client.emit("join_lobby" if code else "create_room", payload)
+                return client
+
+            def your_seat(client):
+                states = [message["args"][0] for message in client.get_received()
+                          if message["name"] in ("lobby_joined", "lobby_update")]
+                return states[-1]["your_seat"] if states else "aucun état"
+
+            try:
+                host = connect("Alice")
+                code = [message["args"][0] for message in host.get_received()
+                        if message["name"] == "room_created"][-1]["code"]
+                room = server.rooms.get(code)
+
+                host.emit("take_seat", {"code": code, "seat": 0, "token": "jeton-A"})
+                self.assertEqual(your_seat(host), 0)
+                self.assertEqual(room.seats[0].token, "jeton-A")
+
+                # L'ancienne connexion reste "vivante" : on ne la déconnecte pas.
+                ancien_sid = room.seats[0].sid
+                self.assertIsNotNone(ancien_sid)
+
+                # Sans jeton : le siège est encore tenu, on devient spectateur.
+                sans_jeton = connect("Alice", code)
+                self.assertIsNone(your_seat(sans_jeton))
+                self.assertEqual(room.seats[0].sid, ancien_sid)
+
+                # Avec le jeton du même onglet : le siège est repris.
+                avec_jeton = connect("Alice", code, token="jeton-A")
+                self.assertEqual(your_seat(avec_jeton), 0)
+                nouveau_sid = room.seats[0].sid
+                self.assertNotEqual(nouveau_sid, ancien_sid)
+                self.assertEqual(room.seats[0].name, "Alice")
+
+                # La déconnexion tardive de l'ancien sid ne libère pas le siège.
+                host.disconnect()
+                self.assertEqual(room.seats[0].sid, nouveau_sid)
+                self.assertTrue(room.seats[0].occupied)
+            finally:
+                for client in clients:
+                    if client.is_connected():
+                        client.disconnect()
+
 
 if __name__ == "__main__":
     unittest.main()
