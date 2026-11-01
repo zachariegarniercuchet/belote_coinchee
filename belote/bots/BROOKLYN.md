@@ -1,7 +1,7 @@
 # Brooklyn v1 — David
 
-Rule-based card play, with Spark's existing bidding policy. No hidden hands,
-Monte Carlo search or changes to the existing bots/default bot.
+Rule-based card play, with Spark's existing bidding policy. No hidden hands
+or Monte Carlo search; the default bot selection is retained.
 
 All players now receive actual public belote/rebelote announcements before
 the next card choice. The first locates the unplayed king/queen mate; the
@@ -59,7 +59,12 @@ Rules and values follow §11 of the repository's FFB PDF.
   partner with non-master points; take with a safe winner or the weakest
   current winner when overtaking remains possible. TA still requires climbing.
 
-The [fresh direct comparison](../../benchmarks/2026-10-31-partner-support.md)
+The [frozen-contract card comparison](../../benchmarks/2026-11-01-cardplay.md)
+replays V1/V3/V4 on the same 500 distributions and public auctions, after
+the shared public-belote information fix and restoration of V4's return to
+partner's opening suit. V4 makes 86.47% of the attacking suited reference
+contracts versus V1's 83.35%; these are duplicate-deal results, not game wins.
+The [earlier fresh direct comparison](../../benchmarks/2026-10-31-partner-support.md)
 uses 800 games after the suited support deduction, on seeds 48000–48049.
 It reports V4 at 49.5% wins and 65.9% SA success; the earlier favourable
 SA sample does not establish that the SA policy is reliable on new deals.
@@ -190,8 +195,9 @@ When following a trump lead while attacking, take the strongest legal winner. Wh
 cutting/overcutting a side suit in attack, keep the smallest sufficient legal
 trump. Do not apply the following rule to leads: lead J first, a master next,
 otherwise small (do not sacrifice 9 under an unseen J if a lower trump exists).
-Defence remains unchanged. V1/v2/v3 are byte-for-byte identical to the
-published runtime modules; their metadata and default selection are retained.
+Defence remains unchanged between the Brooklyn versions. Their versioned
+trump-play rules remain distinct; shared public-information changes are
+documented above. Benchmark results always belong to their recorded revision.
 
 The possible context-sensitive defensive-cut version previously called v4
 is now the deferred v5 TODO in AGENTS.md. It is NOT implemented or selectable.

@@ -187,6 +187,18 @@ def summarize(records):
     return result
 
 
+def write_result(path, output):
+    """Keep full traces in standard JSON without megabytes of indentation."""
+    metadata = {k: v for k, v in output.items() if k != 'records'}
+    records = output['records']
+    with path.open('w', encoding='utf-8', newline='\n') as stream:
+        stream.write(json.dumps(metadata, ensure_ascii=True, indent=2)[:-1].rstrip() + ',\n  "records": [\n')
+        for i, row in enumerate(records):
+            stream.write('    ' + json.dumps(row, ensure_ascii=True, separators=(',', ':')))
+            stream.write(',\n' if i + 1 < len(records) else '\n')
+        stream.write('  ]\n}\n')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--seeds', type=int, default=500)
@@ -224,7 +236,7 @@ def main():
               'elapsed_s': round(time.monotonic() - start, 2),
               'summary': summarize(records), 'records': records}
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(output, ensure_ascii=True, indent=2) + '\n', encoding='utf-8')
+    write_result(args.output, output)
     print(json.dumps(output['summary']), flush=True)
 
 

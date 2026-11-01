@@ -1,0 +1,550 @@
+{
+  "revision": "c7be4ffc262cd1db473d47e19c5c019e0e22a1d1",
+  "seeds": 500,
+  "primary": {
+    "n": 1574,
+    "versions": {
+      "brooklyn_v1": {
+        "made": 1312,
+        "mean_card_points": 114.43265565438374,
+        "mean_earned_points": 136.06543837357052,
+        "mean_net_awarded": 137.2617534942821
+      },
+      "brooklyn_v3": {
+        "made": 1335,
+        "mean_card_points": 114.89326556543837,
+        "mean_earned_points": 136.89453621346888,
+        "mean_net_awarded": 143.37992376111816
+      },
+      "brooklyn_v4": {
+        "made": 1361,
+        "mean_card_points": 115.97903430749682,
+        "mean_earned_points": 138.64104193138502,
+        "mean_net_awarded": 152.68106734434562
+      }
+    },
+    "comparisons": {
+      "brooklyn_v3_minus_brooklyn_v1": {
+        "card_delta": 0.4606099110546379,
+        "earned_delta": 0.8290978398983482,
+        "net_awarded_delta": 6.118170266836087,
+        "made_delta_pp": 1.4612452350698857,
+        "saved": 54,
+        "lost": 31,
+        "better": 149,
+        "equal": 1312,
+        "worse": 113,
+        "ci95": {
+          "card_delta": [
+            -0.16,
+            1.129
+          ],
+          "earned_delta": [
+            -0.294,
+            2.04
+          ],
+          "net_awarded_delta": [
+            -1.062,
+            13.473
+          ],
+          "made_delta_pp": [
+            -0.065,
+            3.088
+          ]
+        }
+      },
+      "brooklyn_v4_minus_brooklyn_v1": {
+        "card_delta": 1.5463786531130876,
+        "earned_delta": 2.5756035578144854,
+        "net_awarded_delta": 15.419313850063533,
+        "made_delta_pp": 3.1130876747141043,
+        "saved": 85,
+        "lost": 36,
+        "better": 273,
+        "equal": 1123,
+        "worse": 178,
+        "ci95": {
+          "card_delta": [
+            0.754,
+            2.372
+          ],
+          "earned_delta": [
+            0.947,
+            4.374
+          ],
+          "net_awarded_delta": [
+            6.584,
+            24.085
+          ],
+          "made_delta_pp": [
+            1.199,
+            5.006
+          ]
+        }
+      },
+      "brooklyn_v4_minus_brooklyn_v3": {
+        "card_delta": 1.0857687420584499,
+        "earned_delta": 1.7465057179161372,
+        "net_awarded_delta": 9.301143583227446,
+        "made_delta_pp": 1.6518424396442184,
+        "saved": 37,
+        "lost": 11,
+        "better": 149,
+        "equal": 1342,
+        "worse": 83,
+        "ci95": {
+          "card_delta": [
+            0.557,
+            1.63
+          ],
+          "earned_delta": [
+            0.521,
+            3.03
+          ],
+          "net_awarded_delta": [
+            4.162,
+            14.634
+          ],
+          "made_delta_pp": [
+            0.556,
+            2.792
+          ]
+        }
+      }
+    }
+  },
+  "strata": {
+    "reference": {
+      "brooklyn_v1": {
+        "n": 856,
+        "versions": {
+          "brooklyn_v1": {
+            "made": 699,
+            "mean_card_points": 114.04906542056075,
+            "mean_earned_points": 134.48130841121494,
+            "mean_net_awarded": 126.88084112149532
+          },
+          "brooklyn_v3": {
+            "made": 715,
+            "mean_card_points": 114.49766355140187,
+            "mean_earned_points": 135.31542056074767,
+            "mean_net_awarded": 134.60280373831776
+          },
+          "brooklyn_v4": {
+            "made": 728,
+            "mean_card_points": 115.46144859813084,
+            "mean_earned_points": 137.2021028037383,
+            "mean_net_awarded": 143.76168224299064
+          }
+        },
+        "comparisons": {
+          "brooklyn_v3_minus_brooklyn_v1": {
+            "card_delta": 0.4485981308411215,
+            "earned_delta": 0.8341121495327103,
+            "net_awarded_delta": 7.72196261682243,
+            "made_delta_pp": 1.8691588785046727,
+            "saved": 30,
+            "lost": 14,
+            "better": 77,
+            "equal": 717,
+            "worse": 62
+          },
+          "brooklyn_v4_minus_brooklyn_v1": {
+            "card_delta": 1.4123831775700935,
+            "earned_delta": 2.7207943925233646,
+            "net_awarded_delta": 16.880841121495326,
+            "made_delta_pp": 3.387850467289719,
+            "saved": 47,
+            "lost": 18,
+            "better": 146,
+            "equal": 612,
+            "worse": 98
+          },
+          "brooklyn_v4_minus_brooklyn_v3": {
+            "card_delta": 0.9637850467289719,
+            "earned_delta": 1.8866822429906542,
+            "net_awarded_delta": 9.158878504672897,
+            "made_delta_pp": 1.5186915887850467,
+            "saved": 19,
+            "lost": 6,
+            "better": 80,
+            "equal": 730,
+            "worse": 46
+          }
+        }
+      },
+      "brooklyn_v4": {
+        "n": 718,
+        "versions": {
+          "brooklyn_v1": {
+            "made": 613,
+            "mean_card_points": 114.8899721448468,
+            "mean_earned_points": 137.9540389972145,
+            "mean_net_awarded": 149.63788300835654
+          },
+          "brooklyn_v3": {
+            "made": 620,
+            "mean_card_points": 115.36490250696379,
+            "mean_earned_points": 138.77715877437325,
+            "mean_net_awarded": 153.84401114206128
+          },
+          "brooklyn_v4": {
+            "made": 633,
+            "mean_card_points": 116.59610027855153,
+            "mean_earned_points": 140.35654596100278,
+            "mean_net_awarded": 163.31476323119776
+          }
+        },
+        "comparisons": {
+          "brooklyn_v3_minus_brooklyn_v1": {
+            "card_delta": 0.47493036211699163,
+            "earned_delta": 0.8231197771587744,
+            "net_awarded_delta": 4.206128133704736,
+            "made_delta_pp": 0.9749303621169917,
+            "saved": 24,
+            "lost": 17,
+            "better": 72,
+            "equal": 595,
+            "worse": 51
+          },
+          "brooklyn_v4_minus_brooklyn_v1": {
+            "card_delta": 1.7061281337047354,
+            "earned_delta": 2.402506963788301,
+            "net_awarded_delta": 13.676880222841225,
+            "made_delta_pp": 2.785515320334262,
+            "saved": 38,
+            "lost": 18,
+            "better": 127,
+            "equal": 511,
+            "worse": 80
+          },
+          "brooklyn_v4_minus_brooklyn_v3": {
+            "card_delta": 1.2311977715877438,
+            "earned_delta": 1.5793871866295264,
+            "net_awarded_delta": 9.470752089136491,
+            "made_delta_pp": 1.8105849582172702,
+            "saved": 18,
+            "lost": 5,
+            "better": 69,
+            "equal": 612,
+            "worse": 37
+          }
+        }
+      }
+    },
+    "opponent": {
+      "spark_v2": {
+        "n": 787,
+        "versions": {
+          "brooklyn_v1": {
+            "made": 647,
+            "mean_card_points": 114.05082592121983,
+            "mean_earned_points": 136.1982210927573,
+            "mean_net_awarded": 132.79542566709023
+          },
+          "brooklyn_v3": {
+            "made": 658,
+            "mean_card_points": 114.39771283354511,
+            "mean_earned_points": 136.7992376111817,
+            "mean_net_awarded": 138.20838627700127
+          },
+          "brooklyn_v4": {
+            "made": 679,
+            "mean_card_points": 115.73570520965693,
+            "mean_earned_points": 138.49301143583227,
+            "mean_net_awarded": 151.67725540025413
+          }
+        },
+        "comparisons": {
+          "brooklyn_v3_minus_brooklyn_v1": {
+            "card_delta": 0.3468869123252859,
+            "earned_delta": 0.6010165184243964,
+            "net_awarded_delta": 5.412960609911055,
+            "made_delta_pp": 1.3977128335451081,
+            "saved": 25,
+            "lost": 14,
+            "better": 78,
+            "equal": 655,
+            "worse": 54
+          },
+          "brooklyn_v4_minus_brooklyn_v1": {
+            "card_delta": 1.6848792884371029,
+            "earned_delta": 2.2947903430749683,
+            "net_awarded_delta": 18.881829733163915,
+            "made_delta_pp": 4.066073697585769,
+            "saved": 46,
+            "lost": 14,
+            "better": 140,
+            "equal": 561,
+            "worse": 86
+          },
+          "brooklyn_v4_minus_brooklyn_v3": {
+            "card_delta": 1.337992376111817,
+            "earned_delta": 1.6937738246505718,
+            "net_awarded_delta": 13.468869123252858,
+            "made_delta_pp": 2.6683608640406606,
+            "saved": 24,
+            "lost": 3,
+            "better": 75,
+            "equal": 671,
+            "worse": 41
+          }
+        }
+      },
+      "spark_v3": {
+        "n": 787,
+        "versions": {
+          "brooklyn_v1": {
+            "made": 665,
+            "mean_card_points": 114.81448538754765,
+            "mean_earned_points": 135.93265565438372,
+            "mean_net_awarded": 141.72808132147395
+          },
+          "brooklyn_v3": {
+            "made": 677,
+            "mean_card_points": 115.38881829733164,
+            "mean_earned_points": 136.98983481575604,
+            "mean_net_awarded": 148.55146124523506
+          },
+          "brooklyn_v4": {
+            "made": 682,
+            "mean_card_points": 116.22236340533672,
+            "mean_earned_points": 138.78907242693774,
+            "mean_net_awarded": 153.68487928843712
+          }
+        },
+        "comparisons": {
+          "brooklyn_v3_minus_brooklyn_v1": {
+            "card_delta": 0.5743329097839899,
+            "earned_delta": 1.0571791613722998,
+            "net_awarded_delta": 6.823379923761118,
+            "made_delta_pp": 1.5247776365946633,
+            "saved": 29,
+            "lost": 17,
+            "better": 71,
+            "equal": 657,
+            "worse": 59
+          },
+          "brooklyn_v4_minus_brooklyn_v1": {
+            "card_delta": 1.4078780177890724,
+            "earned_delta": 2.8564167725540024,
+            "net_awarded_delta": 11.956797966963151,
+            "made_delta_pp": 2.1601016518424396,
+            "saved": 39,
+            "lost": 22,
+            "better": 133,
+            "equal": 562,
+            "worse": 92
+          },
+          "brooklyn_v4_minus_brooklyn_v3": {
+            "card_delta": 0.8335451080050826,
+            "earned_delta": 1.7992376111817028,
+            "net_awarded_delta": 5.133418043202033,
+            "made_delta_pp": 0.6353240152477764,
+            "saved": 13,
+            "lost": 8,
+            "better": 74,
+            "equal": 671,
+            "worse": 42
+          }
+        }
+      }
+    }
+  },
+  "controls": {
+    "defense_suit": 192,
+    "TOUT_ATOUT": 16,
+    "SANS_ATOUT": 22
+  },
+  "first_changes_vs_v1": {
+    "brooklyn_v1": {},
+    "brooklyn_v3": {
+      "last_trump_lead": 288
+    },
+    "brooklyn_v4": {
+      "winning_requested_trump": 521,
+      "last_trump_lead": 206
+    }
+  },
+  "first_follow_difference_position": {
+    "2": {
+      "n": 100,
+      "versions": {
+        "brooklyn_v1": {
+          "made": 78,
+          "mean_card_points": 114.52,
+          "mean_earned_points": 130.02,
+          "mean_net_awarded": 105.6
+        },
+        "brooklyn_v3": {
+          "made": 76,
+          "mean_card_points": 113.51,
+          "mean_earned_points": 129.31,
+          "mean_net_awarded": 95.7
+        },
+        "brooklyn_v4": {
+          "made": 87,
+          "mean_card_points": 117.31,
+          "mean_earned_points": 135.11,
+          "mean_net_awarded": 146.8
+        }
+      },
+      "comparisons": {
+        "brooklyn_v3_minus_brooklyn_v1": {
+          "card_delta": -1.01,
+          "earned_delta": -0.71,
+          "net_awarded_delta": -9.9,
+          "made_delta_pp": -2.0,
+          "saved": 4,
+          "lost": 6,
+          "better": 9,
+          "equal": 80,
+          "worse": 11
+        },
+        "brooklyn_v4_minus_brooklyn_v1": {
+          "card_delta": 2.79,
+          "earned_delta": 5.09,
+          "net_awarded_delta": 41.2,
+          "made_delta_pp": 9.0,
+          "saved": 15,
+          "lost": 6,
+          "better": 37,
+          "equal": 43,
+          "worse": 20
+        },
+        "brooklyn_v4_minus_brooklyn_v3": {
+          "card_delta": 3.8,
+          "earned_delta": 5.8,
+          "net_awarded_delta": 51.1,
+          "made_delta_pp": 11.0,
+          "saved": 14,
+          "lost": 3,
+          "better": 38,
+          "equal": 47,
+          "worse": 15
+        }
+      },
+      "unique_distributions": 57
+    },
+    "3": {
+      "n": 384,
+      "versions": {
+        "brooklyn_v1": {
+          "made": 331,
+          "mean_card_points": 118.41145833333333,
+          "mean_earned_points": 141.11979166666666,
+          "mean_net_awarded": 159.24479166666666
+        },
+        "brooklyn_v3": {
+          "made": 340,
+          "mean_card_points": 119.55989583333333,
+          "mean_earned_points": 144.22135416666666,
+          "mean_net_awarded": 171.11979166666666
+        },
+        "brooklyn_v4": {
+          "made": 356,
+          "mean_card_points": 123.11458333333333,
+          "mean_earned_points": 149.96354166666666,
+          "mean_net_awarded": 196.82291666666666
+        }
+      },
+      "comparisons": {
+        "brooklyn_v3_minus_brooklyn_v1": {
+          "card_delta": 1.1484375,
+          "earned_delta": 3.1015625,
+          "net_awarded_delta": 11.875,
+          "made_delta_pp": 2.34375,
+          "saved": 9,
+          "lost": 0,
+          "better": 34,
+          "equal": 339,
+          "worse": 11
+        },
+        "brooklyn_v4_minus_brooklyn_v1": {
+          "card_delta": 4.703125,
+          "earned_delta": 8.84375,
+          "net_awarded_delta": 37.578125,
+          "made_delta_pp": 6.510416666666667,
+          "saved": 30,
+          "lost": 5,
+          "better": 130,
+          "equal": 189,
+          "worse": 65
+        },
+        "brooklyn_v4_minus_brooklyn_v3": {
+          "card_delta": 3.5546875,
+          "earned_delta": 5.7421875,
+          "net_awarded_delta": 25.703125,
+          "made_delta_pp": 4.166666666666666,
+          "saved": 23,
+          "lost": 7,
+          "better": 110,
+          "equal": 210,
+          "worse": 64
+        }
+      },
+      "unique_distributions": 147
+    },
+    "4": {
+      "n": 37,
+      "versions": {
+        "brooklyn_v1": {
+          "made": 28,
+          "mean_card_points": 110.13513513513513,
+          "mean_earned_points": 123.37837837837837,
+          "mean_net_awarded": 91.89189189189189
+        },
+        "brooklyn_v3": {
+          "made": 28,
+          "mean_card_points": 108.78378378378379,
+          "mean_earned_points": 123.10810810810811,
+          "mean_net_awarded": 87.02702702702703
+        },
+        "brooklyn_v4": {
+          "made": 27,
+          "mean_card_points": 107.8108108108108,
+          "mean_earned_points": 122.13513513513513,
+          "mean_net_awarded": 77.83783783783784
+        }
+      },
+      "comparisons": {
+        "brooklyn_v3_minus_brooklyn_v1": {
+          "card_delta": -1.3513513513513513,
+          "earned_delta": -0.2702702702702703,
+          "net_awarded_delta": -4.864864864864865,
+          "made_delta_pp": 0,
+          "saved": 3,
+          "lost": 3,
+          "better": 4,
+          "equal": 29,
+          "worse": 4
+        },
+        "brooklyn_v4_minus_brooklyn_v1": {
+          "card_delta": -2.324324324324324,
+          "earned_delta": -1.2432432432432432,
+          "net_awarded_delta": -14.054054054054054,
+          "made_delta_pp": -2.7027027027027026,
+          "saved": 2,
+          "lost": 3,
+          "better": 4,
+          "equal": 27,
+          "worse": 6
+        },
+        "brooklyn_v4_minus_brooklyn_v3": {
+          "card_delta": -0.972972972972973,
+          "earned_delta": -0.972972972972973,
+          "net_awarded_delta": -9.18918918918919,
+          "made_delta_pp": -2.7027027027027026,
+          "saved": 0,
+          "lost": 1,
+          "better": 1,
+          "equal": 32,
+          "worse": 4
+        }
+      },
+      "unique_distributions": 25
+    }
+  },
+  "reference_conditions": 4000,
+  "physical_replay_triples": 1674
+}

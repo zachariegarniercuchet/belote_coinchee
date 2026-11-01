@@ -98,9 +98,15 @@ weights. Uncertainty must cluster whole seeds, including both references,
 opponents and team swaps. Identical frozen histories under the two reference
 policies reuse their exact seeded replay; records mark that reuse and are
 not treated as independent observations.
+Full traces remain in standard JSON, with one compact line per reference
+condition to keep result artifacts small without removing data.
 
 ## Saved comparisons
 
+- [Card play with frozen contracts](2026-11-01-cardplay.md): 500 distributions,
+  1,574 attacking suited reference conditions, v1/v3/v4 replays and 230
+  identical defense/SA/TA controls at `c7be4ff`. Includes the public belote
+  information fix and restored V4 return to partner's opening suit.
 - [Fresh Brooklyn vs de Belote comparison](2026-10-31-partner-support.md):
   800 games on seeds 48000–48049 at `50e18f9`, after the no-trump suited
   support deduction, with direct opponent results and per-mode calibration.
