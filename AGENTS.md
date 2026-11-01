@@ -88,6 +88,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
 | `tests/test_brooklyn.py` | Stratégie de David, enchères de partenariat v2 et parties légales identiques console/web. |
 | `benchmarks/bots.py`, `benchmarks/README.md` | Comparaison reproductible des bots via le moteur web, calibration des contrats et diagnostic des entames à l'atout, sans toucher au serveur actif. |
+| `benchmarks/cardplay.py` | Donnes en dupliqué : mêmes cartes, historique d'enchères, contrat et entame ; comparaison du jeu v1/v3/v4, contrôles de défense et SA/TA. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
 | `tests/test_spectators.py` | Salon public : annuaire, spectateur sans main, reprise d'un siège de bot entre deux donnes, témoin privé. |
 | `tests/test_time_control.py` | Échiquier de temps du salon : réglage partagé et verrouillé au démarrage, coup forcé par le bot de secours, joueur viré quand son temps total est épuisé. |

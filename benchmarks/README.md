@@ -66,6 +66,39 @@ do not guarantee identical hands throughout games. Trump-leading rates depend
 on the contracts won and are NOT causal measurements of that strategy's value.
 Do not tune on results and present the same sample as independent validation.
 
+## Card play at the same contract
+
+```powershell
+.\.venv\Scripts\python.exe -B benchmarks/cardplay.py --seeds 500 --seed 50000 --control-seeds 50 --workers 4 --output cardplay.json
+```
+
+This compares duplicate single deals, not complete games to a target score.
+For each seed, generate the same deck/dealer and use Brooklyn v1 and v4 as
+two reference bidding policies against de Belote v2/v3, on both teams.
+Those eight reference conditions are chosen before the compared card play.
+Force the whole legal public auction, including bidder, suit, level and
+coinche, and replay each attacking suited condition with Brooklyn v1, v3
+and v4. V2 has exactly V1's card-play methods and is not duplicated.
+
+Every bot still observes the ordinary bidding calls with its own hand and
+the frozen public history. Proposed bids are ignored; normal contract,
+trick and public belote notifications are delivered by the web engine.
+Assertions verify equal initial hands, auction, contract and opening lead.
+No hidden hand is passed to an opponent or candidate bot.
+
+On the first 50 seeds, also replay defensive, SA and TA conditions as
+controls: those policies are shared and their complete plays/scores must
+match exactly. Passed-out auctions and unplayed control conditions remain
+listed in the raw population. All capots and coinches are retained.
+
+Results report earned card/bonus points, awarded score differences and
+contracts made/saved/lost at the same contract. They are not full-game win
+rates. Keep both reference-auction strata visible; pool only with explicit
+weights. Uncertainty must cluster whole seeds, including both references,
+opponents and team swaps. Identical frozen histories under the two reference
+policies reuse their exact seeded replay; records mark that reuse and are
+not treated as independent observations.
+
 ## Saved comparisons
 
 - [Fresh Brooklyn vs de Belote comparison](2026-10-31-partner-support.md):
