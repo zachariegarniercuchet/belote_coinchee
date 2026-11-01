@@ -181,8 +181,10 @@ default selection were not modified; they now receive their missing inputs.
 V4 inherits v3's recoverable-card bidding and public partnership support.
 Before the first trump lead it may lead its singleton to start drawing.
 AFTER a trump round, it keeps its last trump on its own lead when a side suit
-is available, EVEN when partner opened. The partner-return exception must not
-override this. Forced following/cutting/overcutting remains legal and required;
+is available, EXCEPT to return partner's first-announced suit while opponents
+may still hold trump. With no possible enemy trump there is no hunt.
+This restores V3's partner-return exception following David's clarification.
+Forced following/cutting/overcutting remains legal and required;
 the public first-trump marker resets each deal. No late-deal threshold.
 When following a trump lead while attacking, take the strongest legal winner. When
 cutting/overcutting a side suit in attack, keep the smallest sufficient legal

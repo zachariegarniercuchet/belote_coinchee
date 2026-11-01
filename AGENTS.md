@@ -266,9 +266,10 @@ dernier (R avant J si R suffit). La défense reste inchangée. Conserver
 la priorité de charger un partenaire déjà maître quand cela reste légal.
 Dans v4, distinguer le seul atout avant le premier tour d'atout et le dernier
 atout après ce tour : avant, chasser normalement ; après, à l'entame, garder
-le dernier atout si une couleur annexe est jouable. Le fait que le partenaire
-ait ouvert ne doit JAMAIS court-circuiter cette conservation après le premier
-tour. Fourniture, coupe obligatoire et surcoupe restent imposées par les
+le dernier atout si une couleur annexe est jouable, SAUF pour revenir à la
+couleur annoncée en premier par le partenaire tant qu'un adversaire peut
+encore avoir de l'atout. Sans atout adverse possible, ne pas chasser.
+Fourniture, coupe obligatoire et surcoupe restent imposées par les
 cartes légales. Le marqueur est public et réinitialisé à chaque donne.
 Hors atout, pour prendre soi-même : plus gros gagnant en dernière position ; avant cela,
 plus gros gagnant jugé sûr sur informations publiques, sinon plus petit gagnant

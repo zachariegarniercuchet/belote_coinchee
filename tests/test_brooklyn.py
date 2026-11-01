@@ -211,8 +211,8 @@ class BrooklynTests(unittest.TestCase):
                          next(c for c in support_hand if c.suit != Suit.PIQUE and c.rank == Rank.AS)]
             returning = TrickState(leader=2, atout=Suit.PIQUE)
             self.assertEqual(supporter.choose_card(remaining, returning, remaining), remaining[0])
-            # V4 must NOT let "partner opened" override last-trump retention
-            # after drawing has started. Before the first round it returns it.
+            # Return even the last trump to partner's opening while opponents
+            # may still hold trumps, before or after the first trump round.
             revised = BrooklynBotV4(2)
             auction = BiddingState(dealer=1)
             auction.apply(BidAction.enchere(80, Suit.PIQUE))
@@ -227,7 +227,12 @@ class BrooklynTests(unittest.TestCase):
             revised.notify_trick_result(
                 [(0, cards("7_PIQUE")[0]), (1, cards("V_PIQUE")[0]),
                  (2, spent), (3, cards("A_PIQUE")[0])], 1)
+            self.assertEqual(revised.choose_card(remaining, returning, remaining), remaining[0])
+            for enemy in (1, 3):
+                revised.void_suits[enemy].add(Suit.PIQUE)
             self.assertEqual(revised.choose_card(remaining, returning, remaining), remaining[1])
+            for enemy in (1, 3):
+                revised.void_suits[enemy].discard(Suit.PIQUE)
             forced = TrickState(leader=0, atout=Suit.PIQUE,
                                 plays=list(zip([0, 1], cards("7_PIQUE", "8_PIQUE"))))
             self.assertEqual(revised.choose_card(remaining, forced, forced.legal_cards_for(remaining)), remaining[0])
