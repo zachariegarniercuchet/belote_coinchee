@@ -191,7 +191,8 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   `lobby_update`, `state_update`, `public_rooms` et `error_message`.
 - Préserver les identifiants échangés : carte sous la forme `VALET_PIQUE`,
   index d'enchère issu de la liste légale courante, clés de sièges/équipes
-  converties en chaînes dans les objets JSON. Coordonner toute évolution du
+  converties en chaînes dans les objets JSON, jeton d'onglet `token` joint à
+  `join_lobby` et `take_seat`. Coordonner toute évolution du
   protocole entre serveur, sérialisation et interfaces.
 - Pour ajouter un bot, suivre `belote/bots/README.md`, implémenter `Player` et
   passer par `belote.bots.create_bot` / `list_bots`. Conserver les imports
@@ -360,6 +361,21 @@ pas prendre la même place, même avec des prénoms identiques. Chaque état de
 salon est personnalisé avec `your_seat` ; le client attend cette confirmation
 et ne déduit pas son siège du prénom. Pendant la partie, interdire changements
 et départs, mais permettre la reconnexion à son siège réservé.
+
+La reconnexion ne repose ni sur le prénom ni sur le sid seuls : iOS met Safari
+en veille sans fermer la WebSocket, donc le serveur détecte la déconnexion avec
+retard et le joueur revient avec un **nouveau** sid alors que le siège porte
+encore l'ancien. Chaque onglet génère un jeton (`sessionStorage`
+`belote_token`) envoyé dans `join_lobby` et `take_seat` ; `Seat.token` le
+conserve et `Room.reclaim_seat` reprend le siège **même si l'ancien sid est
+encore attaché**, en expulsant la connexion périmée. Sans jeton, la reprise par
+prénom n'a lieu que si le siège est libre : un homonyme ne doit jamais voler la
+place. Effacer le jeton dès qu'un siège est libéré (`leave_seat`,
+`release_seat_to_bot`), sinon il permettrait de reprendre une place abandonnée.
+Le client mémorise aussi code + prénom (`sessionStorage` `belote_room`) et
+rejoint automatiquement au rechargement ; « Quitter le salon » efface cette
+entrée avant de recharger, et un salon disparu retombe sur l'accueil. Les deux
+fichiers `app.js` portent cette logique à l'identique.
 
 Un salon se crée en public ou en privé (public par défaut). Un salon privé
 garde son comportement d'origine : accès par code, aucun spectateur. Un salon
@@ -756,3 +772,36 @@ vérifie deux donnes passées, le donneur suivant, les phases, scores et états 
   `test_room_links.py` (PNG comparé) et par l'inspection de la page servie
   par Render ; un redéploiement est nécessaire pour confirmer en conditions
   réelles.
+
+## Mise à jour du 1er novembre 2026 — reprise du siège après suspension
+
+- Bug constaté sur iPhone : parti de la partie dans WhatsApp puis revenu dans
+  Safari, le joueur était repassé spectateur (« choisis un siège ») et la
+  table restait bloquée sur son siège.
+- Cause : iOS met Safari en veille sans fermer la WebSocket. Le serveur
+  détecte la déconnexion avec retard, donc `join_lobby` retrouvait le siège
+  encore tenu par l'ancien sid, ne reprenait rien (`seat.sid is None`
+  requis) et le joueur devenait spectateur ; `take_seat` refusait aussi, et
+  rien ne réessayait ensuite. `Room.rebind_sid` existait déjà mais n'était
+  jamais appelée.
+- Correctif : jeton d'onglet en `sessionStorage`, joint à `join_lobby` et
+  `take_seat`, conservé dans `Seat.token` ; `Room.reclaim_seat` reprend le
+  siège même avec un ancien sid vivant. Effacé quand le siège est libéré.
+  Code + prénom mémorisés pour reprendre après un rechargement ; « Quitter
+  le salon » les efface.
+- Le bot de secours ne joue toujours qu'à l'expiration du temps réglé :
+  aucun délai de grâce n'a été ajouté, `_wait_for_choice` et
+  `_wait_for_recap` restent sans timeout et une partie sans échiquier de
+  temps attend toujours indéfiniment un joueur parti. Choix explicite de
+  l'utilisateur ; à revoir s'il faut un relais.
+- Tests : `test_lobby.py` (2, dont le nouveau
+  `test_stale_seat_is_reclaimed_by_session_token`), `test_spectators.py`,
+  `test_time_control.py`, `test_autoplay.py`, `test_claim.py`,
+  `test_hand_order.py`, `test_supabase_config.py`, `test_room_links.py` —
+  tous OK ; `node --check` OK sur les deux `app.js`, qui ne divergent que
+  sur les trois écarts documentés du récapitulatif.
+- Vérification navigateur **faite** (10/10, Chromium, port 5075) : siège
+  pris, jeton et salon mémorisés, rechargement qui revient au même siège,
+  second onglet portant le même jeton qui reprend le siège alors que la
+  première connexion est encore vivante, « Quitter le salon » qui retourne
+  à l'accueil en effaçant le salon mais pas le jeton, aucune erreur JS.
