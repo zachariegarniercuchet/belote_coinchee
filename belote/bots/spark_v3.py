@@ -84,13 +84,13 @@ class SparkBotV3(SparkBotV2):
 
     def _deal_hands(self, unknown: list[Card], others: list[int],
                     sizes: dict[int, int],
-                    forbidden: dict[int, set[Suit]]) -> dict[int, list[Card]] | None:
+                    forbidden: dict[int, set[Suit]], fixed) -> dict[int, list[Card]] | None:
         tmp = list(unknown)
         self.rng.shuffle(tmp)
         idx = 0
         deal: dict[int, list[Card]] = {}
         for p in others:
-            deal[p] = tmp[idx:idx + sizes[p]]
+            deal[p] = fixed[p] + tmp[idx:idx + sizes[p]]
             idx += sizes[p]
             if any(c.suit in forbidden.get(p, set()) for c in deal[p]):
                 return None
@@ -107,38 +107,20 @@ class SparkBotV3(SparkBotV2):
 
     def _sample_worlds(self, hand: list[Card], trick_state: TrickState,
                        k: int) -> list[dict[int, list[Card]]]:
-        known: set[Card] = set(hand)
-        for plays, _w in self._past_tricks:
-            for _p, c in plays:
-                known.add(c)
-        for _p, c in trick_state.plays:
-            known.add(c)
-        from ..cards import full_deck
-        unknown = [c for c in full_deck() if c not in known]
-
-        played_count = {p: 0 for p in range(4)}
-        for plays, _w in self._past_tricks:
-            for p, _c in plays:
-                played_count[p] += 1
-        for p, _c in trick_state.plays:
-            played_count[p] += 1
-        sizes = {p: 8 - played_count[p] for p in range(4)}
-        sizes[self.player_id] = len(hand)
-
-        others = [p for p in range(4) if p != self.player_id]
-        voids = {p: set(s) for p, s in self.void_suits.items()}
+        unknown, others, sizes, fixed = self._sampling_information(hand, trick_state)
+        voids = {p: self.void_suits[p] - {c.suit for c in fixed[p]} for p in others}
         worlds = []
         for _ in range(k):
             deal = None
             for _try in range(80):
-                deal = self._deal_hands(unknown, others, sizes, voids)
+                deal = self._deal_hands(unknown, others, sizes, voids, fixed)
                 if deal is not None:
                     break
             if deal is None:  # fallback 1: drop auction minimums
                 saved, self._auction_min = self._auction_min, {}
                 try:
                     for _try in range(40):
-                        deal = self._deal_hands(unknown, others, sizes, voids)
+                        deal = self._deal_hands(unknown, others, sizes, voids, fixed)
                         if deal is not None:
                             break
                 finally:
@@ -149,7 +131,7 @@ class SparkBotV3(SparkBotV2):
                 idx = 0
                 deal = {}
                 for p in others:
-                    deal[p] = tmp[idx:idx + sizes[p]]
+                    deal[p] = fixed[p] + tmp[idx:idx + sizes[p]]
                     idx += sizes[p]
             hands = {self.player_id: list(hand)}
             hands.update({p: list(deal[p]) for p in others})
@@ -324,6 +306,8 @@ class SparkBotV3(SparkBotV2):
                 sh = {p: SparkBotV1(p) for p in range(4)}
                 for s in sh.values():
                     s.notify_contract(self.contract)
+                    for seat, card in self.belote_events:
+                        s.notify_belote(seat, card)
                 for plays, winner in self._past_tricks:
                     for s in sh.values():
                         s.notify_trick_result(list(plays), winner)

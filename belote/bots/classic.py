@@ -53,7 +53,7 @@ class HeuristicBot(Player):
 
     def notify_contract(self, contract) -> None:
         self._reset_donne_state()
-        self.contract = contract
+        super().notify_contract(contract)
         self.is_preneur = team_of(self.player_id) == contract.team
         self.atout = contract.suit
 
@@ -85,6 +85,7 @@ class HeuristicBot(Player):
         return voids
 
     def notify_trick_result(self, plays, winner) -> None:
+        super().notify_trick_result(plays, winner)
         for _, card in plays:
             self.played_by_suit[card.suit].add(card.rank)
         for player, suit in self._infer_voids_from_trick(plays):

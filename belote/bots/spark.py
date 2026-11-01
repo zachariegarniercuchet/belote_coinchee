@@ -53,7 +53,7 @@ class SparkBot(Player):
     def notify_contract(self, contract) -> None:
         saved = self._full_hand
         self._reset_donne_state()
-        self.contract = contract
+        super().notify_contract(contract)
         self.atout = contract.suit
         self.is_preneur = team_of(self.player_id) == contract.team
         self._full_hand = saved
@@ -63,6 +63,7 @@ class SparkBot(Player):
                 self.belote_bonus = 20
 
     def notify_trick_result(self, plays: list[tuple[int, Card]], winner: int) -> None:
+        super().notify_trick_result(plays, winner)
         atout = self.atout
         pts = sum(c.points(atout) for _, c in plays)
         self.team_points[team_of(winner)] += pts
@@ -351,7 +352,9 @@ class SparkBot(Player):
             # preneurs: raw_total (tricks + belote) must reach contract.points.
             # team_points only counts trick points so far; belote (if WE hold
             # K+Q, detected at deal time) and a ~5pt dix-der share are added.
-            have = mine + self.belote_bonus
+            holder = self.public_belotes.get(self.atout)
+            public_bonus = 20 if holder is not None and team_of(holder) == team_of(self.player_id) else 0
+            have = mine + max(self.belote_bonus, public_bonus)
             return (self.contract.points or 0) - have - 5
         return 0
 

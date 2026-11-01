@@ -3,6 +3,15 @@
 Rule-based card play, with Spark's existing bidding policy. No hidden hands,
 Monte Carlo search or changes to the existing bots/default bot.
 
+All players now receive actual public belote/rebelote announcements before
+the next card choice. The first locates the unplayed king/queen mate; the
+second removes it. Hidden unannounced pairs are never supplied. Brooklyn's
+threat assessment uses these owners, and de Belote v2/v3 keep the known card
+in that seat in every sampled world, including relaxed samples. Public bonus
+information is also retained in their playouts. These shared information
+changes are separate from the versioned Brooklyn trump-play rules; older
+benchmarks remain attached to their recorded revision.
+
 ## Sans Atout / Tout Atout
 
 All four Brooklyn versions now also consider SA/TA, without replacing their

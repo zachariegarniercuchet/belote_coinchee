@@ -292,6 +292,7 @@ class NetworkGame(Game):
                                                       for entry in ctx.belote_announcements) else "Belote !",
                         "card_id": card_id(card),
                     })
+                    self.session.notify_players("notify_belote", p, card)
 
                 ctx.waiting_seat = None
                 ctx.waiting_kind = None

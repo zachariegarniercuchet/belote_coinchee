@@ -241,6 +241,38 @@ class BrooklynTests(unittest.TestCase):
             self.assertEqual(bots[0].partner_raises, [])
 
     def test_trump_hunt_then_bank_points_with_public_information(self):
+        # A public first belote locates its unplayed mate, even while the
+        # current trick is unfinished; sampled worlds must keep that fact.
+        hand = cards("A_COEUR", "10_COEUR", "R_COEUR", "D_COEUR", "A_TREFLE", "10_TREFLE", "7_CARREAU", "8_CARREAU")
+        for bot_id in ("spark_v2", "spark_v3"):
+            bot = create_bot(bot_id, 0)
+            bot.notify_donne_start()
+            bot.notify_contract(contract(team=1))
+            self.assertTrue(all(not known for known in bot.known_cards.values()))
+            trick = TrickState(1, Suit.PIQUE,
+                               list(zip((1, 2, 3), cards("R_PIQUE", "10_PIQUE", "7_PIQUE"))))
+            bot.notify_belote(1, cards("R_PIQUE")[0])
+            self.assertEqual(bot.known_card_owner(cards("D_PIQUE")[0]), 1)
+            self.assertEqual(bot._belote_team(), 1)
+            for force_relaxation in (False, True):
+                if force_relaxation:
+                    bot.void_suits = {p: set(Suit) for p in range(4)}
+                for world in bot._sample_worlds(hand, trick, 12):
+                    self.assertEqual([p for p in world if cards("D_PIQUE")[0] in world[p]], [1])
+                    self.assertEqual({p: len(h) for p, h in world.items()}, {0:8, 1:7, 2:7, 3:7})
+                    self.assertEqual(len(set(sum(world.values(), []))), 29)
+            bot.notify_belote(1, cards("D_PIQUE")[0])
+            self.assertTrue(all(not known for known in bot.known_cards.values()))
+            bot.notify_donne_start()
+            self.assertEqual(bot.public_belotes, {})
+            self.assertEqual(bot.belote_events, [])
+        for holder, expected in ((2, False), (1, True)):
+            bot = create_bot("brooklyn_v4", 0)
+            bot.notify_contract(contract())
+            bot.played_by_suit[Suit.PIQUE] = set(Rank) - {Rank.DAME}
+            bot.notify_belote(holder, cards("R_PIQUE")[0])
+            self.assertEqual(bot._opponents_have_trumps(hand, TrickState(0, Suit.PIQUE)), expected)
+
         bot = BrooklynBot(0)
         bot.notify_contract(contract())
         hand = cards("V_PIQUE", "9_PIQUE", "A_PIQUE", "7_PIQUE", "A_COEUR", "R_COEUR", "10_TREFLE", "7_CARREAU")

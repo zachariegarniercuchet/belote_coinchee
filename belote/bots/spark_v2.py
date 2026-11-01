@@ -67,17 +67,13 @@ class SparkBotV2(SparkBotV1):
     # world sampling
     # ------------------------------------------------------------------ #
 
-    def _sample_worlds(self, hand: list[Card], trick_state: TrickState,
-                       k: int) -> list[dict[int, list[Card]]]:
-        atout = self.atout
+    def _sampling_information(self, hand, trick_state):
         known: set[Card] = set(hand)
         for plays, _w in self._past_tricks:
             for _p, c in plays:
                 known.add(c)
         for _p, c in trick_state.plays:
             known.add(c)
-        unknown = [c for c in full_deck() if c not in known]
-
         # current hand sizes of the other seats
         played_count = {p: 0 for p in range(4)}
         for plays, _w in self._past_tricks:
@@ -87,10 +83,21 @@ class SparkBotV2(SparkBotV1):
             played_count[p] += 1
         sizes = {p: 8 - played_count[p] for p in range(4)}
         sizes[self.player_id] = len(hand)
-        assert sum(sizes.values()) == len(unknown) + len(hand), (sizes, len(unknown))
-
         others = [p for p in range(4) if p != self.player_id]
-        voids = self.void_suits
+        fixed = {p: sorted(self.known_cards[p] - known,
+                           key=lambda c: (c.suit.name, c.rank.name)) for p in others}
+        located = {c for cards in fixed.values() for c in cards}
+        unknown = [c for c in full_deck() if c not in known and c not in located]
+        for p in others:
+            sizes[p] -= len(fixed[p])
+            assert sizes[p] >= 0
+        assert sum(sizes[p] for p in others) == len(unknown)
+        return unknown, others, sizes, fixed
+
+    def _sample_worlds(self, hand: list[Card], trick_state: TrickState,
+                       k: int) -> list[dict[int, list[Card]]]:
+        unknown, others, sizes, fixed = self._sampling_information(hand, trick_state)
+        voids = {p: self.void_suits[p] - {c.suit for c in fixed[p]} for p in others}
         worlds = []
         rng = self.rng
         for _ in range(k):
@@ -102,7 +109,7 @@ class SparkBotV2(SparkBotV1):
                 good = True
                 deal: dict[int, list[Card]] = {}
                 for p in others:
-                    deal[p] = tmp[idx:idx + sizes[p]]
+                    deal[p] = fixed[p] + tmp[idx:idx + sizes[p]]
                     idx += sizes[p]
                     if any(c.suit in voids[p] for c in deal[p]):
                         good = False
@@ -117,7 +124,7 @@ class SparkBotV2(SparkBotV1):
                 idx = 0
                 ok = {}
                 for p in others:
-                    ok[p] = tmp[idx:idx + sizes[p]]
+                    ok[p] = fixed[p] + tmp[idx:idx + sizes[p]]
                     idx += sizes[p]
             hands = {self.player_id: list(hand)}
             hands.update({p: list(ok[p]) for p in others})
@@ -129,6 +136,9 @@ class SparkBotV2(SparkBotV1):
     # ------------------------------------------------------------------ #
 
     def _belote_team(self):
+        holder = self.public_belotes.get(self.atout)
+        if holder is not None:
+            return team_of(holder)
         if self._own_initial is not None and self.atout is not None:
             from ..cards import Rank
             ranks = {c.rank for c in self._own_initial if c.suit == self.atout}
@@ -244,6 +254,8 @@ class SparkBotV2(SparkBotV1):
                 sh = {p: SparkBotV1(p) for p in range(4)}
                 for s in sh.values():
                     s.notify_contract(self.contract)
+                    for seat, card in self.belote_events:
+                        s.notify_belote(seat, card)
                 for plays, winner in self._past_tricks:
                     for s in sh.values():
                         s.notify_trick_result(list(plays), winner)

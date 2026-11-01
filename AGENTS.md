@@ -165,6 +165,19 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   pli automatique. Une surcharge doit conserver le contrat dans `self.contract`.
   Pendant les enchères, le contrat provisoire est dans `BiddingState` fourni
   à `choose_bid`. Ces notifications ne transmettent aucune main adverse.
+- `Player.notify_belote(seat, card)` est diffusé aux joueurs et bots de secours
+  dès la pose réelle accompagnée de Belote/Rebelote, avant le joueur suivant.
+  `public_belotes`, `belote_events` et `known_cards` mémorisent uniquement ces
+  faits publics : la première annonce localise l'autre carte de la paire ;
+  la seconde (ou son jeu dans un pli résolu) la retire des cartes restantes.
+  Réinitialiser à chaque donne/contrat. Ne jamais fournir la détection privée
+  des paires à l'acceptation du contrat, ni annoncer les cartes simulées après
+  tablage. SA reste sans belote ; chaque paire TA est indépendante.
+  Brooklyn utilise ces localisations pour les menaces adverses ; les mondes
+  Spark v2/v3 réservent les cartes connues à leur détenteur et ne relâchent
+  JAMAIS ce fait en relâchant une hypothèse d'enchère/coupe franche. Les
+  simulations et ombres reçoivent les mêmes annonces publiques, pas les
+  autres cartes du moteur.
 - Le déroulement d'une donne est présent à la fois dans `belote/game.py` et
   `NetworkGame` dans `game_session.py`. Pour une modification de déroulement,
   vérifier les chemins console et web.

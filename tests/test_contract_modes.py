@@ -14,7 +14,7 @@ from belote.game import Donne
 from belote.scoring import find_belotes, belote_points_by_team, compute_donne_score
 from game_session import GameSession
 from rooms import Room
-from serialize import sorted_hand
+from serialize import card_id, sorted_hand
 
 
 SA, TA = ContractMode.SANS_ATOUT, ContractMode.TOUT_ATOUT
@@ -247,9 +247,24 @@ class ContractModeTests(unittest.TestCase):
                     return bots
                 with self.subTest(mode=mode, bot=bot_id):
                     with patch('belote.game.deal', side_effect=lambda *_: copy.deepcopy(hands)):
-                        console = Donne(players(), dealer=0).play()
+                        console_players = players()
+                        console = Donne(console_players, dealer=0).play()
                     session = GameSession(Room('MODES'), target_score=1000)
                     session.players = session.game.players = players()
+                    for bot in session.players.values():
+                        choose = bot.choose_card
+                        def inspect_public_facts(hand, trick, legal, bot=bot, choose=choose):
+                            announced = {e['suit'] for e in session.ctx.belote_announcements}
+                            expected_known = {p: set() for p in range(4)}
+                            for suit, holder in find_belotes(hands, mode).items():
+                                if suit.name in announced:
+                                    expected_known[holder].update(c for c in session.ctx.hands[holder]
+                                                                 if c.suit == suit and c.rank in (Rank.ROI, Rank.DAME))
+                            # The next player already knows the mate, without
+                            # waiting for the unfinished trick's result.
+                            self.assertEqual(bot.known_cards, expected_known)
+                            return choose(hand, trick, legal)
+                        bot.choose_card = inspect_public_facts
                     session.game.dealer = 0
                     session.sleep = Mock()
                     states = []
@@ -258,6 +273,11 @@ class ContractModeTests(unittest.TestCase):
                         web = session.game.play_one_donne()
                     self.assertEqual(console.tricks, web.tricks)
                     self.assertEqual(console.result, web.result)
+                    public_events = [(e['seat'], e['card_id']) for e in session.ctx.belote_announcements]
+                    for bot in session.players.values():
+                        self.assertEqual([(p, card_id(c)) for p, c in bot.belote_events], public_events)
+                    for bot in console_players.values():
+                        self.assertEqual([(p, card_id(c)) for p, c in bot.belote_events], public_events)
                     self.assertEqual(len(web.tricks), 8)
                     self.assertEqual(sum(web.result.raw_points.values()), 152)
                     expected = {0: 40, 1: 40} if mode is TA else {0: 0, 1: 0}

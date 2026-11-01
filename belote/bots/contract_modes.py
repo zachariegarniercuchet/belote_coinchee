@@ -42,9 +42,15 @@ def choose_mode_card(bot, hand, trick, legal, purge_suits=None):
         for p, c in trick.plays:
             if c.suit != trick.plays[0][1].suit:
                 voids[p].add(trick.plays[0][1].suit)
+        known = set(played.get(best.suit, ()))
+        known.update(c.rank for _, c in trick.plays if c.suit == best.suit)
+        known.update(c.rank for c in hand if c.suit == best.suit)
+        higher = [Card(rank, best.suit) for rank in Rank if rank not in known
+                  and Card(rank, best.suit).strength_index(mode) < best.strength_index(mode)]
         later = [(bot.player_id + n) % 4 for n in range(1, 4 - len(trick.plays))]
-        return master(best) or all(team_of(p) == team_of(bot.player_id)
-                                  or best.suit in voids[p] for p in later)
+        return all(team_of(p) == team_of(bot.player_id) or best.suit in voids[p]
+                   or not any(bot.known_card_owner(card) in (None, p) for card in higher)
+                   for p in later)
 
     def discard(pool):
         return min(pool, key=lambda c: (master(c), c.points(mode), -c.strength_index(mode)))

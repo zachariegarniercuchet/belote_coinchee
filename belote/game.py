@@ -9,7 +9,7 @@ import random
 from dataclasses import dataclass, field
 
 from .bidding import ActionType, BiddingState, Contract
-from .cards import Card, Suit, cut_deck, deal, new_shuffled_deck
+from .cards import Card, Rank, Suit, cut_deck, deal, new_shuffled_deck
 from .claim import Claim, find_claim, play_claim
 from .player import Player
 from .scoring import DonneResult, compute_donne_score, find_belotes, belote_points_by_team, BELOTE_BONUS
@@ -69,6 +69,7 @@ class Donne:
         for pl in self.players.values():
             pl.notify_contract(contract)
         atout = contract.suit
+        belotes = find_belotes(initial_hands, atout)
         leader = (self.dealer - 1) % 4
 
         trick_points = {0: 0, 1: 0}
@@ -100,6 +101,9 @@ class Donne:
                     raise ValueError(f"Le joueur {p} a tenté de jouer une carte illégale: {card}")
                 trick.play(p, card)
                 hands[p].remove(card)
+                if belotes.get(card.suit) == p and card.rank in (Rank.ROI, Rank.DAME):
+                    for player in self.players.values():
+                        player.notify_belote(p, card)
 
             winner = trick.winner()
             last_trick_winner = winner
@@ -114,7 +118,7 @@ class Donne:
                 pl.notify_trick_result(list(trick.plays), winner)
 
         capot_team = 0 if tricks_won_by_team[0] == 8 else (1 if tricks_won_by_team[1] == 8 else None)
-        bonuses = belote_points_by_team(find_belotes(initial_hands, atout))
+        bonuses = belote_points_by_team(belotes)
 
         result = compute_donne_score(
             contract=contract,

@@ -56,6 +56,8 @@ class BrooklynBot(SparkBot):
         voids = {seat: set(suits) for seat, suits in self.void_suits.items()}
         for seat, suit in self._infer_voids(trick.plays):
             voids[seat].add(suit)
+        for seat, cards in self.known_cards.items():
+            voids[seat].difference_update(c.suit for c in cards)
         return voids
 
     def _unknown_ranks(self, suit, hand, trick):
@@ -66,8 +68,10 @@ class BrooklynBot(SparkBot):
         if not self._unknown_ranks(trick.atout, hand, trick):
             return False
         voids = self._known_voids(trick)
-        return any(trick.atout not in voids[seat] for seat in range(4)
-                   if team_of(seat) != team_of(self.player_id))
+        return any(trick.atout not in voids[seat]
+                   and any(self.known_card_owner(Card(rank, trick.atout)) in (None, seat)
+                           for rank in self._unknown_ranks(trick.atout, hand, trick))
+                   for seat in range(4) if team_of(seat) != team_of(self.player_id))
 
     @staticmethod
     def _strength(card, atout):
@@ -91,10 +95,13 @@ class BrooklynBot(SparkBot):
             seat = (self.player_id + offset) % 4
             if team_of(seat) == team_of(self.player_id):
                 continue
-            if best.suit not in voids[seat] and higher:
+            if best.suit not in voids[seat] and any(
+                    self.known_card_owner(Card(rank, best.suit)) in (None, seat) for rank in higher):
                 return False
             if (best.suit != trick.atout and best.suit in voids[seat]
-                    and trick.atout not in voids[seat] and unknown_trumps):
+                    and trick.atout not in voids[seat] and any(
+                        self.known_card_owner(Card(rank, trick.atout)) in (None, seat)
+                        for rank in unknown_trumps)):
                 return False
         return True
 
