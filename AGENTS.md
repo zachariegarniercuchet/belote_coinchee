@@ -49,8 +49,10 @@
   puis comparer avant/après à cartes et contrat identiques pour isoler le
   jeu de carte, et en parties complètes pour les enchères. Garder la suite
   de tests petite ; ne pas ajouter un test atomique pour chaque branche.
-- Cette demande ajoute un TODO : ne pas modifier maintenant les politiques
-  de jeu ni d'enchères, ni étendre une future correction SA au TA/aux couleurs.
+- La revue globale reste à faire. Le correctif ciblé de v5 décrit plus bas
+  traite la charge en dernière position et les reprises du partenaire ; il
+  ne constitue pas une refonte des entames, purges ou enchères SA. Le TA
+  garde sa politique existante.
 
 ## TODO — test-suite audit (deferred)
 
@@ -323,8 +325,21 @@ notamment singletons, sans sacrifier une carte maîtresse s'il reste un déchet.
 Respecter les coups forcés et ne charger que si le partenaire paraît sûr.
 Toute modification de ce jeu partagé exige de refaire le benchmark v1 aussi :
 les anciens résultats restent attachés à leur révision, pas à un nom de bot.
-Brooklyn v5 (`brooklyn_v5`) conserve exactement le jeu de carte de v4 et
-ses ouvertures. Si le partenaire change de couleur après la dernière annonce
+Brooklyn v5 (`brooklyn_v5`) reprend les ouvertures et le socle de v4, avec
+les priorités de partenaire suivantes (le jeu de v4 reste inchangé) :
+- Avant la dernière position, ne pas couper/surcouper volontairement le
+  partenaire gagnant si une carte légale permet de le laisser gagner.
+  Une incertitude sur sa carte ne justifie pas à elle seule de sacrifier
+  un atout. Les coupes et montées forcées restent légales et obligatoires.
+- Dans la couleur demandée, ne pas surprendre avant le dernier joueur avec
+  un simple gagnant actuel non maître (10 sur R avec A encore inconnu).
+- En quatrième position en défense, charger la carte légale de plus forte
+  valeur susceptible d'être perdue, même si elle reprend le partenaire.
+  Préserver les maîtres et séquences couvertes, ainsi que les as hors atout,
+  sauf A-10 en main ou as publiquement menacé de coupe dans les deux dernières
+  cartes. Quand toutes les cartes légales sont protégées, en jouer une reste
+  obligatoire. Ce choix vaut à une couleur et en SA ; le TA reste inchangé.
+Si le partenaire change de couleur après la dernière annonce
 à une couleur du joueur, son soutien à cette nouvelle couleur ne compte que
 le 9 (+10) et la belote (+20), sans valet ni as. Exception : un changement
 exact de 80 à 90 autorise aussi +10 par as hors du nouvel atout. Lire les

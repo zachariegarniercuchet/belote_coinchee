@@ -170,7 +170,7 @@ BOT_REGISTRY: dict[str, dict] = {
         "avatars": [None, None, None, None],
         "version": "v5",
         "author": "David",
-        "description": "Jeu de carte et ouvertures de v4. Après un changement de couleur du partenaire : soutien +10 pour le 9, +20 de belote, sans valet ni as. Exception 80 vers 90 : les as hors atout comptent aussi. Crédits dépensés une seule fois. SA/TA inchangés.",
+        "description": "Ouvertures de v4. Soutien après changement de couleur : 9 et belote, as aussi pour 80 vers 90. Au jeu : respecte le partenaire gagnant, évite les coupes volontaires avant le dernier joueur ; en dernière position en défense, charge les points exposés même en surprenant. Préserve as et maîtres. Enchères SA/TA et jeu TA inchangés.",
         "level": 3,
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot_v5(seat, name),

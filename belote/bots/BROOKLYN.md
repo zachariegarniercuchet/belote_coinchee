@@ -219,8 +219,8 @@ documented above. Benchmark results always belong to their recorded revision;
 the comparison at `c7be4ff` predates this master-preservation rule.
 
 The possible context-sensitive defensive-cut policy remains deferred in
-AGENTS.md, without a reserved version number. V5 below is a bidding variant,
-not that defensive-cut idea.
+AGENTS.md, without a reserved version number. V5's partner-specific fixes
+below do not implement that general defensive-cut idea.
 
 The existing three journey tests cover all four versions and full seeded
 console/web parity. No frontend code changes are needed: the catalogue exposes
@@ -230,9 +230,10 @@ gives v4 49%/43% wins versus de Belote v2/v3, compared with v3's 46%/46%.
 V3's rerun exactly matches its previous outcomes and metrics. No clear overall
 v4 win improvement is established; v1/v2/v3 runtime modules remain frozen.
 
-## Brooklyn v5 — support after partner changes suit
+## Brooklyn v5 — suit-switch support and partner priorities
 
-V5 inherits V4's card play, openings and ordinary partnership bidding.
+V5 builds on V4's openings, ordinary partnership bidding and card play,
+with the partner-specific overrides below.
 After our suited bid and partner's switch to another suit, support only the
 9 (+10) and belote (+20); neither J nor side aces add credit. The exact
 80 -> 90 switch is the exception: side aces still add +10 each, but J does
@@ -243,9 +244,29 @@ Ordinary partner openings and SA/TA bidding are unchanged.
 
 This convention uses only our hand and public auction history. V1/V2/V3/V4,
 de Belote and the default bot are not changed. Existing partnership and full
-game journeys cover the new version, including console/web parity; card play
-is inherited directly, not copied. The deferred defensive policy above is
-not implemented by V5.
+game journeys cover the new version, including console/web parity. The
+deferred general defensive cutting policy above is not implemented by V5.
+
+Before last seat, do not voluntarily cut or overcut a currently winning
+partner if a legal card keeps partner winning. Do not replace this priority
+with a blanket test that partner must hold the highest remaining rank.
+Following suit, do not overtake with a merely current winner when no own
+master is available (10 over partner's K with A still missing). Forced
+following, cuts and overtrumps still come from the legal-card set.
+
+Last defender banks the highest-point vulnerable legal card, including one
+that overtakes partner: team ownership is already assured. Keep future
+masters/sequences and side aces, except A-10 or a publicly endangered ace in
+the last two cards. At least one card must still be played if all are
+protected. This overrides only V5, in suited contracts and SA; TA is unchanged.
+
+David's 100-diamond deal was replayed through the web engine with all 32
+reported cards and the first trick 7/A/9/8 of spades. On Q/J of spades next,
+V4 cuts 9 diamonds and Octave must overtrump J; corrected V5 discards 7 hearts
+and keeps its 9, with Octave choosing 10 diamonds. Existing nominal journeys
+cover this position, third/last-seat charging, protected masters/aces and
+forced cards; full console/web and SA/TA journeys pass. No browser check or
+new full-game performance benchmark was performed for these partner fixes.
 
 The [paired 400-game comparison](../../benchmarks/2026-11-02-v5.md) at
 `40e343d` uses fresh seeds 54000–54049, V4/V5 against de Belote v2/v3,
@@ -253,6 +274,8 @@ with both team swaps. Both versions win 90/200 games; V5 makes 357/401
 suited contracts versus V4's 356/401. Only three seeds produce different
 recorded trajectories. No win improvement is established, and this does
 not measure partnership understanding with a human.
+That snapshot predates the partner-specific card-play fixes above and does
+not measure current V5 performance.
 That snapshot predates the later fix retaining the last trump even when
 partner opened; the new fix has journey checks, not a fresh full benchmark.
 Eight short mixed-bot control games also completed; this is an integration

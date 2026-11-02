@@ -11,7 +11,7 @@ from belote.bots.brooklyn import BrooklynBot
 from belote.bots.brooklyn_v2 import BrooklynBotV2
 from belote.bots.brooklyn_v3 import BrooklynBotV3
 from belote.bots.brooklyn_v4 import BrooklynBotV4
-from belote.cards import Card, Rank, Suit
+from belote.cards import Card, ContractMode, Rank, Suit
 from belote.game import Game
 from belote.trick import TrickState, trick_winner
 from game_session import GameSession
@@ -456,6 +456,44 @@ class BrooklynTests(unittest.TestCase):
         trick = TrickState(leader=2, atout=Suit.COEUR,
                            plays=list(zip([2, 3, 0], cards("D_COEUR", "8_COEUR", "7_PIQUE"))))
         self.assertEqual(nora.choose_card(hand, trick, trick.legal_cards_for(hand)), cards("R_COEUR")[0])
+        # David's 100-diamond deal: after 7/A/9/8 of spades, partner's Q
+        # beats J on the next trick. Nora must not spend her singleton trump 9.
+        first = list(zip([2, 3, 0, 1], cards("7_PIQUE", "A_PIQUE", "9_PIQUE", "8_PIQUE")))
+        for version in ("brooklyn_v4", "brooklyn_v5"):
+            nora = create_bot(version, 1)
+            nora.notify_contract(Contract(player=2, team=0, points=100, suit=Suit.CARREAU, is_capot=False))
+            nora.notify_trick_result(first, 3)
+            hand = cards("R_COEUR", "9_COEUR", "7_COEUR", "A_TREFLE", "9_TREFLE", "7_TREFLE", "9_CARREAU")
+            trick = TrickState(3, Suit.CARREAU, list(zip([3, 0], cards("D_PIQUE", "V_PIQUE"))))
+            chosen = nora.choose_card(hand, trick, trick.legal_cards_for(hand))
+            if version == "brooklyn_v4":
+                self.assertEqual(chosen, cards("9_CARREAU")[0])  # Published control.
+            else:
+                self.assertNotEqual(chosen.suit, Suit.CARREAU)
+                self.assertEqual(chosen.points(Suit.CARREAU), 0)
+
+        # Partner K with our 10/7: do not add 10 under a possible A in third
+        # seat; bank it in last seat. A future master/ace stays protected.
+        for atout in (Suit.CARREAU, ContractMode.SANS_ATOUT):
+            for held, ace_out, third, last in (
+                (("10_TREFLE", "7_TREFLE"), False, "7_TREFLE", "10_TREFLE"),
+                (("10_TREFLE", "7_TREFLE"), True, "7_TREFLE", "7_TREFLE"),
+                (("A_TREFLE", "7_TREFLE"), False, "A_TREFLE", "7_TREFLE"),
+                (("A_TREFLE", "10_TREFLE"), False, "A_TREFLE", "A_TREFLE"),
+                (("10_TREFLE",), False, "10_TREFLE", "10_TREFLE"),
+            ):
+                for position, plays, expected in (
+                    (3, list(zip([2, 3], cards("R_TREFLE", "8_TREFLE"))), third),
+                    (4, list(zip([1, 2, 3], cards("8_TREFLE", "R_TREFLE", "9_TREFLE"))), last),
+                ):
+                    defender = create_bot("brooklyn_v5", 0)
+                    defender.notify_contract(Contract(1, 1, 80, atout, False))
+                    if ace_out:
+                        defender.played_by_suit[Suit.TREFLE].add(Rank.AS)
+                    hand = cards(*held)
+                    trick = TrickState(plays[0][0], atout, plays)
+                    self.assertEqual(defender.choose_card(hand, trick, trick.legal_cards_for(hand)),
+                                     cards(expected)[0], (atout, position, held))
         # Publicly fallen honours promote the next master; mandatory climbing
         # still spends it when necessary. Risk only a small winner before last.
         for team in (0, 1):
@@ -532,7 +570,6 @@ class BrooklynTests(unittest.TestCase):
         info = get_bot_info("brooklyn_v1")
         self.assertEqual((info["family"], info["author"]), ("Brooklyn", "David"))
         self.assertEqual(len(set(info["names"])), 4)
-        self.assertIs(create_bot("brooklyn_v5", 0).choose_card.__func__, BrooklynBotV4.choose_card)
         for bot_id, seed in product(("brooklyn_v1", "brooklyn_v2", "brooklyn_v3", "brooklyn_v4", "brooklyn_v5"), range(4)):
             players = {seat: create_bot(bot_id, seat) for seat in range(4)}
             self.assertTrue(all(isinstance(bot, BrooklynBot) for bot in players.values()))
