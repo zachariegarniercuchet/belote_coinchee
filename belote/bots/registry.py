@@ -163,6 +163,18 @@ BOT_REGISTRY: dict[str, dict] = {
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot_v4(seat, name),
     },
+    "brooklyn_v5": {
+        "label": "Brooklyn v5",
+        "family": "Brooklyn",
+        "theme": "New-Yorkais",
+        "avatars": [None, None, None, None],
+        "version": "v5",
+        "author": "David",
+        "description": "Jeu de carte et ouvertures de v4. Après un changement de couleur du partenaire : soutien +10 pour le 9, +20 de belote, sans valet ni as. Exception 80 vers 90 : les as hors atout comptent aussi. Crédits dépensés une seule fois. SA/TA inchangés.",
+        "level": 3,
+        "names": ["Miles", "Nora", "Eli", "Maya"],
+        "factory": lambda seat, name: _brooklyn_bot_v5(seat, name),
+    },
 }
 
 
@@ -216,6 +228,11 @@ def _brooklyn_bot_v3(seat: int, name: str) -> Player:
 def _brooklyn_bot_v4(seat: int, name: str) -> Player:
     from .brooklyn_v4 import BrooklynBotV4
     return BrooklynBotV4(seat, name=name)
+
+
+def _brooklyn_bot_v5(seat: int, name: str) -> Player:
+    from .brooklyn_v5 import BrooklynBotV5
+    return BrooklynBotV5(seat, name=name)
 
 
 # --- API publique ------------------------------------------------------------

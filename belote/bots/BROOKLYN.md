@@ -218,9 +218,9 @@ trump-play rules remain distinct; shared public-information changes are
 documented above. Benchmark results always belong to their recorded revision;
 the comparison at `c7be4ff` predates this master-preservation rule.
 
-The possible context-sensitive defensive-cut version previously called v4
-is now the deferred v5 TODO in AGENTS.md. It is NOT implemented or selectable.
-Do not publish a placeholder bot or claim a v5 benchmark.
+The possible context-sensitive defensive-cut policy remains deferred in
+AGENTS.md, without a reserved version number. V5 below is a bidding variant,
+not that defensive-cut idea.
 
 The existing three journey tests cover all four versions and full seeded
 console/web parity. No frontend code changes are needed: the catalogue exposes
@@ -229,6 +229,23 @@ The [400-game comparison](../../benchmarks/2026-10-26-v4.md) at `09e0bf9`
 gives v4 49%/43% wins versus de Belote v2/v3, compared with v3's 46%/46%.
 V3's rerun exactly matches its previous outcomes and metrics. No clear overall
 v4 win improvement is established; v1/v2/v3 runtime modules remain frozen.
+
+## Brooklyn v5 — support after partner changes suit
+
+V5 inherits V4's card play, openings and ordinary partnership bidding.
+After our suited bid and partner's switch to another suit, support only the
+9 (+10) and belote (+20); neither J nor side aces add credit. The exact
+80 -> 90 switch is the exception: side aces still add +10 each, but J does
+not. Trump aces never count as side aces. Read the original amounts at the
+switch even after further raises in the same suit episode. Existing spent
+credits and the no-trump-in-hand deduction remain. A new deal resets memory.
+Ordinary partner openings and SA/TA bidding are unchanged.
+
+This convention uses only our hand and public auction history. V1/V2/V3/V4,
+de Belote and the default bot are not changed. Existing partnership and full
+game journeys cover the new version, including console/web parity; card play
+is inherited directly, not copied. The deferred defensive policy above is
+not implemented by V5.
 That snapshot predates the later fix retaining the last trump even when
 partner opened; the new fix has journey checks, not a fresh full benchmark.
 Eight short mixed-bot control games also completed; this is an integration

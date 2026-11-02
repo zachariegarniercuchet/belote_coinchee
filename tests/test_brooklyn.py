@@ -103,7 +103,7 @@ class BrooklynTests(unittest.TestCase):
 
         # A trump void deducts ten from the total partner-support budget,
         # once per suit episode, rather than once per raise or per ace.
-        for version in ("brooklyn_v2", "brooklyn_v3", "brooklyn_v4"):
+        for version in ("brooklyn_v2", "brooklyn_v3", "brooklyn_v4", "brooklyn_v5"):
             for support_hand, raise_points in (
                 (cards("A_COEUR", "R_COEUR", "A_TREFLE", "R_TREFLE", "D_TREFLE",
                        "R_CARREAU", "D_CARREAU", "8_CARREAU"), 10),
@@ -158,6 +158,40 @@ class BrooklynTests(unittest.TestCase):
         self.assertEqual(partner.choose_bid(support_hand, state, state.legal_actions()), BidAction.passe())
         self.assertEqual(partner.partner_raise_points, 0)
         self.assertEqual(partner.partner_raises, [])
+
+        # After our own bid, partner's new suit no longer asks us to repeat
+        # side aces or J. Only the exact 80 -> 90 switch retains ace support.
+        switch_hand = cards("V_TREFLE", "9_TREFLE", "R_TREFLE", "D_TREFLE",
+                            "A_PIQUE", "A_COEUR", "7_PIQUE", "8_PIQUE")
+        for opening, entry, credit in ((80, 100, 30), (80, 90, 50), (90, 100, 30)):
+            state = BiddingState(dealer=1)
+            state.apply(BidAction.enchere(opening, Suit.PIQUE))
+            state.apply(BidAction.enchere(entry - 10, Suit.CARREAU)
+                        if entry > opening + 10 else BidAction.passe())
+            state.apply(BidAction.enchere(entry, Suit.TREFLE))
+            state.apply(BidAction.passe())
+            only_clubs = lambda: [a for a in state.legal_actions() if a.type == ActionType.PASSE
+                                 or a.type == ActionType.ENCHERE and a.suit == Suit.TREFLE]
+            old = create_bot("brooklyn_v4", 0)
+            bot = create_bot("brooklyn_v5", 0)
+            self.assertEqual(old.choose_bid(switch_hand, state, only_clubs()),
+                             BidAction.enchere(entry + 60, Suit.TREFLE))
+            expected = BidAction.enchere(entry + credit, Suit.TREFLE)
+            self.assertEqual(bot.choose_bid(switch_hand, state, only_clubs()), expected)
+            self.assertEqual(bot.choose_bid(switch_hand, state, only_clubs()), expected)
+            state.apply(expected)
+            state.apply(BidAction.enchere(expected.points + 10, Suit.CARREAU))
+            state.apply(BidAction.passe())
+            state.apply(BidAction.passe())
+            self.assertEqual(bot.choose_bid(switch_hand, state, only_clubs()), BidAction.passe())
+            # A new deal forgets the switch; an ordinary partner opening still
+            # credits J, 9, both side aces and belote, just as v4 does.
+            bot.notify_donne_start()
+            state = BiddingState(dealer=3)
+            state.apply(BidAction.enchere(80, Suit.TREFLE))
+            state.apply(BidAction.passe())
+            self.assertEqual(bot.choose_bid(switch_hand, state, only_clubs()),
+                             BidAction.enchere(140, Suit.TREFLE))
 
         # Recoverable-card v3 rejects unsupported strength, then each partner's
         # J/9, side aces and two-trump belote count once.
@@ -498,7 +532,8 @@ class BrooklynTests(unittest.TestCase):
         info = get_bot_info("brooklyn_v1")
         self.assertEqual((info["family"], info["author"]), ("Brooklyn", "David"))
         self.assertEqual(len(set(info["names"])), 4)
-        for bot_id, seed in product(("brooklyn_v1", "brooklyn_v2", "brooklyn_v3", "brooklyn_v4"), range(4)):
+        self.assertIs(create_bot("brooklyn_v5", 0).choose_card.__func__, BrooklynBotV4.choose_card)
+        for bot_id, seed in product(("brooklyn_v1", "brooklyn_v2", "brooklyn_v3", "brooklyn_v4", "brooklyn_v5"), range(4)):
             players = {seat: create_bot(bot_id, seat) for seat in range(4)}
             self.assertTrue(all(isinstance(bot, BrooklynBot) for bot in players.values()))
             game = Game(players, target_score=300, first_dealer=seed, rng=random.Random(seed))

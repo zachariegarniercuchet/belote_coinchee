@@ -17,7 +17,9 @@ To include it alongside both baselines, use
 `changes` field still compares v2 minus v1 only when both are present;
 all selected versions have full metric rows and per-game records.
 Use `--brooklyn brooklyn_v3 brooklyn_v4` for a 400-game paired comparison of
-the new v4 with its unchanged v3 control. V5 is a deferred idea, not a bot.
+the new v4 with its unchanged v3 control.
+Use `--brooklyn brooklyn_v4 brooklyn_v5` to compare V5's suit-switch support
+convention against current V4 with identical card play (400 games at 50 pairs).
 Progress is printed to stderr; the summary goes to stdout. Optional JSON
 output also contains every game's deal outcomes and lead counts, plus the
 source revision, so reported metrics can be audited.
@@ -123,7 +125,7 @@ condition to keep result artifacts small without removing data.
 - [SA/TA across Brooklyn v1–v4](2026-10-29-sa-ta.md): 800 games at
   `dc31e65`, with per-mode success/calibration and all capots included.
 - [Versioned Brooklyn v4](2026-10-26-v4.md): 400 games at `09e0bf9`, newly
-  rerunning v3 as an unchanged control; defensive v5 remains deferred.
+  rerunning v3 as an unchanged control; the defensive-cut idea remains deferred.
 - [V3 first trump lead and return to partner](2026-10-26-first-trump.md):
   v3 at `feb956d`, 200 games; v1/v2 remain unchanged saved baselines.
 - [Weakest winning trump in attack](2026-10-26-trump-control.md): all three

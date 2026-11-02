@@ -43,11 +43,11 @@
   cases only where their risk warrants it. Do this audit later; do not expand
   or reorganize the suite preemptively.
 
-## TODO — Brooklyn v5 defensive play (deferred)
+## TODO — Brooklyn defensive cutting variant (deferred)
 
-- Explore a possible Brooklyn v5 defensive cutting policy: preserve trump
+- Explore a future Brooklyn defensive cutting policy: preserve trump
   control when there is spare length, but cash vulnerable 9/ace points when
-  they are likely to be lost. Implement separately, preserving v1/v2/v3/v4;
+  they are likely to be lost. Implement separately, preserving v1/v2/v3/v4/v5;
   do not apply a blanket cheapest-cut rule in defence.
 
 ## TODO — bidding variants (deferred)
@@ -294,6 +294,19 @@ notamment singletons, sans sacrifier une carte maîtresse s'il reste un déchet.
 Respecter les coups forcés et ne charger que si le partenaire paraît sûr.
 Toute modification de ce jeu partagé exige de refaire le benchmark v1 aussi :
 les anciens résultats restent attachés à leur révision, pas à un nom de bot.
+Brooklyn v5 (`brooklyn_v5`) conserve exactement le jeu de carte de v4 et
+ses ouvertures. Si le partenaire change de couleur après la dernière annonce
+à une couleur du joueur, son soutien à cette nouvelle couleur ne compte que
+le 9 (+10) et la belote (+20), sans valet ni as. Exception : un changement
+exact de 80 à 90 autorise aussi +10 par as hors du nouvel atout. Lire les
+montants à l'entrée de cet épisode de couleur, pas ceux d'une surenchère
+ultérieure. Déduire les crédits déjà dépensés ; conserver le retrait de 10
+sans atout. Sans changement de couleur par le partenaire, ou en SA/TA,
+garder les enchères de v4. Tous les choix utilisent seulement la main propre
+et l'historique public. La variante défensive envisagée plus haut reste
+différée et n'est pas la v5. Ne pas modifier v1/v2/v3/v4 ni de Belote en
+ajustant v5 ; le bot par défaut reste inchangé.
+
 Brooklyn v2 (`brooklyn_v2`) garde les cartes de v1 mais change les enchères :
 chaque nouvelle couleur exige au moins trois atouts avec J ou 9, plus au
 moins un as hors atout OU deux dix seconds. Base 80 avec un des J/9, 90
