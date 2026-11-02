@@ -29,7 +29,6 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="join">Rejoindre</button>
       <button class="tab-btn" data-tab="create">Créer un salon</button>
-      <button class="tab-btn" data-tab="public">Salons publics</button>
     </div>
 
     <div id="tab-join" class="tab-panel">
@@ -65,14 +64,19 @@
       <button id="btn-create" class="btn btn-primary">Créer un nouveau salon</button>
       <p class="hint">Lance ceci depuis l'ordinateur qui fait tourner le serveur, ou depuis n'importe quel appareil du réseau.</p>
     </div>
+  </div><!-- /.home-card -->
 
-    <div id="tab-public" class="tab-panel hidden">
-      <label>Ton prénom</label>
-      <input id="public-name" type="text" placeholder="Ton prénom" maxlength="20" autocomplete="off">
-      <button id="btn-refresh-rooms" class="btn btn-ghost btn-small">Actualiser la liste</button>
-      <div id="public-rooms" class="public-rooms"></div>
-      <p id="public-empty" class="hint">Aucun salon public pour l'instant. Crée-en un, il apparaîtra ici.</p>
+  <!-- Annuaire des salons publics : rectangle séparé sous le panneau principal,
+       toujours visible (« aucun salon » si la liste est vide). -->
+  <div id="public-card" class="public-card">
+    <div class="public-card-head">
+      <span class="public-card-title">Salons publics</span>
+      <button id="btn-refresh-rooms" class="btn btn-ghost btn-small">Actualiser</button>
     </div>
+    <label>Ton prénom</label>
+    <input id="public-name" type="text" placeholder="Ton prénom" maxlength="20" autocomplete="off">
+    <div id="public-rooms" class="public-rooms"></div>
+    <p id="public-empty" class="hint">Aucun salon public pour l'instant. Crée-en un, il apparaîtra ici.</p>
   </div>
 </section>
 
@@ -272,9 +276,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 <script>
-  // Adresse de votre backend Render (a completer). Exemple :
+  // Adresse de votre backend Render. Exemple :
   // window.BELOTE_BACKEND_URL = "https://belote-coinchee.onrender.com";
-  window.BELOTE_BACKEND_URL = "https://VOTRE-SERVICE.onrender.com";
+  window.BELOTE_BACKEND_URL = "https://belote-coinchee-g77g.onrender.com";
 
   // Clés publiques de votre projet Supabase (voir SUPABASE.md). Laissez les
   // deux valeurs vides : l'application reste en mode invité, sans compte.

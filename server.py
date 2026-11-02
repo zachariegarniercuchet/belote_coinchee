@@ -16,10 +16,12 @@ QR code affiché dans le salon depuis les téléphones (même réseau Wi-Fi).
 from __future__ import annotations
 
 import io
+import ipaddress
 import os
 import socket
 import sys
 import threading
+import time
 
 # Permet `import belote` quel que soit le répertoire
 # depuis lequel ce script est lancé.
@@ -33,7 +35,7 @@ from flask_socketio import join_room as sio_join_room
 
 from extensions import socketio
 from game_session import GameSession
-from rooms import PLAYER_SEATS, RoomManager
+from rooms import EMPTY_ROOM_IDLE, NO_HUMAN_IDLE, PLAYER_SEATS, RoomManager
 from belote.bots import is_valid_bot, list_bots
 
 app = Flask(__name__, template_folder=".", static_folder=None)
@@ -64,16 +66,53 @@ LAN_IP = get_lan_ip()
 
 # En local, on devine l'IP Wi-Fi pour que le QR code pointe vers le bon
 # endroit. Une fois deploye (Render, etc.), l'adresse publique n'a plus
-# rien a voir avec une IP locale : definissez PUBLIC_BASE_URL (ex.
-# "https://belote-coinchee.onrender.com") et elle sera utilisee a la place.
+# rien a voir avec une IP locale : PUBLIC_BASE_URL (ex.
+# "https://belote-coinchee-g77g.onrender.com") permet de forcer l'adresse,
+# et a defaut l'URL est deduite de l'hote de la requete, ce qui convient a
+# un deploiement comme a un acces par IP locale.
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+
+
+def _split_host(host: str) -> tuple[str, str]:
+    """Hôte et port séparés depuis `request.host` (IPv6 entre crochets)."""
+    if host.startswith("["):  # "[::1]:5000"
+        end = host.find("]")
+        name, rest = host[1:end], host[end + 1:]
+        return name, rest[1:] if rest.startswith(":") else ""
+    if host.count(":") == 1:
+        name, port = host.split(":")
+        return name, port
+    return host, ""
+
+
+def _is_local_host(hostname: str) -> bool:
+    """Vrai si l'hôte ne désigne que la machine ou le réseau local.
+
+    Un QR code doit alors viser l'IP Wi-Fi du LAN. Un nom de domaine complet
+    (« belote-coinchee-g77g.onrender.com », une IP publique) est considéré
+    comme joignable tel quel, contrairement à « localhost » ou à un nom de
+    poste sans point (« BUREAU »).
+    """
+    name = hostname.strip("[]").lower()
+    if not name or name == "localhost" or name.endswith(".local"):
+        return True
+    try:
+        addr = ipaddress.ip_address(name)
+    except ValueError:
+        return "." not in name
+    return addr.is_loopback or addr.is_link_local or addr.is_private or addr.is_unspecified
 
 
 def get_base_url(req) -> str:
     if PUBLIC_BASE_URL:
         return PUBLIC_BASE_URL
-    port = req.host.split(":")[1] if ":" in req.host else "80"
-    return f"http://{LAN_IP}:{port}"
+    hostname, port = _split_host(req.host)
+    if _is_local_host(hostname):
+        return f"http://{LAN_IP}:{port or '80'}"
+    # Derrière un proxy (Render envoie X-Forwarded-Proto), l'hôte public est
+    # déjà celui de la requête : on s'y fie plutôt que sur une IP locale.
+    scheme = (req.headers.get("X-Forwarded-Proto") or "").split(",")[0].strip() or req.scheme
+    return f"{scheme}://{req.host}"
 
 
 # --------------------------------------------------------------------------
@@ -181,6 +220,78 @@ def _seat_key(raw):
     return "board"
 
 
+def _client_token(data) -> str | None:
+    """Jeton d'onglet envoyé par le client pour reprendre sa place à la reconnexion.
+
+    Il identifie la même session d'un onglet à l'autre rechargement, ce que le
+    prénom ne fait pas (un homonyme ne doit pas voler la place) et ce que le
+    sid ne fait pas (l'ancien sid peut être encore vivant côté serveur alors
+    que le client est déjà revenu).
+    """
+    token = ((data or {}).get("token") or "").strip()[:64]
+    return token or None
+
+
+def _room_has_human(code: str) -> bool:
+    """Vrai si au moins une connection humaine pointe encore vers ce salon.
+
+    `sid_info` est la source fiable : tout client connecté (joueur assis ou
+    spectateur) y a une entrée dont `code` désigne son salon. On ne regarde
+    pas les seats ni les spectateurs, qui peuvent garder un nom après une
+    déconnexion le temps d'une reprise.
+    """
+    with sid_lock:
+        return any(info["code"] == code for info in sid_info.values())
+
+
+def purge_expired_rooms(now: float | None = None) -> list[str]:
+    """Ferme les salons abandonnés et retourne leurs codes.
+
+    Ne ferme jamais un salon :
+    - avec une partie en cours (un humain peut encore y être, ou les bots
+      jouent — on ne touche pas à un thread de jeu) ;
+    - auquel au moins une connection humaine est encore attachée.
+
+    Sinon, un salon « nu » (aucun siège occupé, aucune partie) est fermé au
+    bout de `EMPTY_ROOM_IDLE`, et un salon qui a accueilli des joueurs ou une
+    partie au bout de `NO_HUMAN_IDLE`, mesurés depuis la dernière activité
+    humaine. La décision et la suppression se font sous le verrou de chaque
+    salon puis celui du gestionnaire, pour ne pas fermer un salon qu'un
+    humain vient de rejoindre.
+    """
+    now = time.time() if now is None else now
+    closed: list[str] = []
+    for room in rooms.all_rooms():
+        with room.lock:
+            # Partie en cours : jamais purgé (le thread de jeu continue).
+            if room.game_session is not None and not room.game_session.finished:
+                continue
+            threshold = EMPTY_ROOM_IDLE if room.is_vacant() else NO_HUMAN_IDLE
+            if room.idle_seconds(now) < threshold:
+                continue
+        # Re-vérifie l'absence d'humain juste avant suppression, puis ferme.
+        if _room_has_human(room.code):
+            continue
+        rooms.remove(room.code)
+        closed.append(room.code)
+    return closed
+
+
+def _purge_loop(interval: float = 60.0):
+    """Tâche de fond : ferme périodiquement les salons abandonnés.
+
+    Lance via `socketio.start_background_task` uniquement au démarrage réel du
+    serveur (`__main__`), jamais à l'import, pour ne pas tourner dans les tests.
+    """
+    while True:
+        time.sleep(interval)
+        try:
+            purge_expired_rooms()
+        except Exception:
+            # Une erreur de balayage ne doit jamais tuer la tâche de fond.
+            pass
+
+
 @socketio.on("create_room")
 def on_create_room(data):
     name = ((data or {}).get("name") or "").strip()[:20] or "Hôte"
@@ -189,7 +300,7 @@ def on_create_room(data):
     visibility = ((data or {}).get("visibility") or "public").strip().lower()
     if visibility not in ("public", "private"):
         visibility = "public"
-    room = rooms.create_room(visibility=visibility)
+    room = rooms.create_room(visibility=visibility, created_by=name)
     sio_join_room(room.code)
     with sid_lock:
         sid_info[request.sid] = {"code": room.code, "name": name}
@@ -201,6 +312,9 @@ def on_create_room(data):
 @socketio.on("list_public_rooms")
 def on_list_public_rooms(_data=None):
     """Annuaire des salons publics, envoyé uniquement au demandeur."""
+    # On en profite pour fermer les salons abandonnés : l'annuaire reste propre
+    # même sans tâche de fond, et un visiteur rafraîchit souvent la liste.
+    purge_expired_rooms()
     socketio.emit("public_rooms", {"rooms": rooms.public_rooms()}, to=request.sid)
 
 
@@ -216,14 +330,14 @@ def on_join_lobby(data):
     sio_join_room(room.code)
     with sid_lock:
         sid_info[request.sid] = {"code": room.code, "name": name}
+    room.touch()
 
-    # Reconnexion : un siège porte déjà ce nom mais est actuellement sans connexion.
-    with room.lock:
-        if room.seat_of_sid(request.sid) is None:
-            for seat in room.seats.values():
-                if seat.name == name and seat.sid is None:
-                    seat.sid = request.sid
-                    break
+    # Reconnexion : le jeton d'onglet reprend le siège même si l'ancienne
+    # connexion n'est pas encore expirée ; sans jeton, le prénom ne suffit
+    # que si le siège est libre.
+    token = _client_token(data)
+    if room.seat_of_sid(request.sid) is None:
+        room.reclaim_seat(request.sid, name, token)
 
     # Sans siège, on est spectateur : on suit le salon et la partie sans main.
     with room.lock:
@@ -249,7 +363,7 @@ def on_take_seat(data):
     name = info["name"] if info else "Joueur"
     seat_key = _seat_key((data or {}).get("seat"))
 
-    ok = room.take_seat(seat_key, request.sid, name)
+    ok = room.take_seat(seat_key, request.sid, name, token=_client_token(data))
     if not ok:
         message = ("Les sièges sont verrouillés pendant la partie."
                    if room.game_session and not room.game_session.finished
@@ -257,6 +371,7 @@ def on_take_seat(data):
         socketio.emit("error_message", {"message": message}, to=request.sid)
         socketio.emit("lobby_update", room.lobby_state(request.sid), to=request.sid)
         return
+    room.touch()
     _emit_lobby_update(room)
     room.remove_spectator(request.sid)
     if room.game_session:
@@ -276,6 +391,7 @@ def on_leave_seat(data):
         seat = room.seat_of_sid(request.sid)
         if seat is not None:
             room.free_seat(seat)
+    room.touch()
     _emit_lobby_update(room)
 
 
@@ -314,6 +430,7 @@ def on_request_takeover(data):
     if not room.request_takeover(seat, request.sid, name):
         socketio.emit("error_message", {"message": "Ce siège est déjà pris."}, to=request.sid)
         return
+    room.touch()
     _emit_lobby_update(room)
     session.broadcast()
 
@@ -386,6 +503,7 @@ def on_start_game(data):
         return
 
     room.target_score = target_score
+    room.touch()
     # Mémorise les choix dans la room pour cohérence (lobby + reconnexion).
     with room.lock:
         for seat, bid in bot_ids.items():
@@ -411,6 +529,7 @@ def on_bid_choice(data):
         index = int((data or {}).get("index"))
     except (TypeError, ValueError):
         return
+    room.touch()
     room.game_session.submit_bid(seat, index)
 
 
@@ -425,6 +544,7 @@ def on_play_card(data):
     card_id = (data or {}).get("card_id")
     if not card_id:
         return
+    room.touch()
     room.game_session.submit_card(seat, card_id)
 
 
@@ -475,6 +595,9 @@ def on_disconnect():
             if seat.sid == request.sid:
                 seat.sid = None
         room.remove_spectator(request.sid)
+    # Redémarre l'horloge d'inactivité : si c'était le dernier humain, le
+    # salon commence alors son compte à rebours de fermeture.
+    room.touch()
     _emit_lobby_update(room)
 
 
@@ -483,6 +606,8 @@ if __name__ == "__main__":
     # Production imports keep Flask's usual template caching.
     app.jinja_env.auto_reload = True
     port = int(os.environ.get("PORT", 5000))
+    # Balayage périodique des salons abandonnés (fermeture automatique).
+    socketio.start_background_task(_purge_loop)
     print("=" * 60)
     print("  Belote Coinchée — serveur local")
     print("=" * 60)

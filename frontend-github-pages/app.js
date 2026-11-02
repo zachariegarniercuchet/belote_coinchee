@@ -10,9 +10,60 @@
   const BACKEND_URL = window.BELOTE_BACKEND_URL || "";
   const socket = BACKEND_URL ? io(BACKEND_URL) : io();
 
+  // Chemins HTTP vers le backend : identiques a l'origine quand BACKEND_URL
+  // est vide (serveur Flask), prefixes par le backend distant sinon (GitHub
+  // Pages), sans quoi le QR code et le lien du salon renverraient 404.
+  function backendUrl(path) {
+    return BACKEND_URL.replace(/\/+$/, "") + path;
+  }
+
   let roomCode = null;
   let myName = null;
   let mySeatChosen = null; // 0-3 ou "board", mémorisé pour se rasseoir après reconnexion
+
+  // Identité d'onglet et salon en cours.
+  // iOS met Safari en veille sans recharger la page ni fermer la WebSocket :
+  // le serveur garde alors l'ancien sid du siège un moment. Le jeton permet
+  // de reprendre la place quand même, et le salon mémorisé permet de rejoindre
+  // à nouveau après un rechargement d'onglet au lieu de retomber sur l'accueil.
+  const TOKEN_KEY = "belote_token";
+  const ROOM_KEY = "belote_room";
+
+  function clientToken() {
+    try {
+      let token = sessionStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        token = (window.crypto && window.crypto.randomUUID)
+          ? window.crypto.randomUUID()
+          : Date.now().toString(36) + Math.random().toString(36).slice(2);
+        sessionStorage.setItem(TOKEN_KEY, token);
+      }
+      return token;
+    } catch (err) {
+      return ""; // stockage indisponible : reprise par prénom seulement
+    }
+  }
+
+  function rememberRoom() {
+    try {
+      if (roomCode && myName) {
+        sessionStorage.setItem(ROOM_KEY, JSON.stringify({ code: roomCode, name: myName }));
+      }
+    } catch (err) { /* ignore */ }
+  }
+
+  function forgetRoom() {
+    try { sessionStorage.removeItem(ROOM_KEY); } catch (err) { /* ignore */ }
+  }
+
+  // Reprise après rechargement : l'onglet retrouve son salon et son prénom.
+  try {
+    const savedRoom = JSON.parse(sessionStorage.getItem(ROOM_KEY) || "null");
+    if (savedRoom && savedRoom.code && savedRoom.name) {
+      roomCode = savedRoom.code;
+      myName = savedRoom.name;
+    }
+  } catch (err) { /* stockage illisible : on reste sur l'accueil */ }
   let lastLobbyState = null;
   let lastRenderedState = null;
   let dismissedDonneNumber = null;
@@ -87,8 +138,6 @@
       btn.classList.add("active");
       document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
       document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
-      // On demande la liste à chaque ouverture : elle change tout le temps.
-      if (btn.dataset.tab === "public") requestPublicRooms();
     });
   });
 
@@ -112,7 +161,7 @@
     if (!name) { showToast("Entre ton prénom."); return; }
     myName = name;
     roomCode = code;
-    socket.emit("join_lobby", { code, name });
+    socket.emit("join_lobby", { code, name, token: clientToken() });
   }
 
   function renderPublicRooms(rooms) {
@@ -139,6 +188,7 @@
       const meta = document.createElement("span");
       meta.className = "public-room-meta";
       meta.textContent = room.player_count + "/4 joueurs · " + room.target_score + " pts" +
+        (room.created_by ? " · par " + room.created_by : "") +
         (room.spectator_count ? " · " + room.spectator_count + " spectateur" +
           (room.spectator_count > 1 ? "s" : "") : "");
       row.append(code, phase, meta);
@@ -156,7 +206,7 @@
     if (code.length < 4) { showToast("Entre le code du salon (4 caractères)."); return; }
     myName = name;
     roomCode = code;
-    socket.emit("join_lobby", { code, name });
+    socket.emit("join_lobby", { code, name, token: clientToken() });
   });
 
   // ------------------------------------------------------------------
@@ -165,8 +215,8 @@
   function enterLobby(code) {
     roomCode = code;
     document.getElementById("lobby-code").textContent = code;
-    document.getElementById("lobby-qr").src = "/room/" + code + "/qr.png";
-    fetch("/room/" + code + "/info")
+    document.getElementById("lobby-qr").src = backendUrl("/room/" + code + "/qr.png");
+    fetch(backendUrl("/room/" + code + "/info"))
       .then(r => r.json())
       .then(d => { document.getElementById("lobby-url").textContent = d.join_url; })
       .catch(() => {});
@@ -184,7 +234,7 @@
   }
 
   function botAvatarUrl(file) {
-    return BACKEND_URL.replace(/\/+$/, "") + "/assets/bots/" + encodeURIComponent(file);
+    return backendUrl("/assets/bots/" + encodeURIComponent(file));
   }
 
   function botAvatar(file, name, extraClass = "") {
@@ -405,7 +455,7 @@
         btn.textContent = "S'asseoir";
         btn.onclick = () => {
           seatLost = false;
-          socket.emit("take_seat", { code: roomCode, seat: key });
+          socket.emit("take_seat", { code: roomCode, seat: key, token: clientToken() });
         };
         controls.appendChild(btn);
       } else if (isMine) {
@@ -445,6 +495,9 @@
   });
 
   document.getElementById("btn-leave-lobby").addEventListener("click", () => {
+    // Quitter efface le salon mémorisé : le rechargement retombe sur l'accueil
+    // au lieu de rejoindre à nouveau le même salon.
+    forgetRoom();
     location.reload();
   });
 
@@ -485,11 +538,13 @@
   socket.on("room_created", data => {
     roomCode = data.code;
     myName = data.name;
+    rememberRoom();
     enterLobby(data.code);
   });
 
   socket.on("lobby_joined", data => {
     roomCode = data.code;
+    rememberRoom();
     enterLobby(data.code);
     renderSeats(data);
   });
@@ -522,12 +577,15 @@
 
   socket.on("connect", () => {
     if (roomCode && myName) {
-      socket.emit("join_lobby", { code: roomCode, name: myName });
+      socket.emit("join_lobby", { code: roomCode, name: myName, token: clientToken() });
       // Un spectateur n'a pas de siège : ne jamais lui envoyer take_seat.
       if (mySeatChosen !== null && mySeatChosen !== "spectator") {
-        socket.emit("take_seat", { code: roomCode, seat: mySeatChosen });
+        socket.emit("take_seat", { code: roomCode, seat: mySeatChosen, token: clientToken() });
       }
       socket.emit("request_state", { code: roomCode });
+      // Si le salon a disparu (fermé pendant l'absence), on retombe sur
+      // l'accueil avec l'annuaire déjà chargé.
+      requestPublicRooms();
     } else {
       requestPublicRooms();
     }

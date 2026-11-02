@@ -61,15 +61,15 @@ You said it's already on GitHub — make sure the changes in this delivery
      - For real use, set it to your exact frontend origin, e.g.
        `https://zachariegarniercuchet.github.io` (no trailing slash, no
        path) — tighter and avoids random sites embedding your backend.
-   - `PUBLIC_BASE_URL` — only needed if you want the in-app QR code / share
-     link to point somewhere other than the Render URL itself (e.g. at your
-     GitHub Pages URL). Example:
-     `https://zachariegarniercuchet.github.io/belote_choinchee`
-     Leave empty to have links point at the Render app itself (fine for
-     Option A).
+   - `PUBLIC_BASE_URL` — optional override for the in-app QR code / share
+     link. Leave it empty: it comes from the request's own host, so the QR
+     code on Render points at `https://<your-service>.onrender.com/?code=XXXX`
+     by itself, and on a LAN machine it points at that machine's Wi-Fi IP.
+     Set it only if links must point somewhere else, e.g. to send scans
+     straight to your GitHub Pages front door (Option B).
 4. Click **Create Web Service** / **Apply**. Render will build and deploy;
    first deploy takes a couple of minutes. You'll get a URL like
-   `https://belote-coinchee.onrender.com`.
+   `https://belote-coinchee-g77g.onrender.com`.
 5. Open that URL. You should see the lobby screen. Create a room, then open
    the same URL on your phone (any network, not just Wi-Fi now) and join
    with the code — this already proves the backend works standalone
@@ -84,7 +84,7 @@ You said it's already on GitHub — make sure the changes in this delivery
 2. In `index.html`, set the backend URL to your real Render URL:
    ```html
    <script>
-     window.BELOTE_BACKEND_URL = "https://belote-coinchee.onrender.com";
+     window.BELOTE_BACKEND_URL = "https://belote-coinchee-g77g.onrender.com";
    </script>
    ```
 3. Commit and push. GitHub Pages will redeploy automatically.
@@ -123,9 +123,13 @@ same behaviour as before. Note that GitHub Pages' copy also needs
   elsewhere (Option B, set it).
 - **`server.py`** — the lobby/QR share-link used to be built from a
   best-guess *local Wi-Fi IP* (`get_lan_ip()`), which only makes sense when
-  you and your friends are physically on the same router. On the internet
-  that guess is meaningless, so it's now overridable with `PUBLIC_BASE_URL`;
-  the link format also changed from `/join/<code>` to `/?code=<code>` (a
+  you and your friends are physically on the same router — on Render that
+  guess is the container's private IP, so scanned QR codes went nowhere.
+  It is now built from the request's own host: a public host (Render) is
+  reused as-is with the proxy scheme (`X-Forwarded-Proto`), while
+  `localhost` / private IPs / short machine names still fall back to the
+  Wi-Fi IP, and `PUBLIC_BASE_URL` still forces the URL when set. The link
+  format also changed from `/join/<code>` to `/?code=<code>` (a
   query string works on both a Flask route and a plain static file, which
   a path segment doesn't on GitHub Pages).
 - **`frontend-github-pages/`** — a ready-to-copy static build of the

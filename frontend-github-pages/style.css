@@ -57,8 +57,10 @@ button {
 
 #screen-home {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   padding: 20px;
 }
 
@@ -70,6 +72,29 @@ button {
   width: 100%;
   max-width: 380px;
   box-shadow: 0 20px 50px rgba(0,0,0,.5);
+}
+
+/* Annuaire des salons publics : second rectangle sous le panneau principal. */
+.public-card {
+  background: var(--wood);
+  border: 1px solid var(--wood-light);
+  border-radius: 18px;
+  padding: 18px 20px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.5);
+}
+.public-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.public-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: .3px;
 }
 
 .logo {
@@ -208,6 +233,15 @@ input::placeholder { color: rgba(247,241,227,.4); }
   color: rgba(247,241,227,.6);
   font-weight: 500;
   font-size: 13px;
+}
+/* Bouton compact en ligne (ex. « Actualiser » dans l'en-tête de l'annuaire). */
+.btn-small {
+  display: inline-block;
+  width: auto;
+  margin-top: 0;
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 9px;
 }
 .btn-big { font-size: 17px; padding: 16px; }
 .btn:disabled { opacity: .4; }

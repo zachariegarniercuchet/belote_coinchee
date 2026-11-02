@@ -90,9 +90,10 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `benchmarks/bots.py`, `benchmarks/README.md` | Comparaison reproductible des bots via le moteur web, calibration des contrats et diagnostic des entames à l'atout, sans toucher au serveur actif. |
 | `benchmarks/cardplay.py` | Donnes en dupliqué : mêmes cartes, historique d'enchères, contrat et entame ; comparaison du jeu v1/v3/v4, contrôles de défense et SA/TA. |
 | `tests/test_lobby.py` | Un parcours Socket.IO : changement de siège, bot restauré, conflit simultané, homonymes et reconnexion. |
-| `tests/test_spectators.py` | Salon public : annuaire, spectateur sans main, reprise d'un siège de bot entre deux donnes, témoin privé. |
+| `tests/test_spectators.py` | Salon public : annuaire avec créateur, spectateur sans main, reprise d'un siège de bot entre deux donnes, témoin privé, fermeture automatique des salons abandonnés. |
 | `tests/test_time_control.py` | Échiquier de temps du salon : réglage partagé et verrouillé au démarrage, coup forcé par le bot de secours, joueur viré quand son temps total est épuisé. |
 | `tests/test_supabase_config.py` | Injection des clés Supabase dans la page, repli invité sans configuration et service de `auth.js`. |
+| `tests/test_room_links.py` | QR code et lien de partage : URL publique déduite de l'hôte de la requête (Render), IP Wi-Fi en local et surcharge `PUBLIC_BASE_URL`. |
 | `requirements.txt` | Dépendances web : Flask, Flask-SocketIO et qrcode avec Pillow. |
 | `render.yaml`, `DEPLOY.md` | Configuration Render et documentation de déploiement. |
 | `README.md`, `belote/bots/README.md` | Présentation, utilisation et procédure d'ajout de bots. |
@@ -152,6 +153,7 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_spectators.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_time_control.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_supabase_config.py
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_room_links.py
 ```
 
 ## Conventions et précautions d'implémentation
@@ -203,7 +205,8 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   `lobby_update`, `state_update`, `public_rooms` et `error_message`.
 - Préserver les identifiants échangés : carte sous la forme `VALET_PIQUE`,
   index d'enchère issu de la liste légale courante, clés de sièges/équipes
-  converties en chaînes dans les objets JSON. Coordonner toute évolution du
+  converties en chaînes dans les objets JSON, jeton d'onglet `token` joint à
+  `join_lobby` et `take_seat`. Coordonner toute évolution du
   protocole entre serveur, sérialisation et interfaces.
 - Pour ajouter un bot, suivre `belote/bots/README.md`, implémenter `Player` et
   passer par `belote.bots.create_bot` / `list_bots`. Conserver les imports
@@ -214,6 +217,13 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   par l'autre sans examiner le diff. `auth.js` et `style.css` sont tenus
   identiques entre la racine et `frontend-github-pages/` ; `app.js` ne l'est
   pas (voir « État initial » plus bas).
+- Le lien de partage et le QR code du salon viennent de `get_base_url()` dans
+  `server.py` : `PUBLIC_BASE_URL` si défini, sinon l'hôte de la requête
+  (schéma pris à `X-Forwarded-Proto`), et IP Wi-Fi seulement pour `localhost`,
+  une IP privée ou un nom de poste. Ne pas recalculer ce lien côté frontend :
+  `app.js` appelle `/room/<code>/info` et `/room/<code>/qr.png` via
+  `backendUrl()` afin qu'ils visent le backend configuré, même depuis GitHub
+  Pages.
 - Les comptes sont **optionnels** : sans `SUPABASE_URL` ni `SUPABASE_ANON_KEY`,
   la page ne montre aucune trace de compte et `auth.js` ne charge aucune
   bibliothèque. Ne jamais rendre une connexion obligatoire pour jouer, ne
@@ -396,6 +406,21 @@ salon est personnalisé avec `your_seat` ; le client attend cette confirmation
 et ne déduit pas son siège du prénom. Pendant la partie, interdire changements
 et départs, mais permettre la reconnexion à son siège réservé.
 
+La reconnexion ne repose ni sur le prénom ni sur le sid seuls : iOS met Safari
+en veille sans fermer la WebSocket, donc le serveur détecte la déconnexion avec
+retard et le joueur revient avec un **nouveau** sid alors que le siège porte
+encore l'ancien. Chaque onglet génère un jeton (`sessionStorage`
+`belote_token`) envoyé dans `join_lobby` et `take_seat` ; `Seat.token` le
+conserve et `Room.reclaim_seat` reprend le siège **même si l'ancien sid est
+encore attaché**, en expulsant la connexion périmée. Sans jeton, la reprise par
+prénom n'a lieu que si le siège est libre : un homonyme ne doit jamais voler la
+place. Effacer le jeton dès qu'un siège est libéré (`leave_seat`,
+`release_seat_to_bot`), sinon il permettrait de reprendre une place abandonnée.
+Le client mémorise aussi code + prénom (`sessionStorage` `belote_room`) et
+rejoint automatiquement au rechargement ; « Quitter le salon » efface cette
+entrée avant de recharger, et un salon disparu retombe sur l'accueil. Les deux
+fichiers `app.js` portent cette logique à l'identique.
+
 Un salon se crée en public ou en privé (public par défaut). Un salon privé
 garde son comportement d'origine : accès par code, aucun spectateur. Un salon
 public figure dans l'annuaire de l'accueil (`list_public_rooms` →
@@ -410,6 +435,26 @@ tous, et `GameSession.apply_pending_takeovers()` permute le bot en
 nouveau joueur reçoit sa main. Aucune donne en cours n'est interrompue ; le
 bouton n'apparaît que sur les sièges de bot occupés. Un spectateur ne redevient
 jamais spectateur volontairement : il reste joueur jusqu'à la fin de la partie.
+
+L'annuaire vit dans un rectangle séparé `#public-card` sous le panneau
+principal de l'accueil (l'onglet « Salons publics » a été supprimé). Il est
+toujours visible, affiche « Aucun salon » quand la liste est vide, propose un
+bouton **Actualiser** et un champ prénom, et montre le créateur de chaque
+salon (`created_by`, transmis par `Room` → `public_rooms`).
+
+Les salons abandonnés sont fermés automatiquement, sans jamais interrompre une
+partie ni déconnecter un joueur : `purge_expired_rooms()` dans `server.py`
+ne supprime que les salons **sans partie en cours** et **sans aucune
+connection humaine attachée** (détecté via `sid_info`, qui compte aussi les
+joueurs de lobby d'un salon privé, non suivis sur le `Room`). Deux seuils,
+mesurés depuis `Room.last_activity` (rajeuni à chaque action humaine,
+création/jonction/siège/coup/déconnexion) : `EMPTY_ROOM_IDLE` (30 min) pour un
+salon nu, `NO_HUMAN_IDLE` (2 h) pour un salon qui a accueilli des joueurs ou
+une partie. Le balayage tourne à chaque demande d'annuaire et dans une tâche
+de fond démarrée uniquement sous `__main__` (`_purge_loop`), jamais à
+l'import. Ne jamais purger un salon joué : `GameSession.stop()` n'est jamais
+appelé et `_wait_for_choice` attend sans timeout, un arrêt laisserait un
+thread orphelin.
 
 L'échiquier de temps se règle dans le salon, à côté du score cible, et vaut
 pour toute la partie : deux sélecteurs (`#move-time`, `#total-time`) envoient
@@ -723,3 +768,94 @@ vérifie deux donnes passées, le donneur suivant, les phases, scores et états 
   Un compte de test `e2e.1792447462@gmail.com` existe et peut être supprimé
   dans Authentication → Users ; les inscriptions précédentes avaient été
   bloquées (adresse invalide puis limite d'emails) et n'avaient rien créé.
+
+## Mise à jour du 31 octobre 2026 — annuaire sous le panneau et fermeture des salons
+
+- Annuaire déplacé : l'onglet « Salons publics » a disparu, la liste vit
+  dans `#public-card` sous `.home-card`, toujours visible, avec « Aucun
+  salon », **Actualiser**, champ prénom et créateur (`created_by`).
+  `style.css` resynchronisé entre les deux frontends.
+- Fermeture automatique des salons abandonnés : `purge_expired_rooms()` et
+  `_purge_loop()` dans `server.py`, seuils `EMPTY_ROOM_IDLE` (30 min) /
+  `NO_HUMAN_IDLE` (2 h) dans `rooms.py`, jamais pendant une partie ni avec
+  un humain connecté.
+- Tests : `test_spectators.py` (2), `test_lobby.py`, `test_time_control.py`,
+  `test_autoplay.py`, `test_claim.py`, `test_hand_order.py`,
+  `test_supabase_config.py` — tous OK.
+- **Échec préexistant** : `tests/test_contract_modes.py` échoue (10
+  échecs, RNG/moteur) **avec et sans** les changements de cette livraison
+  (vérifié via `git stash`). Distinct des 2 échecs connus de `test_rules.py`.
+  Ne pas le faire passer en touchant au moteur sans demande explicite.
+- Vérification navigateur **faite** : accueil (12/12) — onglet absent,
+  carte sous le panneau, message vide, création de salon Zoé présente avec
+  « par Zoé », aucune erreur JS ; purge (3/3) — serveur démarrant avec la
+  purge câblée, annuaire et salon créé fonctionnels. Les seuils 30 min / 2 h
+  sont couverts par l'unitaire (horloge manipulée), pas par le navigateur.
+
+## Mise à jour du 31 octobre 2026 — QR code et lien de partage
+
+- Bug constaté : le QR code du salon encodait une URL locale.
+  `get_base_url()` retombait sur `LAN_IP`, c'est-à-dire l'adresse interne du
+  conteneur Render, `PUBLIC_BASE_URL` étant vide dans `render.yaml` : le scan
+  ouvrait un serveur injoignable au lieu de
+  `https://belote-coinchee-g77g.onrender.com`.
+- Correctif serveur : `get_base_url()` déduit l'URL de l'hôte de la requête.
+  Un hôte public est repris tel quel avec le schéma de `X-Forwarded-Proto`
+  (Render) ; `LAN_IP` reste réservée à `localhost`, à une IP privée, à un nom
+  de poste et à un nom `.local`, comme avant. `PUBLIC_BASE_URL` garde son rôle
+  de surcharge (laisser vide sur Render, renseigner seulement pour viser une
+  autre adresse, par exemple GitHub Pages).
+- `app.js` (racine et `frontend-github-pages/`) : nouvelle fonction
+  `backendUrl()` qui préfixe `/room/<code>/info` et `/room/<code>/qr.png`
+  (comme elle le faisait déjà pour les portraits de bots). Sans elle, la copie
+  statique demandait ces URLs à GitHub Pages, qui renvoie 404.
+- `frontend-github-pages/index.html` : `window.BELOTE_BACKEND_URL` passe de
+  l'exemple `https://VOTRE-SERVICE.onrender.com` à
+  `https://belote-coinchee-g77g.onrender.com`.
+- Tests : nouveau `tests/test_room_links.py` (2 tests : lien public derrière
+  le proxy Render et PNG du QR comparé octet à octet, puis IP Wi-Fi en local
+  et surcharge `PUBLIC_BASE_URL`). Suites relues : `test_autoplay.py`,
+  `test_claim.py`, `test_hand_order.py`, `test_lobby.py`,
+  `test_spectators.py`, `test_time_control.py`, `test_supabase_config.py`,
+  `test_room_links.py` — tous OK ; `test_card_play_rules.py` 17/0 ;
+  `test_rules.py` toujours 16 réussites / 2 échecs connus ;
+  `test_contract_modes.py` toujours ses 10 échecs préexistants ;
+  `node --check` OK sur les quatre fichiers JS.
+- Vérification navigateur **non faite** pour ce changement : le QR n'a pas été
+  scanné depuis un téléphone. L'URL encodée est couverte par
+  `test_room_links.py` (PNG comparé) et par l'inspection de la page servie
+  par Render ; un redéploiement est nécessaire pour confirmer en conditions
+  réelles.
+
+## Mise à jour du 1er novembre 2026 — reprise du siège après suspension
+
+- Bug constaté sur iPhone : parti de la partie dans WhatsApp puis revenu dans
+  Safari, le joueur était repassé spectateur (« choisis un siège ») et la
+  table restait bloquée sur son siège.
+- Cause : iOS met Safari en veille sans fermer la WebSocket. Le serveur
+  détecte la déconnexion avec retard, donc `join_lobby` retrouvait le siège
+  encore tenu par l'ancien sid, ne reprenait rien (`seat.sid is None`
+  requis) et le joueur devenait spectateur ; `take_seat` refusait aussi, et
+  rien ne réessayait ensuite. `Room.rebind_sid` existait déjà mais n'était
+  jamais appelée.
+- Correctif : jeton d'onglet en `sessionStorage`, joint à `join_lobby` et
+  `take_seat`, conservé dans `Seat.token` ; `Room.reclaim_seat` reprend le
+  siège même avec un ancien sid vivant. Effacé quand le siège est libéré.
+  Code + prénom mémorisés pour reprendre après un rechargement ; « Quitter
+  le salon » les efface.
+- Le bot de secours ne joue toujours qu'à l'expiration du temps réglé :
+  aucun délai de grâce n'a été ajouté, `_wait_for_choice` et
+  `_wait_for_recap` restent sans timeout et une partie sans échiquier de
+  temps attend toujours indéfiniment un joueur parti. Choix explicite de
+  l'utilisateur ; à revoir s'il faut un relais.
+- Tests : `test_lobby.py` (2, dont le nouveau
+  `test_stale_seat_is_reclaimed_by_session_token`), `test_spectators.py`,
+  `test_time_control.py`, `test_autoplay.py`, `test_claim.py`,
+  `test_hand_order.py`, `test_supabase_config.py`, `test_room_links.py` —
+  tous OK ; `node --check` OK sur les deux `app.js`, qui ne divergent que
+  sur les trois écarts documentés du récapitulatif.
+- Vérification navigateur **faite** (10/10, Chromium, port 5075) : siège
+  pris, jeton et salon mémorisés, rechargement qui revient au même siège,
+  second onglet portant le même jeton qui reprend le siège alors que la
+  première connexion est encore vivante, « Quitter le salon » qui retourne
+  à l'accueil en effaçant le salon mais pas le jeton, aucune erreur JS.

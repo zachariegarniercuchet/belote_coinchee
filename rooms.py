@@ -19,6 +19,15 @@ from belote.bots import DEFAULT_BOT_ID, is_valid_bot, list_bots
 SEATS = (0, 1, 2, 3, "board")
 PLAYER_SEATS = (0, 1, 2, 3)
 
+# Fermeture automatique d'un salon inactif, en secondes, mesurée depuis la
+# dernière interaction humaine (création, jonction, prise/quitus de siège,
+# déconnexion). Un salon n'est jamais fermé pendant une partie en cours ni
+# tant qu'au moins une connection humaine lui est attachée. Deux seuils :
+# un salon « nu » (aucun siège occupé, aucune partie) est réclamé plus vite
+# qu'un salon qui a servi (sièges réservés ou partie déjà jouée).
+EMPTY_ROOM_IDLE = 30 * 60     # salon nu : 30 min
+NO_HUMAN_IDLE = 2 * 60 * 60   # salon marqué mais sans humain : 2 h
+
 # Échiquiers de temps proposés dans le salon, en secondes. 0 = illimité.
 # Les deux listes servent de liste blanche côté serveur et de propositions
 # côté client : le sélecteur du lobby est construit à partir d'ici.
@@ -39,11 +48,16 @@ CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 
 class Seat:
-    __slots__ = ("sid", "name")
+    __slots__ = ("sid", "name", "token")
 
-    def __init__(self, sid: str | None = None, name: str | None = None):
+    def __init__(self, sid: str | None = None, name: str | None = None,
+                 token: str | None = None):
         self.sid = sid
         self.name = name
+        # Jeton d'onglet du joueur qui occupe la place. Il survit à une
+        # suspension (iOS met Safari en veille sans fermer la WebSocket) et à
+        # un rechargement : voir Room.reclaim_seat.
+        self.token = token
 
     @property
     def occupied(self) -> bool:
@@ -51,9 +65,15 @@ class Seat:
 
 
 class Room:
-    def __init__(self, code: str, visibility: str = "public"):
+    def __init__(self, code: str, visibility: str = "public", created_by: str | None = None):
         self.code = code
         self.created_at = time.time()
+        # Dernière interaction humaine dans ce salon (création, jonction,
+        # prise/quitus de siège, coup, déconnexion). Sert de base à la
+        # fermeture automatique des salons abandonnés (voir server.purge).
+        self.last_activity = time.time()
+        # Prénom du créateur, affiché dans l'annuaire public.
+        self.created_by = created_by
         self.lock = threading.RLock()
         self.seats: dict = {s: Seat() for s in SEATS}
         self.game_session = None  # web.game_session.GameSession, une fois la partie lancée
@@ -76,6 +96,28 @@ class Room:
         # Bot choisi par siège (siège vide au démarrage -> rempli par ce bot).
         # Modifiable depuis le lobby par n'importe quel membre du salon.
         self.bot_choices: dict[int, str] = {p: DEFAULT_BOT_ID for p in PLAYER_SEATS}
+
+    def touch(self) -> None:
+        """Marque une activité humaine récente dans ce salon (repousse l'expiration)."""
+        with self.lock:
+            self.last_activity = time.time()
+
+    def idle_seconds(self, now: float | None = None) -> float:
+        """Secondes écoulées depuis la dernière activité humaine."""
+        with self.lock:
+            base = self.last_activity
+        return (now if now is not None else time.time()) - base
+
+    def is_vacant(self) -> bool:
+        """Vrai si le salon est nu : aucun siège occupé et aucune partie.
+
+        Sert à choisir le seuil de fermeture : un salon nu est fermé plus
+        vite (EMPTY_ROOM_IDLE) qu'un salon qui a accueilli des joueurs ou une
+        partie (NO_HUMAN_IDLE), même sans humain connecté.
+        """
+        with self.lock:
+            occupied = any(self.seats[s].occupied for s in PLAYER_SEATS)
+            return not occupied and self.game_session is None
 
     def set_bot_choice(self, seat_key, bot_id: str) -> bool:
         """Mémorise le bot qui occupera `seat_key` si un humain ne le prend pas."""
@@ -125,6 +167,9 @@ class Room:
             sid, name = slot.sid, slot.name
             slot.sid = None
             slot.name = None
+            # Le siège est abandonné : son jeton ne doit plus permettre de le
+            # reprendre (le joueur a été viré par son temps total épuisé).
+            slot.token = None
             if is_valid_bot(bot_id):
                 self.bot_choices[seat] = bot_id
             if sid is not None:
@@ -221,16 +266,22 @@ class Room:
                 "game_over": self.game_session is not None and self.game_session.finished,
             }
 
-    def take_seat(self, seat_key, sid: str, name: str) -> bool:
+    def take_seat(self, seat_key, sid: str, name: str, token: str | None = None) -> bool:
         with self.lock:
             seat = self.seats.get(seat_key)
             if seat is None:
                 return False
+            # Même onglet (jeton identique) : c'est bien le même joueur qui se
+            # rasseoit, même si son ancien sid est encore attaché au siège
+            # (déconnexion pas encore détectée) ou si son prénom a changé.
+            same_session = bool(token) and seat.token == token
             # Un homonyme connecté n'est pas le propriétaire du siège.
             # Un siège déconnecté reste réservé à son nom pour la reconnexion.
-            if seat.occupied and seat.sid != sid and (seat.sid is not None or seat.name != name):
+            if (seat.occupied and seat.sid != sid and not same_session
+                    and (seat.sid is not None or seat.name != name)):
                 return False
             if (self.game_session and not self.game_session.finished
+                    and not same_session
                     and (not seat.occupied or seat.name != name)):
                 return False
             # Vérifier la destination AVANT de libérer l'ancien siège. Le verrou
@@ -239,9 +290,36 @@ class Room:
                 if s.sid == sid:
                     s.sid = None
                     s.name = None
+                    s.token = None
             seat.sid = sid
             seat.name = name
+            if token:
+                seat.token = token
             return True
+
+    def reclaim_seat(self, sid: str, name: str, token: str | None = None) -> bool:
+        """Reprend le siège d'un joueur qui revient dans le salon.
+
+        Priorité au jeton d'onglet : il désigne la même session même quand
+        l'ancien sid est toujours attaché au siège, car la déconnexion n'est
+        pas encore détectée (Safari en veille sur iOS ne ferme pas la
+        WebSocket). Sans jeton, on retombe sur le prénom, mais uniquement si le
+        siège est libre : on ne prend jamais la place d'un homonyme connecté.
+        """
+        with self.lock:
+            if self.seat_of_sid(sid) is not None:
+                return False
+            if token:
+                for seat in self.seats.values():
+                    if seat.token and seat.token == token:
+                        seat.sid = sid
+                        seat.name = name
+                        return True
+            for seat in self.seats.values():
+                if seat.name == name and seat.sid is None:
+                    seat.sid = sid
+                    return True
+            return False
 
     def rebind_sid(self, seat_key, sid: str) -> None:
         """Reconnexion : on retrouve le même siège via le nom, on met juste à jour le sid."""
@@ -256,6 +334,8 @@ class Room:
             if seat is not None:
                 seat.sid = None
                 seat.name = None
+                # Départ volontaire : le jeton ne doit plus reprendre ce siège.
+                seat.token = None
 
     def seat_of_sid(self, sid: str):
         with self.lock:
@@ -280,10 +360,10 @@ class RoomManager:
             if code not in self._rooms:
                 return code
 
-    def create_room(self, visibility: str = "public") -> Room:
+    def create_room(self, visibility: str = "public", created_by: str | None = None) -> Room:
         with self._lock:
             code = self._generate_code()
-            room = Room(code, visibility=visibility)
+            room = Room(code, visibility=visibility, created_by=created_by)
             self._rooms[code] = room
             return room
 
@@ -307,6 +387,7 @@ class RoomManager:
                 listing.append({
                     "code": room.code,
                     "phase": phase,
+                    "created_by": room.created_by,
                     "target_score": room.target_score,
                     "player_count": sum(1 for p in PLAYER_SEATS if room.seats[p].occupied),
                     "spectator_count": len(room.spectators),
@@ -319,6 +400,11 @@ class RoomManager:
             return None
         with self._lock:
             return self._rooms.get(code.upper())
+
+    def all_rooms(self) -> list[Room]:
+        """Copie de la liste des salons, pour un balayage sans retenir le verrou."""
+        with self._lock:
+            return list(self._rooms.values())
 
     def remove(self, code: str) -> None:
         with self._lock:
