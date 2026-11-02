@@ -59,12 +59,14 @@ Rules and values follow §11 of the repository's FFB PDF.
   partner with non-master points; take with a safe winner or the weakest
   current winner when overtaking remains possible. TA still requires climbing.
 
-The [current full-game comparison](../../benchmarks/2026-11-01-current-bots.md)
+The [latest full-game comparison](../../benchmarks/2026-11-01-current-bots.md)
 at `51c8d48` runs 800 games on fresh seeds 52000–52049, including V4's
 held-master protection. V1/V2/V3/V4 win 50.0/33.5/46.5/45.5% overall.
 V4 makes 90.7% of suited contracts, 63.1% SA and 72.2% TA; SA remains its
 least reliable mode. V4 minus V3 is −1 percentage point in game wins,
 seed-cluster 95% interval [−3, +1]; no improvement is established on this lot.
+This snapshot predates the clarification limiting attacking master
+preservation to last seat when a winning trump is available.
 
 The earlier [frozen-contract card comparison](../../benchmarks/2026-11-01-cardplay.md)
 replays V1/V3/V4 on the same 500 distributions and public auctions, after
@@ -198,11 +200,16 @@ may still hold trump. With no possible enemy trump there is no hunt.
 This restores V3's partner-return exception following David's clarification.
 Forced following/cutting/overcutting remains legal and required;
 the public first-trump marker resets each deal. No late-deal threshold.
-When following a trump lead, in attack or defence, keep a held master and
-play the weakest legal card. Climbing is mandatory: spend the master if it
+When following a trump lead in attack, take the highest-point safe winner in
+second or third seat: usually a master, or no possible enemy overtrump on
+public information. Without a safe winner, risk only the weakest current
+winner. In last seat, keep a held
+master by playing the weakest legal winner. Defence retains master
+preservation in every seat. If no card wins, spare the next master likewise.
+Climbing is mandatory: spend the master if it
 is the only legal choice. Publicly fallen honours, including the current
-trick, determine the next master (9 after J, etc.). Without a held master,
-take the winner worth the most points. When
+trick, determine the next master (9 after J, etc.). In last seat or defence,
+without a held master, take the winner worth the most points. When
 cutting/overcutting a side suit in attack, keep the smallest sufficient legal
 trump. Do not apply the following rule to leads: lead J first, a master next,
 otherwise small (do not sacrifice 9 under an unseen J if a lower trump exists).

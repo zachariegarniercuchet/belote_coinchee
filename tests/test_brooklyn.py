@@ -359,7 +359,7 @@ class BrooklynTests(unittest.TestCase):
             self.assertEqual(leader_bot.choose_card(lead_hand, lead, lead_hand), cards("7_PIQUE")[0])
             leader_bot.played_by_suit[Suit.PIQUE].add(Rank.VALET)
             self.assertEqual(leader_bot.choose_card(lead_hand, lead, lead_hand), cards("9_PIQUE")[0])
-            # V4 preserves its master on requested trump in either role.
+            # V4 attack cashes a sure winner in seats 2/3, preserves it last.
             for team in (0, 1):
                 ace_bot = bot_class(0)
                 ace_bot.notify_contract(contract(team))
@@ -380,8 +380,10 @@ class BrooklynTests(unittest.TestCase):
                     taker.notify_contract(contract(team))
                     hand = cards("V_PIQUE", "R_PIQUE", "A_COEUR")
                     trick = TrickState(leader=plays[0][0], atout=Suit.PIQUE, plays=plays)
+                    keep_master = bot_class is BrooklynBotV4 and (team == 1 or len(plays) == 3)
+                    old_small_winner = bot_class is not BrooklynBotV4 and team == 0
                     self.assertEqual(taker.choose_card(hand, trick, trick.legal_cards_for(hand)),
-                                     cards("R_PIQUE" if team == 0 or bot_class is BrooklynBotV4 else "V_PIQUE")[0])
+                                     cards("R_PIQUE" if keep_master or old_small_winner else "V_PIQUE")[0])
                 # Cutting differs from following trump. Defence stays unchanged.
                 for plays, attack_card in (
                     ([(3, cards("A_COEUR")[0])], "7_PIQUE"),
@@ -421,21 +423,27 @@ class BrooklynTests(unittest.TestCase):
                            plays=list(zip([2, 3, 0], cards("D_COEUR", "8_COEUR", "7_PIQUE"))))
         self.assertEqual(nora.choose_card(hand, trick, trick.legal_cards_for(hand)), cards("R_COEUR")[0])
         # Publicly fallen honours promote the next master; mandatory climbing
-        # still spends it when necessary. Without a master, cash the big winner.
+        # still spends it when necessary. Risk only a small winner before last.
         for team in (0, 1):
-            for held, played, lead_card, expected in (
-                (("V_PIQUE", "7_PIQUE"), (), "9_PIQUE", "V_PIQUE"),
-                (("9_PIQUE", "R_PIQUE", "7_PIQUE"), (), "D_PIQUE", "9_PIQUE"),
-                (("9_PIQUE", "R_PIQUE", "7_PIQUE"), (Rank.VALET,), "D_PIQUE", "R_PIQUE"),
-                (("R_PIQUE", "8_PIQUE"), (Rank.VALET, Rank.NEUF, Rank.AS, Rank.DIX), "7_PIQUE", "8_PIQUE"),
-                (("9_PIQUE", "A_PIQUE"), (), "V_PIQUE", "A_PIQUE"),
+            for held, played, lead_card, early_attack, preserved in (
+                (("V_PIQUE", "7_PIQUE"), (), "9_PIQUE", "V_PIQUE", "V_PIQUE"),
+                (("9_PIQUE", "R_PIQUE", "7_PIQUE"), (), "D_PIQUE", "R_PIQUE", "9_PIQUE"),
+                (("A_PIQUE", "R_PIQUE", "7_PIQUE"), (), "D_PIQUE", "R_PIQUE", "A_PIQUE"),
+                (("A_PIQUE", "R_PIQUE", "7_PIQUE"), (Rank.VALET, Rank.NEUF), "D_PIQUE", "A_PIQUE", "R_PIQUE"),
+                (("9_PIQUE", "R_PIQUE", "7_PIQUE"), (Rank.VALET,), "D_PIQUE", "9_PIQUE", "R_PIQUE"),
+                (("R_PIQUE", "8_PIQUE"), (Rank.VALET, Rank.NEUF, Rank.AS, Rank.DIX), "7_PIQUE", "R_PIQUE", "8_PIQUE"),
+                (("9_PIQUE", "A_PIQUE"), (), "V_PIQUE", "A_PIQUE", "A_PIQUE"),
             ):
-                taker = BrooklynBotV4(0)
-                taker.notify_contract(contract(team))
-                taker.played_by_suit[Suit.PIQUE].update(played)
-                hand = cards(*held)
-                trick = TrickState(leader=3, atout=Suit.PIQUE, plays=[(3, cards(lead_card)[0])])
-                self.assertEqual(taker.choose_card(hand, trick, trick.legal_cards_for(hand)), cards(expected)[0])
+                for position in (2, 3, 4):
+                    taker = BrooklynBotV4(0)
+                    taker.notify_contract(contract(team))
+                    taker.played_by_suit[Suit.PIQUE].update(played)
+                    hand = cards(*held)
+                    leader = 5 - position
+                    plays = list(zip(range(leader, 4), cards(lead_card, "7_COEUR", "7_TREFLE")[:position - 1]))
+                    trick = TrickState(leader=leader, atout=Suit.PIQUE, plays=plays)
+                    expected = early_attack if team == 0 and position < 4 else preserved
+                    self.assertEqual(taker.choose_card(hand, trick, trick.legal_cards_for(hand)), cards(expected)[0])
 
         bot.notify_contract(contract(1))  # Defence cashes side aces, not a trump hunt.
         hand = cards("V_PIQUE", "9_PIQUE", "A_COEUR", "R_COEUR")

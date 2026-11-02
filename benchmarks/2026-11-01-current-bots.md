@@ -8,6 +8,12 @@ Belote) ont été recalculées et vérifiées contre les parties brutes.
 
 Révision des bots : `51c8d482f647d74a07d37fc8ddb91c4b0c5d8dfc`. Ce lot inclut les informations publiques de belote, le retour au partenaire ouvreur et la nouvelle protection des atouts maîtres de v4. Sur atout demandé, v4 conserve son maître et joue le plus petit atout légal ; sans maître, il prend du gagnant rapportant le plus de points, en attaque comme en défense. Les entames, coupes et versions v1/v2/v3 ne changent pas dans cette dernière correction.
 
+Ce résultat précède la clarification suivante : en attaque, conserver le
+maître lorsqu'un autre atout gagne uniquement en dernière position ; en
+deuxième et troisième positions, prendre du plus gros gagnant sûr, sinon du
+plus petit gagnant actuel. Les résultats
+ci-dessous restent ceux de `51c8d48` et ne mesurent pas cette clarification.
+
 Brooklyn v1 gagne 50,0 % des parties, v2 33,5 %, v3 46,5 % et v4 45,5 %.
 V4 réussit 382/421 contrats à la couleur (90,7 %), 53/84 en SA (63,1 %)
 et 52/72 en TA (72,2 %). Le SA demeure le mode le moins fiable.
