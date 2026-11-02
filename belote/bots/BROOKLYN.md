@@ -234,13 +234,20 @@ v4 win improvement is established; v1/v2/v3 runtime modules remain frozen.
 
 V5 builds on V4's openings, ordinary partnership bidding and card play,
 with the partner-specific overrides below.
-After our suited bid and partner's switch to another suit, support only the
+After our earlier bid (including SA/TA) and partner's switch to a suit, support only the
 9 (+10) and belote (+20); neither J nor side aces add credit. The exact
 80 -> 90 switch is the exception: side aces still add +10 each, but J does
 not. Trump aces never count as side aces. Read the original amounts at the
 switch even after further raises in the same suit episode. Existing spent
 credits and the no-trump-in-hand deduction remain. A new deal resets memory.
-Ordinary partner openings and SA/TA bidding are unchanged.
+An earlier SA bid already describes side-ace strength: do not count it again
+after partner switches. The reported 90 SA / enemy 100 spades / partner
+120 clubs sequence now passes with two side aces and no club 9/belote,
+instead of bidding 140 clubs. An ordinary partner opening at 100 clubs
+still allows the same hand to support to 120. Existing nominal journeys
+cover both paths. Ordinary partner openings and support of a SA/TA contract
+are unchanged. A possible small two-ten support bonus remains a TODO;
+its amount and required protection are not yet specified.
 
 This convention uses only our hand and public auction history. V1/V2/V3/V4,
 de Belote and the default bot are not changed. Existing partnership and full
@@ -274,8 +281,8 @@ with both team swaps. Both versions win 90/200 games; V5 makes 357/401
 suited contracts versus V4's 356/401. Only three seeds produce different
 recorded trajectories. No win improvement is established, and this does
 not measure partnership understanding with a human.
-That snapshot predates the partner-specific card-play fixes above and does
-not measure current V5 performance.
+That snapshot predates the partner-specific card-play fixes above and the
+SA/TA-to-suit support correction; it does not measure current V5 performance.
 That snapshot predates the later fix retaining the last trump even when
 partner opened; the new fix has journey checks, not a fresh full benchmark.
 Eight short mixed-bot control games also completed; this is an integration

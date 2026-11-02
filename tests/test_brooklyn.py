@@ -193,6 +193,32 @@ class BrooklynTests(unittest.TestCase):
             self.assertEqual(bot.choose_bid(switch_hand, state, only_clubs()),
                              BidAction.enchere(140, Suit.TREFLE))
 
+        # Full reported sequence: N 90 SA, E 100 spades, S 120 clubs.
+        # Two side aces cannot fund N 140 clubs without 9/belote. Initial
+        # partner openings remain ordinary support, including above 90.
+        with patch("belote.bidding.CONTRACT_SUITS", tuple(Suit) + tuple(ContractMode)):
+            hand = cards("A_PIQUE", "10_PIQUE", "A_COEUR", "10_COEUR",
+                         "8_TREFLE", "7_TREFLE", "R_CARREAU", "7_CARREAU")
+            for version in ("brooklyn_v4", "brooklyn_v5"):
+                bot = create_bot(version, 0)
+                state = BiddingState(dealer=1)
+                opening = bot.choose_bid(hand, state, state.legal_actions())
+                self.assertEqual(opening, BidAction.enchere(90, ContractMode.SANS_ATOUT))
+                state.apply(opening)
+                state.apply(BidAction.enchere(100, Suit.PIQUE))
+                state.apply(BidAction.enchere(120, Suit.TREFLE))
+                state.apply(BidAction.passe())
+                expected = (BidAction.passe() if version == "brooklyn_v5"
+                            else BidAction.enchere(140, Suit.TREFLE))
+                self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), expected)
+                self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), expected)
+                bot.notify_donne_start()
+                state = BiddingState(dealer=3)
+                state.apply(BidAction.enchere(100, Suit.TREFLE))
+                state.apply(BidAction.passe())
+                self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()),
+                                 BidAction.enchere(120, Suit.TREFLE))
+
         # Recoverable-card v3 rejects unsupported strength, then each partner's
         # J/9, side aces and two-trump belote count once.
         risky = cards("9_PIQUE", "A_PIQUE", "10_PIQUE", "10_COEUR", "R_COEUR", "D_COEUR", "R_TREFLE", "D_TREFLE")

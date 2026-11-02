@@ -73,6 +73,9 @@
 
 ## TODO — bidding variants (deferred)
 
+- Soutien Brooklyn v5 après notre annonce puis changement de couleur du
+  partenaire : étudier une petite prime pour deux dix. Préciser le montant
+  et la protection nécessaire (dix seconds, longueur, etc.) avant de l'activer.
 - Générale means all eight tricks won by the bidder alone, rather than by
   their team. Keep its selector entry commented out after Capot until the
   contract rules, validation and scoring are specified and implemented.
@@ -339,14 +342,17 @@ les priorités de partenaire suivantes (le jeu de v4 reste inchangé) :
   sauf A-10 en main ou as publiquement menacé de coupe dans les deux dernières
   cartes. Quand toutes les cartes légales sont protégées, en jouer une reste
   obligatoire. Ce choix vaut à une couleur et en SA ; le TA reste inchangé.
-Si le partenaire change de couleur après la dernière annonce
-à une couleur du joueur, son soutien à cette nouvelle couleur ne compte que
+Si le partenaire annonce une nouvelle couleur après la dernière annonce
+du joueur, y compris si celle-ci était SA ou TA, son soutien ne compte que
 le 9 (+10) et la belote (+20), sans valet ni as. Exception : un changement
 exact de 80 à 90 autorise aussi +10 par as hors du nouvel atout. Lire les
 montants à l'entrée de cet épisode de couleur, pas ceux d'une surenchère
 ultérieure. Déduire les crédits déjà dépensés ; conserver le retrait de 10
-sans atout. Sans changement de couleur par le partenaire, ou en SA/TA,
-garder les enchères de v4. Tous les choix utilisent seulement la main propre
+sans atout. Une annonce SA décrit déjà notamment les as : ne pas les ajouter
+de nouveau après le changement de couleur (90 SA → 120 trèfle n'autorise
+pas 140 trèfle avec deux as sans 9 ni belote). Sans changement de couleur
+par le partenaire, ou quand le contrat à soutenir est SA/TA, garder les
+enchères de v4. Tous les choix utilisent seulement la main propre
 et l'historique public. La variante défensive envisagée plus haut reste
 différée et n'est pas la v5. Ne pas modifier v1/v2/v3/v4 ni de Belote en
 ajustant v5 ; le bot par défaut reste inchangé.
