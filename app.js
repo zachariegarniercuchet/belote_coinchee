@@ -1436,7 +1436,6 @@
 
     const actionsRow = document.createElement("div");
     actionsRow.className = "bid-actions-row";
-    actionsRow.appendChild(confirmBtn);
     {
       const b = document.createElement("button");
       b.className = "bid-chip pass";
@@ -1456,8 +1455,9 @@
       b.onclick = () => {
         if (doubleAction) socket.emit("bid_choice", { code: roomCode, index: doubleAction.index });
       };
-      actionsRow.appendChild(b);
+      actionsRow.prepend(b);
     }
+    actionsRow.appendChild(confirmBtn);
     container.appendChild(actionsRow);
   }
 

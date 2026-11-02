@@ -530,8 +530,10 @@ changer ce choix ; le montant initial reste le minimum légal.
 L'entrée Générale reste commentée après Capot dans
 les deux interfaces ; la Générale reste suivie dans les TODO ci-dessus.
 Le panneau d'enchères utilise trois lignes compactes : six choix de contrat,
-montant −/+ sur toute la largeur, puis Confirmer/Passer/Coincher sur la même
-ligne. Les trois boutons restent présents, grisés quand l'action est illégale ;
+montant −/+ sur toute la largeur, puis Coincher/Passer/Confirmer sur la même
+ligne. Les deux lignes partagent trois colonnes : Coincher sous −, Passer
+sous le montant, Confirmer sous +. Les trois boutons restent présents,
+grisés quand l'action est illégale ;
 le dernier devient Surcoincher lorsque cette action est légale. Le titre reste
 accessible aux lecteurs d'écran. Taille et position sont choisies UNE FOIS
 au chargement à partir de la taille de l'écran, puis verrouillées en pixels

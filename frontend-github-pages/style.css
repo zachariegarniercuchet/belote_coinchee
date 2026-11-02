@@ -959,9 +959,9 @@ input::placeholder { color: rgba(247,241,227,.4); }
   text-align: center;
 }
 .bid-suit-row { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); align-items: center; gap: 4px; margin: 0; }
-.bid-amount-row { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; gap: 8px; align-items: center; }
+.bid-amount-row { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; align-items: center; }
 .bid-amount { text-align: center; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--gold-light); }
-.bid-amount-row .bid-step-btn { min-height: 40px; padding: 0; font-size: 24px; line-height: 1; }
+.bid-amount-row .bid-step-btn { width: 48px; justify-self: center; min-height: 40px; padding: 0; font-size: 24px; line-height: 1; }
 .bid-step-btn:disabled { opacity: .3; cursor: default; }
 .bid-suit-btn {
   background: rgba(255,255,255,.08);
