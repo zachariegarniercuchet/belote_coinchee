@@ -249,6 +249,14 @@ cover both paths. Ordinary partner openings and support of a SA/TA contract
 are unchanged. A possible small two-ten support bonus remains a TODO;
 its amount and required protection are not yet specified.
 
+The [paired before/after comparison](../../benchmarks/2026-11-02-sa-switch.md)
+at `42d3661` isolates this SA/TA-to-suit support correction from `6029e7c`,
+with identical card play. On 400 games (200 per revision), both win 99/200
+and make 504/616 contracts. Four initial bid reductions occur on achieved
+capots, with no win or contract-success change. SA remains 60/110 (54.5%)
+in both lots. This does not establish equivalence on other deals or measure
+the convention with a human partner.
+
 This convention uses only our hand and public auction history. V1/V2/V3/V4,
 de Belote and the default bot are not changed. Existing partnership and full
 game journeys cover the new version, including console/web parity. The

@@ -19,7 +19,10 @@ all selected versions have full metric rows and per-game records.
 Use `--brooklyn brooklyn_v3 brooklyn_v4` for a 400-game paired comparison of
 the new v4 with its unchanged v3 control.
 Use `--brooklyn brooklyn_v4 brooklyn_v5` to compare V5's suit-switch support
-convention against current V4 with identical card play (400 games at 50 pairs).
+convention and partner-specific card play against current V4 (400 games at
+50 pairs). Their card play is no longer identical: only the historical
+comparison at `40e343d` isolates the initial bidding convention. To isolate
+a later V5 change, replay V5 on the same seeds at its before/after revisions.
 Progress is printed to stderr; the summary goes to stdout. Optional JSON
 output also contains every game's deal outcomes and lead counts, plus the
 source revision, so reported metrics can be audited.
@@ -106,6 +109,10 @@ condition to keep result artifacts small without removing data.
 
 ## Saved comparisons
 
+- [V5 support after an SA/TA opening](2026-11-02-sa-switch.md): 400 paired
+  full games before/after `42d3661`, fresh seeds 56000–56049, identical V5
+  card play and de Belote opponents. Both win 99/200 and make 504/616
+  contracts. Four initial bid reductions occur on capots; no win gain shown.
 - [V5 support after partner changes suit](2026-11-02-v5.md): 400 paired
   full games, current V4 versus V5, seeds 54000–54049, identical card play
   and de Belote opponents. Both win 45%; suited success 88.8% versus 89.0%.
