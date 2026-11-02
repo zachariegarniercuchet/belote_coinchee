@@ -33,6 +33,25 @@
   or implementation detail. Reuse or extend existing coverage before adding
   tests; justify additions by a meaningful behavior or regression risk.
 
+## TODO prioritaire — Sans Atout : jeu de carte et calibration
+
+- Revoir en profondeur le jeu de carte SA : David signale des parties où
+  Brooklyn v5 perd ses as. Reproduire ces pertes et distinguer les coups
+  forcés des mauvais choix ; ne pas conclure à une régression propre à v5
+  sans comparer les mêmes situations et la politique SA partagée.
+- Réexaminer quand encaisser ou conserver un as, les entames, les purges,
+  l'établissement des couleurs, les reprises de main et le soutien au
+  partenaire. Le principal problème signalé est le jeu de carte.
+- Recalibrer aussi les enchères SA : trois as sans dix constituent pour
+  David un repère à 80 SA plutôt que 90. Examiner le reste de la main avant
+  de définir les exceptions ; ne pas augmenter globalement l'ambition.
+- Vérifier les corrections sur quelques donnes nominales représentatives,
+  puis comparer avant/après à cartes et contrat identiques pour isoler le
+  jeu de carte, et en parties complètes pour les enchères. Garder la suite
+  de tests petite ; ne pas ajouter un test atomique pour chaque branche.
+- Cette demande ajoute un TODO : ne pas modifier maintenant les politiques
+  de jeu ni d'enchères, ni étendre une future correction SA au TA/aux couleurs.
+
 ## TODO — test-suite audit (deferred)
 
 - Review whether each existing test protects a useful behavior and identify
