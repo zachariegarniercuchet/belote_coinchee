@@ -246,6 +246,13 @@ de Belote and the default bot are not changed. Existing partnership and full
 game journeys cover the new version, including console/web parity; card play
 is inherited directly, not copied. The deferred defensive policy above is
 not implemented by V5.
+
+The [paired 400-game comparison](../../benchmarks/2026-11-02-v5.md) at
+`40e343d` uses fresh seeds 54000–54049, V4/V5 against de Belote v2/v3,
+with both team swaps. Both versions win 90/200 games; V5 makes 357/401
+suited contracts versus V4's 356/401. Only three seeds produce different
+recorded trajectories. No win improvement is established, and this does
+not measure partnership understanding with a human.
 That snapshot predates the later fix retaining the last trump even when
 partner opened; the new fix has journey checks, not a fresh full benchmark.
 Eight short mixed-bot control games also completed; this is an integration

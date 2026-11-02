@@ -106,6 +106,10 @@ condition to keep result artifacts small without removing data.
 
 ## Saved comparisons
 
+- [V5 support after partner changes suit](2026-11-02-v5.md): 400 paired
+  full games, current V4 versus V5, seeds 54000–54049, identical card play
+  and de Belote opponents. Both win 45%; suited success 88.8% versus 89.0%.
+  Only three seeds yield different recorded trajectories; no win gain shown.
 - [Current Brooklyn vs de Belote](2026-11-01-current-bots.md): 800 complete
   games on fresh seeds 52000–52049 at `51c8d48`, including public belote
   information, partner-return leads and V4's held-master protection on
