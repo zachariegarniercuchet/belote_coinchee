@@ -59,7 +59,14 @@ Rules and values follow §11 of the repository's FFB PDF.
   partner with non-master points; take with a safe winner or the weakest
   current winner when overtaking remains possible. TA still requires climbing.
 
-The [frozen-contract card comparison](../../benchmarks/2026-11-01-cardplay.md)
+The [current full-game comparison](../../benchmarks/2026-11-01-current-bots.md)
+at `51c8d48` runs 800 games on fresh seeds 52000–52049, including V4's
+held-master protection. V1/V2/V3/V4 win 50.0/33.5/46.5/45.5% overall.
+V4 makes 90.7% of suited contracts, 63.1% SA and 72.2% TA; SA remains its
+least reliable mode. V4 minus V3 is −1 percentage point in game wins,
+seed-cluster 95% interval [−3, +1]; no improvement is established on this lot.
+
+The earlier [frozen-contract card comparison](../../benchmarks/2026-11-01-cardplay.md)
 replays V1/V3/V4 on the same 500 distributions and public auctions, after
 the shared public-belote information fix and restoration of V4's return to
 partner's opening suit. V4 makes 86.47% of the attacking suited reference

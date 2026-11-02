@@ -104,6 +104,10 @@ condition to keep result artifacts small without removing data.
 
 ## Saved comparisons
 
+- [Current Brooklyn vs de Belote](2026-11-01-current-bots.md): 800 complete
+  games on fresh seeds 52000–52049 at `51c8d48`, including public belote
+  information, partner-return leads and V4's held-master protection on
+  requested trump. All four versions, both opponents and per-mode calibration.
 - [Card play with frozen contracts](2026-11-01-cardplay.md): 500 distributions,
   1,574 attacking suited reference conditions, v1/v3/v4 replays and 230
   identical defense/SA/TA controls at `c7be4ff`. Includes the public belote
