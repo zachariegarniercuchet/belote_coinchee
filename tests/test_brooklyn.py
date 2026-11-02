@@ -339,28 +339,27 @@ class BrooklynTests(unittest.TestCase):
                              cards("A_COEUR")[0])
 
         for bot_class in (BrooklynBot, BrooklynBotV2, BrooklynBotV3, BrooklynBotV4):
-            # V4 follows trump with J, then leads small from 10/Q. Published
-            # v1/v2/v3 keep their old Q winner, followed by a J lead.
+            # Keep the sure J when Q already wins; lead J on the next trick.
             nora = bot_class(1)
             nora.notify_contract(Contract(player=1, team=1, points=80, suit=Suit.COEUR, is_capot=False))
             nora_hand = cards("A_PIQUE", "V_COEUR", "10_COEUR", "D_COEUR", "R_TREFLE", "9_TREFLE", "10_CARREAU", "V_CARREAU")
             reported = TrickState(leader=2, atout=Suit.COEUR,
                                   plays=list(zip([2, 3, 0], cards("7_COEUR", "8_COEUR", "7_TREFLE"))))
             winner_card = nora.choose_card(nora_hand, reported, reported.legal_cards_for(nora_hand))
-            self.assertEqual(winner_card, cards("V_COEUR" if bot_class is BrooklynBotV4 else "D_COEUR")[0])
+            self.assertEqual(winner_card, cards("D_COEUR")[0])
             reported.play(1, winner_card)
             nora_hand.remove(winner_card)
             nora.notify_trick_result(reported.plays, reported.winner())
             next_trick = TrickState(leader=1, atout=Suit.COEUR)
             self.assertEqual(nora.choose_card(nora_hand, next_trick, next_trick.legal_cards_for(nora_hand)),
-                             cards("D_COEUR" if bot_class is BrooklynBotV4 else "V_COEUR")[0])
+                             cards("V_COEUR")[0])
             leader_bot = bot_class(0)
             leader_bot.notify_contract(contract())
             lead_hand = cards("9_PIQUE", "A_PIQUE", "7_PIQUE", "A_COEUR")
             self.assertEqual(leader_bot.choose_card(lead_hand, lead, lead_hand), cards("7_PIQUE")[0])
             leader_bot.played_by_suit[Suit.PIQUE].add(Rank.VALET)
             self.assertEqual(leader_bot.choose_card(lead_hand, lead, lead_hand), cards("9_PIQUE")[0])
-            # V4 follows with the strongest winner; old versions stay frozen.
+            # V4 preserves its master on requested trump in either role.
             for team in (0, 1):
                 ace_bot = bot_class(0)
                 ace_bot.notify_contract(contract(team))
@@ -382,7 +381,7 @@ class BrooklynTests(unittest.TestCase):
                     hand = cards("V_PIQUE", "R_PIQUE", "A_COEUR")
                     trick = TrickState(leader=plays[0][0], atout=Suit.PIQUE, plays=plays)
                     self.assertEqual(taker.choose_card(hand, trick, trick.legal_cards_for(hand)),
-                                     cards("R_PIQUE" if team == 0 and bot_class is not BrooklynBotV4 else "V_PIQUE")[0])
+                                     cards("R_PIQUE" if team == 0 or bot_class is BrooklynBotV4 else "V_PIQUE")[0])
                 # Cutting differs from following trump. Defence stays unchanged.
                 for plays, attack_card in (
                     ([(3, cards("A_COEUR")[0])], "7_PIQUE"),
@@ -413,6 +412,30 @@ class BrooklynTests(unittest.TestCase):
                              else list(zip([2, 3], cards("7_COEUR", "D_COEUR"))))
                     trick = TrickState(leader=plays[0][0], atout=Suit.PIQUE, plays=plays)
                     self.assertEqual(taker.choose_card(hand, trick, trick.legal_cards_for(hand)), cards(expected)[0])
+
+        # Nora's reported defence: Q, 8, discard; K wins without spending J.
+        nora = BrooklynBotV4(1)
+        nora.notify_contract(Contract(player=2, team=0, points=90, suit=Suit.COEUR, is_capot=False))
+        hand = cards("V_COEUR", "R_COEUR", "7_COEUR", "10_PIQUE", "R_PIQUE", "10_CARREAU", "V_CARREAU", "8_CARREAU")
+        trick = TrickState(leader=2, atout=Suit.COEUR,
+                           plays=list(zip([2, 3, 0], cards("D_COEUR", "8_COEUR", "7_PIQUE"))))
+        self.assertEqual(nora.choose_card(hand, trick, trick.legal_cards_for(hand)), cards("R_COEUR")[0])
+        # Publicly fallen honours promote the next master; mandatory climbing
+        # still spends it when necessary. Without a master, cash the big winner.
+        for team in (0, 1):
+            for held, played, lead_card, expected in (
+                (("V_PIQUE", "7_PIQUE"), (), "9_PIQUE", "V_PIQUE"),
+                (("9_PIQUE", "R_PIQUE", "7_PIQUE"), (), "D_PIQUE", "9_PIQUE"),
+                (("9_PIQUE", "R_PIQUE", "7_PIQUE"), (Rank.VALET,), "D_PIQUE", "R_PIQUE"),
+                (("R_PIQUE", "8_PIQUE"), (Rank.VALET, Rank.NEUF, Rank.AS, Rank.DIX), "7_PIQUE", "8_PIQUE"),
+                (("9_PIQUE", "A_PIQUE"), (), "V_PIQUE", "A_PIQUE"),
+            ):
+                taker = BrooklynBotV4(0)
+                taker.notify_contract(contract(team))
+                taker.played_by_suit[Suit.PIQUE].update(played)
+                hand = cards(*held)
+                trick = TrickState(leader=3, atout=Suit.PIQUE, plays=[(3, cards(lead_card)[0])])
+                self.assertEqual(taker.choose_card(hand, trick, trick.legal_cards_for(hand)), cards(expected)[0])
 
         bot.notify_contract(contract(1))  # Defence cashes side aces, not a trump hunt.
         hand = cards("V_PIQUE", "9_PIQUE", "A_COEUR", "R_COEUR")

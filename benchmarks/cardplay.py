@@ -99,7 +99,7 @@ def first_change(baseline, other, team, suit):
         for position, (old, new) in enumerate(zip(before, after)):
             if old != new:
                 assert old[0] == new[0] and old[0] % 2 == team
-                kind = 'last_trump_lead' if position == 0 else 'winning_requested_trump'
+                kind = 'last_trump_lead' if position == 0 else 'requested_trump_follow'
                 if position:
                     assert before[0][1].split('_', 1)[1] == suit
                 return {'trick': trick_no, 'position': position, 'seat': old[0],
@@ -143,7 +143,7 @@ def play_seed(task):
                         records.append(row)
                         continue
                     logs = {v: replay(seed, team, opponent, v, hands, state) for v in VERSIONS}
-                    if kind != 'attack_suit':
+                    if kind in ('SANS_ATOUT', 'TOUT_ATOUT'):
                         baseline = logs[VERSIONS[0]]
                         # These card policies are common: a divergence is a
                         # wiring/information bug, not an estimated advantage.
@@ -161,7 +161,7 @@ def play_seed(task):
                         follow_change = first_change(row['outcomes']['brooklyn_v3'],
                                                      row['outcomes']['brooklyn_v4'], team, c.suit.name)
                         if follow_change:
-                            assert follow_change['kind'] == 'winning_requested_trump'
+                            assert follow_change['kind'] == 'requested_trump_follow'
                         row['outcomes']['brooklyn_v4']['first_change_vs_v3'] = follow_change
                     cache[key] = row['outcomes']
                 records.append(row)
@@ -204,7 +204,7 @@ def main():
     parser.add_argument('--seeds', type=int, default=500)
     parser.add_argument('--seed', type=int, default=50000)
     parser.add_argument('--control-seeds', type=int, default=50,
-                        help='Replay defense/SA/TA controls on the first N seeds; main attack boards always replayed')
+                        help='Sample defense and SA/TA on the first N seeds; only SA/TA must play identically')
     parser.add_argument('--workers', type=int, default=4)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()

@@ -158,7 +158,7 @@ BOT_REGISTRY: dict[str, dict] = {
         "avatars": [None, None, None, None],
         "version": "v4",
         "author": "David",
-        "description": "À une couleur : Enchères de v3. Lance l'atout même singleton, puis garde le dernier après un tour d'atout. En attaque : gros gagnant sur atout demandé, petite coupe. Défense inchangée. SA/TA : contrôles, cartes récupérables et soutien sans recompter les crédits.",
+        "description": "À une couleur : Enchères de v3. Lance l'atout même singleton, puis garde le dernier sauf pour revenir au partenaire ouvreur. Sur atout demandé : préserve son maître avec le plus petit atout légal, sinon prend du gagnant le plus riche. Petite coupe en attaque ; coupe défensive inchangée. SA/TA : contrôles, cartes récupérables et soutien sans recompter les crédits.",
         "level": 3,
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot_v4(seat, name),

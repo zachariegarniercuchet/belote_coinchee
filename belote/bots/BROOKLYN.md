@@ -98,7 +98,7 @@ CUT is now isolated in v4 below, not retrofitted into the old versions.
 - In v1/v2/v3 attack, take with the weakest sufficient legal trump, whether
   following trump or cutting. V4 changes following only (see below). Legal
   compulsory overtrumps and the safe-partner feeding priority remain.
-  Defence keeps its previous policy in all four versions.
+  V4 also protects held masters when following trump in defence (see below).
 - For non-trump winners, before last seat cash the highest-point reasonably safe winner; otherwise
   use the weakest card that currently wins (K before 10 with A unaccounted for).
   In last seat, cash the highest-point non-trump winner, even with enemy trumps gone.
@@ -191,13 +191,18 @@ may still hold trump. With no possible enemy trump there is no hunt.
 This restores V3's partner-return exception following David's clarification.
 Forced following/cutting/overcutting remains legal and required;
 the public first-trump marker resets each deal. No late-deal threshold.
-When following a trump lead while attacking, take the strongest legal winner. When
+When following a trump lead, in attack or defence, keep a held master and
+play the weakest legal card. Climbing is mandatory: spend the master if it
+is the only legal choice. Publicly fallen honours, including the current
+trick, determine the next master (9 after J, etc.). Without a held master,
+take the winner worth the most points. When
 cutting/overcutting a side suit in attack, keep the smallest sufficient legal
 trump. Do not apply the following rule to leads: lead J first, a master next,
 otherwise small (do not sacrifice 9 under an unseen J if a lower trump exists).
-Defence remains unchanged between the Brooklyn versions. Their versioned
+Defensive cuts remain unchanged between the Brooklyn versions. Their versioned
 trump-play rules remain distinct; shared public-information changes are
-documented above. Benchmark results always belong to their recorded revision.
+documented above. Benchmark results always belong to their recorded revision;
+the comparison at `c7be4ff` predates this master-preservation rule.
 
 The possible context-sensitive defensive-cut version previously called v4
 is now the deferred v5 TODO in AGENTS.md. It is NOT implemented or selectable.

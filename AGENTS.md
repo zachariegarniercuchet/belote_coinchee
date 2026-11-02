@@ -261,9 +261,14 @@ Brooklyn v4 (`brooklyn_v4`) hérite des enchères de v3, distingue la prise
 En attaque, distinguer les trois cas :
 à l'entame, garder la chasse existante (J, sinon atout maître, sinon petit ;
 ne pas sacrifier le 9 sous un J inconnu s'il reste un atout inférieur).
-Sur atout demandé, prendre du plus gros atout légal gagnant ; en coupe ou
-surcoupe d'une couleur annexe, du plus petit atout légal gagnant, même en
-dernier (R avant J si R suffit). La défense reste inchangée. Conserver
+Sur atout demandé, en attaque comme en défense, conserver un atout maître
+détenu et jouer le plus petit atout légal (gagnant si monter est possible).
+Un maître forcé reste joué. Les maîtres sont déduits des cartes publiques,
+y compris celles du pli courant : le 9 devient maître après la chute du J.
+Sans maître détenu, prendre du gagnant rapportant le plus de points.
+En coupe ou surcoupe d'une couleur annexe, l'attaque prend du plus petit
+atout légal gagnant, même en dernier (R avant J si R suffit) ; la politique
+de coupe en défense reste inchangée. Conserver
 la priorité de charger un partenaire déjà maître quand cela reste légal.
 Dans v4, distinguer le seul atout avant le premier tour d'atout et le dernier
 atout après ce tour : avant, chasser normalement ; après, à l'entame, garder

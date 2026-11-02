@@ -86,9 +86,10 @@ trick and public belote notifications are delivered by the web engine.
 Assertions verify equal initial hands, auction, contract and opening lead.
 No hidden hand is passed to an opponent or candidate bot.
 
-On the first 50 seeds, also replay defensive, SA and TA conditions as
-controls: those policies are shared and their complete plays/scores must
-match exactly. Passed-out auctions and unplayed control conditions remain
+On the first 50 seeds, also replay defensive, SA and TA conditions.
+Only SA/TA policies are shared and their complete plays/scores must match
+exactly. V4's suited defence now preserves held trump masters, so defensive
+samples can differ. Passed-out auctions and unplayed sample conditions remain
 listed in the raw population. All capots and coinches are retained.
 
 Results report earned card/bonus points, awarded score differences and
