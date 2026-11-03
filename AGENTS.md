@@ -101,6 +101,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `rooms.py` | Salons, sièges, connexions, choix des bots et verrous. |
 | `game_session.py` | `NetworkGame`, `NetworkPlayer`, `GameSession` : déroulement web, attente des joueurs et diffusion des états. |
 | `serialize.py` | Conversion cartes/enchères en données JSON et identifiants de cartes. |
+| `game_export.py` | Format JSON d'analyse des donnes terminées, enchères complètes et plis résolus après tablage distingués. |
 | `index.html`, `app.js`, `style.css` | Interface principale, servie par Flask ; `index.html` utilise Jinja. |
 | `auth.js` | Comptes optionnels Supabase : connexion/inscription email, mode invité, historique. Fichier identique dans les deux frontends, chargé après `app.js`. |
 | `logo/` | Emblème source du 10 de trèfle (originaux) et icônes dérivées : favicons 16/32 px et icône Apple 180 px, recolorées aux couleurs du site. |
@@ -109,6 +110,7 @@ gestionnaire de paquets JavaScript ni d'étape de compilation du frontend.
 | `tests/test_rules.py` | Script autonome de vérification des règles et scores. |
 | `tests/test_autoplay.py` | Dernière carte automatique, singletons manuels et redistribution après quatre passes sur le web. |
 | `tests/test_claim.py` | Tablage, exploration des ordres légaux, équivalence des scores console/web et confidentialité des mains. |
+| `tests/test_game_export.py` | Parcours Socket.IO d'export JSON : donnes annulées, couleur/SA/TA, surcoinche, tablage, rejeu légal, scores et reconnexion. |
 | `tests/test_hand_order.py` | Tri par force, alternance rouge/noir et passage à l'ordre d'atout après les enchères. |
 | `tests/test_brooklyn.py` | Stratégie de David, enchères de partenariat v2 et parties légales identiques console/web. |
 | `benchmarks/bots.py`, `benchmarks/README.md` | Comparaison reproductible des bots via le moteur web, calibration des contrats et diagnostic des entames à l'atout, sans toucher au serveur actif. |
@@ -172,6 +174,7 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
 ```powershell
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_autoplay.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_claim.py
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_game_export.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_hand_order.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_lobby.py
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_spectators.py
@@ -232,6 +235,12 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   converties en chaînes dans les objets JSON, jeton d'onglet `token` joint à
   `join_lobby` et `take_seat`. Coordonner toute évolution du
   protocole entre serveur, sérialisation et interfaces.
+- L'export `export_game` exige l'appartenance au salon et le `game_id` courant.
+  `GameSession` publie un instantané complet après chaque donne, même annulée,
+  sous son verrou ; ne jamais lire les mains de `ctx` dans le gestionnaire
+  d'export. Le JSON versionné conserve les joueurs au début de chaque donne
+  et distingue les plis résolus après tablage des choix effectivement joués.
+  Le format est documenté dans README.md ; aucun jeton/sid ne doit y figurer.
 - Pour ajouter un bot, suivre `belote/bots/README.md`, implémenter `Player` et
   passer par `belote.bots.create_bot` / `list_bots`. Conserver les imports
   paresseux des fabriques. Le bot par défaut est actuellement `spark_v3`.

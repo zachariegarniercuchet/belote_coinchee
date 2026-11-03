@@ -19,6 +19,7 @@ import random
 import threading
 import time
 import uuid
+from datetime import datetime, timezone
 
 from belote.bidding import BiddingState
 from belote.bots import DEFAULT_BOT_ID, create_bot, get_bot_info, get_bot_name, is_valid_bot
@@ -31,6 +32,7 @@ from belote.scoring import (compute_donne_score, find_belotes, belote_points_by_
 from belote.trick import TrickState, team_of
 
 from extensions import socketio
+from game_export import donne_to_export
 from rooms import PLAYER_SEATS
 from serialize import bid_action_to_dict, card_from_id, card_id, card_to_dict, sorted_hand
 
@@ -71,6 +73,7 @@ class GameContext:
         self.pending_legal_cards = None
         self.turn_deadline = None      # échéance du coup courant (temps serveur), None si illimité
         self.error_message = None
+        self.players_at_start = {}
 
 
 class NetworkPlayer(Player):
@@ -121,6 +124,13 @@ class NetworkGame(Game):
             for team, pts in log.result.final_scores.items():
                 self.cumulative_scores[team] += pts
             self._check_end_conditions(log.result)
+        # Publish one complete snapshot; an export request never reads live hands.
+        exported = donne_to_export(log, len(self.donne_logs), self.session.ctx.players_at_start,
+                                   self.session.ctx.belote_announcements, self.session.ctx.claim)
+        with self.session._lock:
+            self.session._export_deals.append(exported)
+            self.session._export_finished = self.finished
+            self.session._export_winner = self.winner_team
         if log.result is not None:
             self.session.prepare_recap()
         self.session.broadcast()
@@ -135,6 +145,11 @@ class NetworkGame(Game):
         # est remplacé avant la distribution, donc le nouveau joueur reçoit
         # bien sa main. Aucune donne en cours n'est interrompue pour cela.
         self.session.apply_pending_takeovers()
+        ctx.players_at_start = {
+            str(seat): {"name": player.name, "team": team_of(seat),
+                        "bot_id": self.session.bot_profiles.get(seat, {}).get("id")}
+            for seat, player in self.players.items()
+        }
         self.session.arm_fallback_bots()
         self.session.notify_players("notify_donne_start")
 
@@ -349,6 +364,10 @@ class GameSession:
         # Identifiant stable de la partie, diffusé avec l'état : il sert de
         # clé anti-doublon pour l'historique enregistré par un compte connecté.
         self.game_id = uuid.uuid4().hex
+        self.started_at = datetime.now(timezone.utc).isoformat()
+        self._export_deals = []
+        self._export_finished = False
+        self._export_winner = None
         self.finished = False
         self.winner_team = None
         self._stop = False
@@ -401,6 +420,30 @@ class GameSession:
         self.game = NetworkGame(players, target_score=target_score, session=self)
 
     # --- cycle de vie -----------------------------------------------------
+
+    def export_completed_game(self):
+        """Instantané cohérent, disponible aussi après reconnexion, sans la donne en cours."""
+        with self._lock:
+            deals = list(self._export_deals)
+            finished = self._export_finished
+            winner = self._export_winner
+        return {
+            "format": "belote_coinchee.game", "schema_version": 1,
+            "game_id": self.game_id, "started_at": self.started_at,
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "status": "finished" if finished else "in_progress",
+            "target_score": self.game.target_score,
+            "time_control": {"move_seconds": self.move_time_limit,
+                             "total_seconds": self.total_time_limit},
+            "teams": {"0": [0, 2], "1": [1, 3]},
+            "cumulative_scores": {
+                str(team): sum(d["result"]["final_scores"].get(team, 0)
+                               for d in deals if d["result"] is not None)
+                for team in (0, 1)
+            },
+            "winner_team": winner,
+            "deals": deals,
+        }
 
     def run(self):
         try:

@@ -559,6 +559,25 @@ def on_request_state(data):
         socketio.emit("lobby_update", room.lobby_state(request.sid), to=request.sid)
 
 
+@socketio.on("export_game")
+def on_export_game(data):
+    code = (data or {}).get("code")
+    with sid_lock:
+        member = sid_info.get(request.sid)
+        allowed = member is not None and member["code"] == code
+    room = rooms.get(code) if allowed else None
+    session = room.game_session if room else None
+    if session is None:
+        return {"error": "Rejoins une partie pour l'exporter."}
+    # A stale recap must never export a new game started in the same room.
+    if (data or {}).get("game_id") != session.game_id:
+        return {"error": "Cette partie n'est plus disponible dans le salon."}
+    exported = session.export_completed_game()
+    if not exported["deals"]:
+        return {"error": "Aucune donne terminée à exporter pour le moment."}
+    return {"filename": f"belote-{session.game_id}.json", "game": exported}
+
+
 @socketio.on("dismiss_recap")
 def on_dismiss_recap(data):
     room = rooms.get((data or {}).get("code"))

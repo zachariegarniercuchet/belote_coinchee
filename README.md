@@ -88,6 +88,39 @@ tests/
     test_lobby.py       # Parcours Socket.IO : sièges, bots, reconnexion
 ```
 
+## Format JSON d'une partie
+
+Le serveur conserve un export des donnes terminées dans la session de jeu.
+L'événement Socket.IO `export_game` prend `{code, game_id}` et répond uniquement
+au demandeur par un accusé de réception `{filename, game}` (ou `{error}`). Le
+demandeur doit avoir rejoint ce salon. La donne en cours est toujours exclue.
+
+Le document `game` utilise `format: "belote_coinchee.game"` et `schema_version: 1` :
+
+- `game_id`, `started_at`, `exported_at` (dates UTC), `status` (`in_progress` ou
+  `finished`), `target_score`, `time_control` (secondes, 0 = illimité),
+  `teams`, `cumulative_scores` et `winner_team` décrivent la partie exportée.
+- `deals` contient les donnes dans l'ordre, y compris les donnes annulées
+  après quatre passes (`cancelled: true`, sans contrat ni résultat).
+- Chaque donne conserve son numéro, son donneur, son premier joueur, les
+  joueurs au début de la donne (`name`, `team`, `bot_id`, nul pour un humain),
+  les quatre `initial_hands`, tout l'historique d'enchères, le contrat avec
+  sa coinche/surcoinche, les annonces réelles de belote et le résultat détaillé.
+- Les sièges vont de 0 à 3 ; les équipes 0 (A : 0/2) et 1 (B : 1/3).
+  Les cartes sont identifiées comme `VALET_PIQUE`. Les modes sont les quatre
+  couleurs, `SANS_ATOUT` et `TOUT_ATOUT`. Les clés d'objets JSON sont des chaînes.
+- Chaque pli conserve les cartes dans l'ordre de jeu, son gagnant et ses
+  points hors bonus. `resolved_by_claim: true` signale une résolution automatique
+  après tablage : cet ordre de cartes n'est pas un choix des joueurs.
+  `claim.from_trick` indique le premier pli ainsi résolu (numéroté de 1 à 8).
+- `result` conserve les points des plis, les bonus, l'atteinte du contrat,
+  les scores avant arrondi et les scores finaux. Le cumul exclut la donne en cours.
+
+Ces données restent en mémoire tant que la session du salon existe ; elles ne
+sont pas ajoutées à l'historique Supabase. Aucun jeton de connexion ni identifiant
+Socket.IO n'est exporté. Un fichier contient les noms affichés à table et les
+mains des donnes terminées, pour permettre leur analyse hors de l'application.
+
 ## Jouer une partie en console
 
 ```bash
