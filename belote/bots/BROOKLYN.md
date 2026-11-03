@@ -230,6 +230,33 @@ gives v4 49%/43% wins versus de Belote v2/v3, compared with v3's 46%/46%.
 V3's rerun exactly matches its previous outcomes and metrics. No clear overall
 v4 win improvement is established; v1/v2/v3 runtime modules remain frozen.
 
+## Brooklyn v5 — guarded side ten in defence (3 November 2026)
+
+David's reported hand has Nora holding spade 9, heart 10/J/7, club Q and
+diamond K/J/9. After spade 8/Q/A/9, an enemy leads heart K. The historical
+policy detects that the heart 10 can be overtaken, but still selects the
+weakest current winner. All five Brooklyn versions reproduce that choice
+when hearts are not trump. It is not a V5-specific regression.
+
+V5 now ducks with a cheaper legal loser when defending a suited contract,
+following a side suit before last seat, with the 10 as the only current
+winner and no safe winner. On this deal it plays heart 7, retaining 10/J;
+enemy K/A/8 take 15 card points instead of 25. This does not guarantee that
+the retained ten will be cashed later. A safe, last-seat or forced ten keeps
+its previous behavior. Attack, requested trump, SA/TA and V1–V4 are unchanged.
+The existing representative card-play test covers this deal and those limits;
+the seeded full-game test still checks legal play and console/web parity.
+
+A small duplicate comparison used `benchmarks.cardplay.common_auction` and
+`replay`, seeds 56000–56007, V5 versus de Belote V2/V3, both team swaps,
+with identical hands, auction, contract, dealer and RNG. The before class
+was loaded from `a7e4135`; only the V5 factory changed for the after replay.
+All 32 auctions produced a played deal: 14 spades, 10 clubs, 2 hearts,
+2 SA and 4 TA. One deal changed (seed 56002, defence team 1, de Belote V2,
+spades): defence earned 42 points including bonuses instead of 15; the
+contract remained made. The other 31 deals played identically. This small
+development sample does not establish a gain in full-game win rate.
+
 ## Brooklyn v5 — suit-switch support and partner priorities
 
 V5 builds on V4's openings, ordinary partnership bidding and card play,

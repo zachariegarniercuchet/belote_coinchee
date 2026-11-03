@@ -341,6 +341,12 @@ Toute modification de ce jeu partagé exige de refaire le benchmark v1 aussi :
 les anciens résultats restent attachés à leur révision, pas à un nom de bot.
 Brooklyn v5 (`brooklyn_v5`) reprend les ouvertures et le socle de v4, avec
 les priorités de partenaire suivantes (le jeu de v4 reste inchangé) :
+- En défense à une couleur, en fourniture hors atout avant le dernier joueur,
+  conserver un dix accompagné s'il est le seul gagnant actuel, qu'aucun
+  gagnant n'est jugé sûr et qu'une carte légale perdante permet de laisser
+  passer. Exemple : sur le Roi adverse, 10–V–7 fournit le 7 avec l'as encore
+  possible derrière. Un dix sûr, en dernière position ou forcé reste joué.
+  Cette protection ne change ni l'attaque, ni la fourniture à l'atout, ni SA/TA.
 - Avant la dernière position, ne pas couper/surcouper volontairement le
   partenaire gagnant si une carte légale permet de le laisser gagner.
   Une incertitude sur sa carte ne justifie pas à elle seule de sacrifier

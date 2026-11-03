@@ -498,6 +498,49 @@ class BrooklynTests(unittest.TestCase):
                 self.assertNotEqual(chosen.suit, Suit.CARREAU)
                 self.assertEqual(chosen.points(Suit.CARREAU), 0)
 
+        # Reported defence: 8/Q/A/9 spades, then enemy K of hearts with
+        # our 10/J/7. The only current winner is unsafe; duck with 7 in V5.
+        # The historical versions remain witnesses of the old 10 play.
+        first = list(zip([2, 3, 0, 1], cards("8_PIQUE", "D_PIQUE", "A_PIQUE", "9_PIQUE")))
+        hand = cards("10_COEUR", "V_COEUR", "7_COEUR", "D_TREFLE", "R_CARREAU", "V_CARREAU", "9_CARREAU")
+        for atout in (Suit.CARREAU, Suit.TREFLE):
+            for version in ("brooklyn_v1", "brooklyn_v2", "brooklyn_v3", "brooklyn_v4", "brooklyn_v5"):
+                nora = create_bot(version, 1)
+                nora.notify_contract(Contract(2, 0, 80, atout, False))
+                nora.notify_trick_result(first, 0)
+                trick = TrickState(0, atout, [(0, cards("R_COEUR")[0])])
+                chosen = nora.choose_card(hand, trick, trick.legal_cards_for(hand))
+                self.assertEqual(chosen, cards("7_COEUR" if version == "brooklyn_v5" else "10_COEUR")[0])
+                for seat, card in [(1, chosen), (2, cards("A_COEUR")[0]), (3, cards("8_COEUR")[0])]:
+                    trick.play(seat, card)
+                self.assertEqual(trick.winner(), 2)
+                self.assertEqual(trick.points(), 15 if version == "brooklyn_v5" else 25)
+            # Preserve the decision boundaries: cash a safe or last-seat 10,
+            # keep attacking policy, and respect a forced singleton.
+            for team, plays, fallen_ace, held, expected in (
+                (0, [(0, "R_COEUR")], False, hand, "7_COEUR"),
+                (0, [(3, "D_COEUR"), (0, "R_COEUR")], False, hand, "7_COEUR"),
+                (0, [(0, "R_COEUR")], True, hand, "10_COEUR"),
+                (0, [(2, "R_COEUR"), (3, "9_COEUR"), (0, "D_COEUR")], False, hand, "10_COEUR"),
+                (1, [(0, "R_COEUR")], False, hand, "10_COEUR"),
+                (0, [(0, "R_COEUR")], False, cards("10_COEUR", "7_CARREAU"), "10_COEUR"),
+            ):
+                defender = create_bot("brooklyn_v5", 1)
+                defender.notify_contract(Contract(team, team, 80, atout, False))
+                defender.notify_trick_result(first, 0)
+                if fallen_ace:
+                    defender.played_by_suit[Suit.COEUR].add(Rank.AS)
+                trick = TrickState(plays[0][0], atout,
+                                   [(seat, cards(code)[0]) for seat, code in plays])
+                self.assertEqual(defender.choose_card(held, trick, trick.legal_cards_for(held)), cards(expected)[0])
+
+        for atout, expected in ((ContractMode.SANS_ATOUT, "10_COEUR"),
+                                (ContractMode.TOUT_ATOUT, "V_COEUR"), (Suit.COEUR, "10_COEUR")):
+            defender = create_bot("brooklyn_v5", 1)
+            defender.notify_contract(Contract(2, 0, 80, atout, False))
+            trick = TrickState(0, atout, [(0, cards("R_COEUR")[0])])
+            self.assertEqual(defender.choose_card(hand, trick, trick.legal_cards_for(hand)), cards(expected)[0])
+
         # Partner K with our 10/7: do not add 10 under a possible A in third
         # seat; bank it in last seat. A future master/ace stays protected.
         for atout in (Suit.CARREAU, ContractMode.SANS_ATOUT):

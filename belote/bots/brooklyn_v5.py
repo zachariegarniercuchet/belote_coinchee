@@ -39,8 +39,21 @@ class BrooklynBotV5(BrooklynBotV4):
     def choose_card(self, hand, trick_state, legal_cards):
         trick = trick_state
         if (len(legal_cards) <= 1 or not trick.plays
-                or trick.atout is ContractMode.TOUT_ATOUT
-                or trick_winner(trick.plays, trick.atout) != partner_of(self.player_id)):
+                or trick.atout is ContractMode.TOUT_ATOUT):
+            return super().choose_card(hand, trick, legal_cards)
+        if (self.is_defending and isinstance(trick.atout, Suit)
+                and len(trick.plays) < 3 and trick.plays[0][1].suit != trick.atout):
+            # Following a side suit: an exposed 10 is only a current winner.
+            # Keep it guarded when an opponent behind can still take it and
+            # a cheaper card lets us duck. Do not change trump or SA/TA play.
+            winning = [c for c in legal_cards if self._hypo_winner(trick, c) == self.player_id]
+            if (winning and all(c.rank == Rank.DIX and c.suit == trick.plays[0][1].suit
+                                for c in winning)
+                    and not any(self._reasonably_safe(hand, trick, c) for c in winning)):
+                losing = [c for c in legal_cards if c not in winning]
+                if losing:
+                    return self._discard(hand, trick, losing)
+        if trick_winner(trick.plays, trick.atout) != partner_of(self.player_id):
             return super().choose_card(hand, trick, legal_cards)
         if len(trick.plays) == 3:
             if self.is_defending:
