@@ -241,6 +241,8 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   d'export. Le JSON versionné conserve les joueurs au début de chaque donne
   et distingue les plis résolus après tablage des choix effectivement joués.
   Le format est documenté dans README.md ; aucun jeton/sid ne doit y figurer.
+  Le bouton « Exporter la partie (JSON) » télécharge le fichier via cet événement
+  depuis les récapitulatifs des deux frontends, sans dépendre de Supabase.
 - Pour ajouter un bot, suivre `belote/bots/README.md`, implémenter `Player` et
   passer par `belote.bots.create_bot` / `list_bots`. Conserver les imports
   paresseux des fabriques. Le bot par défaut est actuellement `spark_v3`.

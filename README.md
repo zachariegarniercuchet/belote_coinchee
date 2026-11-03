@@ -173,6 +173,14 @@ les points des équipes s'affichent à gauche et à droite du partenaire
 Le récapitulatif se défile à la souris ou au doigt ; **Donne suivante**
 valide une donne intermédiaire, sans fermeture en touchant sa barre de défilement.
 
+**Exporter la partie (JSON)**, dans ce même récapitulatif et dans le bilan
+final, télécharge toutes les donnes terminées de la partie : mains, enchères,
+plis, joueurs/bots et scores. Tu peux partager ce fichier pour faire analyser
+une partie, sans compte ni connexion Supabase. En cours de partie, le fichier
+est partiel et exclut la donne en cours. Télécharge-le avant **Retour au salon** :
+la session précédente est alors supprimée. Le fichier peut être lu hors de
+l'application ; l'import d'une partie n'est pas proposé à ce stade.
+
 Les enchères proposent aussi **SA (Sans Atout)** et **TA (Tout Atout)**,
 selon la section 11 de `REGLES-DE-LA-BELOTE-COINCHEE.pdf` :
 aucune coupe dans les deux modes ; en TA, monter dans la couleur demandée

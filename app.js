@@ -1562,6 +1562,32 @@
     document.getElementById("hand-review").classList.remove("hidden");
     select.focus();
   });
+  document.getElementById("donne-recap").addEventListener("click", event => {
+    const button = event.target.closest("#btn-export-game");
+    if (!button || !recapState) return;
+    event.stopPropagation();
+    button.disabled = true;
+    socket.timeout(15000).emit("export_game", { code: roomCode, game_id: recapState.game_id }, (err, response) => {
+      button.disabled = false;
+      if (err || !response?.game) {
+        showToast(response?.error || "Export impossible. Vérifie ta connexion et réessaie.");
+        return;
+      }
+      try {
+        const blob = new Blob([JSON.stringify(response.game, null, 2) + "\n"], { type: "application/json;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = response.filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (error) {
+        showToast("Le fichier n'a pas pu être téléchargé. Réessaie depuis ton navigateur.");
+      }
+    });
+  });
   document.addEventListener("keydown", event => {
     if (!handReviewState) return;
     if (event.key === "Escape") {
@@ -1661,7 +1687,8 @@
         '<table class="score-history"><tbody>' + rows + '</tbody><tfoot><tr><th>' + recapState.cumulative_scores["0"] + '</th><th>' + recapState.cumulative_scores["1"] + '</th></tr></tfoot></table>' +
         '<div class="score-caption">Total</div>' +
         (recapState.completed_deals?.length
-          ? '<button id="btn-hand-review" class="btn btn-secondary" type="button">Voir les mains</button>'
+          ? '<div class="recap-actions"><button id="btn-hand-review" class="btn btn-secondary" type="button">Voir les mains</button>' +
+            '<button id="btn-export-game" class="btn btn-secondary" type="button">Exporter la partie (JSON)</button></div>'
           : "") +
         (finalRecap
           ? '<p class="recap-hint">Touchez les points pour voir le détail de la dernière donne.</p>' +

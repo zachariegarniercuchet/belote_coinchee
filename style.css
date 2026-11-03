@@ -1092,6 +1092,8 @@ input::placeholder { color: rgba(247,241,227,.4); }
 #donne-recap, #donne-recap .overlay-box { pointer-events: auto; }
 #donne-recap .overlay-box { max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; scrollbar-gutter: stable; }
 #btn-continue-donne { margin-top: 12px; width: 100%; }
+.recap-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.recap-actions .btn { flex: 1 1 160px; }
 .recap-final, .recap-final .overlay-box { pointer-events: auto; }
 .recap-final .overlay-box { max-width: 440px; }
 .final-winner { color: var(--gold-light); font-size: 19px; font-weight: 800; }
