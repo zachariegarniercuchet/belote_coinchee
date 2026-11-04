@@ -96,6 +96,11 @@ class Room:
         # Bot choisi par siège (siège vide au démarrage -> rempli par ce bot).
         # Modifiable depuis le lobby par n'importe quel membre du salon.
         self.bot_choices: dict[int, str] = {p: DEFAULT_BOT_ID for p in PLAYER_SEATS}
+        # Déclaration temporaire (voir declaration.py) : décision de Zacharie
+        # par identifiant de partie ("sent" / "skipped"), et texte en attente
+        # de reconnexion de la partenaire.
+        self.declaration_decision: tuple[str, str] | None = None
+        self.declaration_pending: str | None = None
 
     def touch(self) -> None:
         """Marque une activité humaine récente dans ce salon (repousse l'expiration)."""

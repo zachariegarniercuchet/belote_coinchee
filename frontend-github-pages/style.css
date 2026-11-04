@@ -1036,6 +1036,12 @@ input::placeholder { color: rgba(247,241,227,.4); }
 }
 .overlay-box h2 { margin-top: 0; color: var(--gold-light); }
 
+/* Déclaration temporaire de fin de partie (voir declaration.py). */
+.declaration-overlay { z-index: 300; }
+.declaration-box { max-width: 440px; }
+.declaration-box > .btn { margin-top: 12px; }
+.declaration-text { white-space: pre-wrap; text-align: left; max-height: 50dvh; overflow-y: auto; overscroll-behavior: contain; }
+
 /* Les modales interactives et le récapitulatif capturent leurs interactions. */
 .overlay.interactive, .overlay.interactive .overlay-box { pointer-events: auto; }
 #auth-overlay .overlay-box, #history-overlay .overlay-box { max-height: calc(100dvh - 40px); overflow-y: auto; }

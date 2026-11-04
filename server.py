@@ -34,6 +34,7 @@ from flask import Flask, abort, jsonify, render_template, request, send_file, se
 from flask_socketio import join_room as sio_join_room
 
 from extensions import socketio
+import declaration
 from game_session import GameSession
 from rooms import EMPTY_ROOM_IDLE, NO_HUMAN_IDLE, PLAYER_SEATS, RoomManager
 from belote.bots import is_valid_bot, list_bots
@@ -350,6 +351,10 @@ def on_join_lobby(data):
     _emit_lobby_update(room)
     if room.game_session:
         room.game_session.broadcast()
+        # Déclaration temporaire : relance le popup manqué et livre le texte
+        # en attente dès le retour de la partenaire.
+        declaration.maybe_offer(room.game_session)
+        declaration.deliver_pending(room)
 
 
 @socketio.on("take_seat")
@@ -555,6 +560,10 @@ def on_request_state(data):
         return
     if room.game_session:
         room.game_session.broadcast()
+        # Déclaration temporaire : repropose le popup et relivre un texte
+        # non fermé après un rechargement.
+        declaration.maybe_offer(room.game_session)
+        declaration.deliver_pending(room)
     else:
         socketio.emit("lobby_update", room.lobby_state(request.sid), to=request.sid)
 
@@ -596,6 +605,27 @@ def on_new_game(data):
     if room.game_session and room.game_session.finished:
         room.game_session = None
     _emit_lobby_update(room)
+
+
+# --- Déclaration temporaire de fin de partie (voir declaration.py) ---------
+
+@socketio.on("declaration_reply")
+def on_declaration_reply(data):
+    """Zacharie répond au popup : envoyer ou non `declaration.txt`."""
+    room = rooms.get((data or {}).get("code"))
+    if not room or not room.game_session:
+        return
+    declaration.record_reply(room, room.game_session, request.sid,
+                             bool((data or {}).get("accept")))
+
+
+@socketio.on("declaration_closed")
+def on_declaration_closed(data):
+    """La partenaire ferme l'écran plein écran : le texte n'est plus en attente."""
+    room = rooms.get((data or {}).get("code"))
+    if not room:
+        return
+    declaration.acknowledge_close(room, request.sid)
 
 
 @socketio.on("disconnect")

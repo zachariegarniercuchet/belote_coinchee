@@ -32,6 +32,7 @@ from belote.scoring import (compute_donne_score, find_belotes, belote_points_by_
 from belote.trick import TrickState, team_of
 
 from extensions import socketio
+from declaration import maybe_offer as offer_declaration
 from game_export import donne_to_export
 from rooms import PLAYER_SEATS
 from serialize import bid_action_to_dict, card_from_id, card_id, card_to_dict, sorted_hand
@@ -467,6 +468,7 @@ class GameSession:
             if self.finished:
                 self.ctx.phase = "game_end"
                 self.broadcast()
+                offer_declaration(self)  # temporaire : voir declaration.py
 
     def stop(self):
         self._stop = True
