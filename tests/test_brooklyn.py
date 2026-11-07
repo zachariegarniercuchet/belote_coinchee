@@ -49,7 +49,7 @@ class BrooklynTests(unittest.TestCase):
              [90, 120]),
         ]:
             bots = {seat: BrooklynBotV2(seat) for seat in (0, 2)}
-            state = BiddingState(dealer=1)
+            state = BiddingState(dealer=3)
             hands = {0: opener_hand, 2: support_hand}
             while not state.finished:
                 seat = state.current_player
@@ -87,7 +87,7 @@ class BrooklynTests(unittest.TestCase):
             cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "R_COEUR", "D_COEUR", "V_TREFLE", "8_TREFLE", "7_CARREAU"),
             cards("9_PIQUE", "8_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "R_TREFLE", "8_TREFLE", "7_CARREAU"),
         ]:
-            state = BiddingState(dealer=1)
+            state = BiddingState(dealer=3)
             self.assertEqual(BrooklynBotV2(0).choose_bid(weak_hand, state, state.legal_actions()).type,
                              ActionType.PASSE)
         # The first side ace qualifies 80; extra aces and J+9 each add 10.
@@ -97,7 +97,7 @@ class BrooklynTests(unittest.TestCase):
             (cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "A_COEUR", "10_COEUR", "R_TREFLE", "8_TREFLE", "7_CARREAU"), 90),
             (cards("9_PIQUE", "8_PIQUE", "7_PIQUE", "10_COEUR", "7_COEUR", "10_TREFLE", "8_TREFLE", "7_CARREAU"), 80),
         ]:
-            state = BiddingState(dealer=1)
+            state = BiddingState(dealer=3)
             self.assertEqual(BrooklynBotV2(0).choose_bid(hand, state, state.legal_actions()),
                              BidAction.enchere(amount, Suit.PIQUE))
 
@@ -114,7 +114,7 @@ class BrooklynTests(unittest.TestCase):
                 (cards("7_PIQUE", "A_COEUR", "R_COEUR", "A_TREFLE", "R_TREFLE",
                        "D_TREFLE", "R_CARREAU", "D_CARREAU"), 20),
             ):
-                state = BiddingState(dealer=1)
+                state = BiddingState(dealer=3)
                 state.apply(BidAction.enchere(80, Suit.PIQUE))
                 state.apply(BidAction.passe())
                 bot = create_bot(version, 2)
@@ -132,7 +132,7 @@ class BrooklynTests(unittest.TestCase):
                     self.assertEqual(bot.choose_bid(support_hand, state, only_spades()), BidAction.passe())
 
         # Initial overcalls now include extra aces, not just the trump description.
-        state = BiddingState(dealer=0)  # seat 3 opens, then Brooklyn at seat 0
+        state = BiddingState(dealer=2)  # seat 3 opens, then Brooklyn at seat 0
         state.apply(next(a for a in state.legal_actions() if a.type == ActionType.ENCHERE
                          and a.suit == Suit.CARREAU and a.points == 90))
         hand = cards("V_PIQUE", "9_PIQUE", "7_PIQUE", "A_COEUR", "8_COEUR", "A_TREFLE", "8_TREFLE", "7_CARREAU")
@@ -141,7 +141,7 @@ class BrooklynTests(unittest.TestCase):
 
         # A stronger independent suit can replace the team's earlier proposal.
         # Old support must not be carried across the switch or charged twice.
-        state = BiddingState(dealer=3)
+        state = BiddingState(dealer=1)
         for action in (BidAction.enchere(80, Suit.COEUR), BidAction.passe(),
                        BidAction.enchere(90, Suit.COEUR), BidAction.enchere(100, Suit.CARREAU)):
             state.apply(action)
@@ -164,7 +164,7 @@ class BrooklynTests(unittest.TestCase):
         switch_hand = cards("V_TREFLE", "9_TREFLE", "R_TREFLE", "D_TREFLE",
                             "A_PIQUE", "A_COEUR", "7_PIQUE", "8_PIQUE")
         for opening, entry, credit in ((80, 100, 30), (80, 90, 50), (90, 100, 30)):
-            state = BiddingState(dealer=1)
+            state = BiddingState(dealer=3)
             state.apply(BidAction.enchere(opening, Suit.PIQUE))
             state.apply(BidAction.enchere(entry - 10, Suit.CARREAU)
                         if entry > opening + 10 else BidAction.passe())
@@ -187,7 +187,7 @@ class BrooklynTests(unittest.TestCase):
             # A new deal forgets the switch; an ordinary partner opening still
             # credits J, 9, both side aces and belote, just as v4 does.
             bot.notify_donne_start()
-            state = BiddingState(dealer=3)
+            state = BiddingState(dealer=1)
             state.apply(BidAction.enchere(80, Suit.TREFLE))
             state.apply(BidAction.passe())
             self.assertEqual(bot.choose_bid(switch_hand, state, only_clubs()),
@@ -213,7 +213,7 @@ class BrooklynTests(unittest.TestCase):
                 self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), expected)
                 self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), expected)
                 bot.notify_donne_start()
-                state = BiddingState(dealer=3)
+                state = BiddingState(dealer=1)
                 state.apply(BidAction.enchere(100, Suit.TREFLE))
                 state.apply(BidAction.passe())
                 self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()),
@@ -227,7 +227,7 @@ class BrooklynTests(unittest.TestCase):
         self.assertEqual(detail["suits"]["TREFLE"]["survivors"], [])
         self.assertEqual(detail["cut_credit"], 0)
         self.assertEqual(value, 26.1)
-        state = BiddingState(dealer=1)
+        state = BiddingState(dealer=3)
         self.assertEqual(BrooklynBotV3(0).choose_bid(risky, state, state.legal_actions()), BidAction.passe())
         # A missing ten does not discount an immediately cashable side ace.
         _, detail = BrooklynBotV3(0)._recoverable_value(
@@ -241,7 +241,7 @@ class BrooklynTests(unittest.TestCase):
              cards("R_PIQUE", "D_PIQUE", "A_TREFLE", "7_TREFLE", "A_CARREAU", "8_CARREAU", "7_COEUR", "8_COEUR"),
              [100, 140]),
         ]:
-            state = BiddingState(dealer=1)
+            state = BiddingState(dealer=3)
             bots = {seat: BrooklynBotV3(seat) for seat in (0, 2)}
             hands = {0: opener_hand, 2: support_hand}
             self.assertEqual(bots[0].choose_bid(opener_hand, state, state.legal_actions()),
@@ -274,7 +274,7 @@ class BrooklynTests(unittest.TestCase):
             # Return even the last trump to partner's opening while opponents
             # may still hold trumps, before or after the first trump round.
             revised = BrooklynBotV4(2)
-            auction = BiddingState(dealer=1)
+            auction = BiddingState(dealer=3)
             auction.apply(BidAction.enchere(80, Suit.PIQUE))
             auction.apply(BidAction.passe())
             auction.apply(revised.choose_bid(support_hand, auction, auction.legal_actions()))
@@ -697,7 +697,7 @@ class BrooklynTests(unittest.TestCase):
                 if log.annulee:
                     continue
                 hands = {p: list(h) for p, h in log.initial_hands.items()}
-                leader = (log.dealer - 1) % 4
+                leader = (log.dealer + 1) % 4
                 self.assertEqual(len(log.tricks), 8)
                 for plays, winner in zip(log.tricks, log.trick_winners):
                     trick = TrickState(leader, log.contract.suit)

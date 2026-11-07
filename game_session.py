@@ -135,7 +135,8 @@ class NetworkGame(Game):
         if log.result is not None:
             self.session.prepare_recap()
         self.session.broadcast()
-        self.dealer = (self.dealer - 1) % 4
+        # Le donneur suivant est toujours le voisin de droite, même après une donne annulée.
+        self.dealer = (self.dealer + 1) % 4
         return log
 
     def _play_network_donne(self, dealer: int) -> DonneLog:
@@ -155,7 +156,9 @@ class NetworkGame(Game):
         self.session.notify_players("notify_donne_start")
 
         deck = cut_deck(new_shuffled_deck(rng), rng)
-        starting_player = (dealer - 1) % 4
+        # Distribution en commençant par le voisin de droite du donneur,
+        # dans le sens anti-horaire (index croissant, modulo).
+        starting_player = (dealer + 1) % 4
         hands = deal(deck, starting_player)
         initial_hands = {p: list(h) for p, h in hands.items()}
 
@@ -225,7 +228,8 @@ class NetworkGame(Game):
         contract = bidding_state.contract
         self.session.notify_players("notify_contract", contract)
         atout = contract.suit
-        leader = (dealer - 1) % 4
+        # Le premier pli est entamé par le voisin de droite du donneur.
+        leader = (dealer + 1) % 4
         # Connue du moteur dès la fin des enchères pour calculer le score,
         # mais privée jusqu'à la première annonce réelle (ou au bilan final).
         ctx.belotes = find_belotes(initial_hands, atout)

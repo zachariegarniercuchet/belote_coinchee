@@ -11,7 +11,7 @@ def donne_to_export(log, number, players, announcements, claim):
     return {
         "number": number,
         "dealer": log.dealer,
-        "first_player": (log.dealer - 1) % 4,
+        "first_player": (log.dealer + 1) % 4,
         "players": players,
         "cancelled": log.annulee,
         "initial_hands": {str(seat): [card_id(card) for card in hand]

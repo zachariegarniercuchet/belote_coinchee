@@ -115,7 +115,7 @@ class BiddingState:
     annulee: bool = False  # tous ont passé sans enchère
 
     def __post_init__(self):
-        self.current_player = (self.dealer - 1) % self.num_players  # voisin de droite du donneur
+        self.current_player = (self.dealer + 1) % self.num_players  # voisin de droite du donneur, sens anti-horaire
 
     def team_of(self, player: int) -> int:
         return player % 2
