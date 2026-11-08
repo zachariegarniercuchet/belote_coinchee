@@ -93,13 +93,14 @@
     const MODES = {
       login: {
         title: "Connexion", tabs: true, name: false, email: true, password: true,
-        emailLabel: "Email", passwordLabel: "Mot de passe",
+        emailLabel: "Email ou nom d'utilisateur", passwordLabel: "Mot de passe",
         submit: "Se connecter", forgot: true,
         emailAuto: "username", passwordAuto: "current-password",
       },
       signup: {
-        title: "Créer un compte", tabs: true, name: true, email: true, password: true,
+        title: "Créer un compte", tabs: true, name: true, username: true, email: true, password: true,
         emailLabel: "Email", passwordLabel: "Mot de passe (6 caractères minimum)",
+        usernameLabel: "Nom d'utilisateur", usernameAuto: "username",
         submit: "Créer mon compte", forgot: false,
         emailAuto: "username", passwordAuto: "new-password",
       },
@@ -189,9 +190,26 @@
     function displayName() {
       const user = (session && session.user) || {};
       const meta = user.user_metadata || {};
-      const raw = String(meta.display_name || meta.full_name || user.email || "").trim();
+      const raw = String(meta.username || meta.display_name || meta.full_name || user.email || "").trim();
       if (!raw) return "Connecté·e";
       return raw.indexOf("@") !== -1 ? raw.split("@")[0] : raw;
+    }
+
+    // ------------------------------------------------------------------
+    // Identité anonyme : un identifiant stable généré une fois par
+    // navigateur (localStorage). Il sert de player_id pour enregistrer les
+    // parties des joueurs qui ne sont pas connectés. Il n'est lié à aucun
+    // compte et ne permet pas de consulter un historique depuis un autre
+    // appareil.
+    // ------------------------------------------------------------------
+    const ANON_STORAGE_KEY = "belote_anon_id";
+    function getOrCreateAnonId() {
+      let anonId = localStorage.getItem(ANON_STORAGE_KEY);
+      if (!anonId) {
+        anonId = "anon_" + crypto.randomUUID();
+        try { localStorage.setItem(ANON_STORAGE_KEY, anonId); } catch (error) { /* ignore */ }
+      }
+      return anonId;
     }
 
     function prefillName(name) {
@@ -250,6 +268,7 @@
       if (title) title.textContent = m.title;
       toggle("auth-tabs", m.tabs);
       toggle("auth-name-row", m.name);
+      toggle("auth-username-row", m.username);
       toggle("auth-email-row", m.email);
       toggle("auth-password-row", m.password);
       toggle("btn-auth-forgot", m.forgot);
@@ -257,6 +276,10 @@
       if (emailLabel) emailLabel.textContent = m.emailLabel;
       const passwordLabel = byId("auth-password-label");
       if (passwordLabel) passwordLabel.textContent = m.passwordLabel;
+      const usernameLabel = byId("auth-username-label");
+      if (usernameLabel) usernameLabel.textContent = m.usernameLabel || "Nom d'utilisateur";
+      const username = byId("auth-username");
+      if (username) username.setAttribute("autocomplete", m.usernameAuto || "username");
       const submit = byId("btn-auth-submit");
       if (submit) submit.textContent = m.submit;
       const email = byId("auth-email");
@@ -298,6 +321,7 @@
       const email = byId("auth-email").value.trim();
       const password = byId("auth-password").value;
       const name = byId("auth-name").value.trim().slice(0, 20);
+      const username = byId("auth-username") ? byId("auth-username").value.trim().slice(0, 20) : "";
       clearMessages();
 
       if (MODES[mode].email && !email) {
@@ -312,6 +336,10 @@
         showError("Le mot de passe doit contenir au moins 6 caractères.");
         return;
       }
+      if (mode === "signup" && MODES[mode].username && !username) {
+        showError("Choisis un nom d'utilisateur.");
+        return;
+      }
 
       if (submit) {
         submit.disabled = true;
@@ -319,7 +347,30 @@
       }
       try {
         if (mode === "login") {
-          const { error } = await client.auth.signInWithPassword({ email, password });
+          let loginEmail = email;
+          // Si ce n'est pas un email, c'est un nom d'utilisateur : on le résout
+          // vers l'email du compte avant de se connecter. Le username est unique.
+          if (email.indexOf("@") === -1) {
+            const { data: player, error: lookupError } = await client
+              .from("players")
+              .select("email")
+              .eq("username", email)
+              .maybeSingle();
+            if (lookupError) {
+              showError("Impossible de vérifier le nom d'utilisateur.");
+              return;
+            }
+            if (!player) {
+              showError("Aucun compte avec ce nom d'utilisateur.");
+              return;
+            }
+            loginEmail = player.email;
+          }
+
+          const { error } = await client.auth.signInWithPassword({
+            email: loginEmail,
+            password,
+          });
           if (error) {
             showError(humanError(error));
             return;
@@ -327,18 +378,57 @@
           closeAuth();
           toast("Connecté !");
         } else if (mode === "signup") {
+          // Le nom d'utilisateur doit être unique : on le vérifie avant de
+          // créer le compte, puis on l'insère dans la table players liée à
+          // l'utilisateur auth. La contrainte unique de la base gère les
+          // cas de double inscription simultanée.
+          if (MODES[mode].username) {
+            const { data: existing, error: lookupError } = await client
+              .from("players")
+              .select("id")
+              .eq("username", username)
+              .maybeSingle();
+            if (lookupError) {
+              // La table players n'existe pas encore : on tente quand même,
+              // l'unicité du username ne sera pas garantie au niveau base.
+              console.warn("[auth] table players introuvable :", lookupError.message);
+            } else if (existing) {
+              showError("Ce nom d'utilisateur est déjà pris.");
+              return;
+            }
+          }
+
           const { data, error } = await client.auth.signUp({
             email,
             password,
-            options: { data: { display_name: name || email.split("@")[0] } },
+            options: {
+              data: {
+                display_name: name || email.split("@")[0],
+                username: username || "",
+              },
+            },
           });
           if (error) {
             showError(humanError(error));
             return;
           }
+
+          const newUser = data && data.user ? data.user : null;
+          if (newUser && MODES[mode].username) {
+            const { error: insertError } = await client
+              .from("players")
+              .insert({ username: username, auth_user_id: newUser.id });
+            if (insertError) {
+              showError(humanError(insertError));
+              // Le compte auth a été créé mais le username n'a pas pu être
+              // lié : on informe l'utilisateur.
+              return;
+            }
+          }
+
           if (data && data.session) {
             closeAuth();
-            toast("Compte créé, bienvenue " + (name || "") + " !");
+            toast("Compte créé, bienvenue " + (name || username || "") + " !");
           } else {
             setMode("login");
             byId("auth-email").value = email;
@@ -462,10 +552,12 @@
     }
 
     // ----------------------------------------------------------------
-    // Fin d'une partie : une ligne par partie et par compte connecté.
+    // Fin d'une partie : une ligne par partie et par identité (compte
+    // connecté ou invité anonyme). Les 4 joueurs et le détail de chaque
+    // donne sont enregistrés.
     // ----------------------------------------------------------------
-    api.recordGameEnd = function recordGameEnd(state) {
-      if (!session || !state || !state.game_over) return;
+    api.recordGameEnd = async function recordGameEnd(state) {
+      if (!state || !state.game_over) return;
       const gameId = state.game_id;
       if (!gameId || savedGames.has(gameId)) return;
       if (state.winner_team === null || state.winner_team === undefined) return;
@@ -473,33 +565,73 @@
       const scores = state.cumulative_scores || {};
       const seat = state.your_seat;
       const seatNumber = Number.isInteger(seat) ? seat : null;
-      const row = {
-        user_id: session.user.id,
-        game_id: gameId,
-        room_code: state.code || null,
+
+      // Identité du joueur qui enregistre : username si connecté, id
+      // anonyme sinon.
+      let playerId;
+      let userId = null;
+      if (session) {
+        userId = session.user.id;
+        const meta = session.user.user_metadata || {};
+        playerId = meta.username || session.user.email || String(session.user.id);
+      } else {
+        playerId = getOrCreateAnonId();
+      }
+
+      // Les 4 joueurs de la partie, avec leur nature (humain/bot) et leur
+      // identité (username / id anonyme / id bot) quand connue.
+      const botProfiles = state.bot_profiles || {};
+      const seats = ["0", "1", "2", "3"];
+      const seatNames = {};
+      for (const s of seats) {
+        seatNames[s] = String(state.seats_names && state.seats_names[s] || "");
+      }
+
+      // Détail complet de la partie (toutes les donnes, contrats, scores,
+      // plis, etc.) — stocké en JSON dans game_data.
+      const gameData = {
         target_score: Number(state.target_score) || 0,
         donne_count: Number(state.donne_number) || 0,
+        players: {},
+        deals: state.completed_deals || null,
+      };
+      for (const [s, name] of Object.entries(state.seats_names || {})) {
+        const isBot = Object.prototype.hasOwnProperty.call(botProfiles, s);
+        gameData.players[s] = {
+          name: name,
+          kind: isBot ? "bot" : "human",
+          identity: isBot
+            ? (botProfiles[s] && botProfiles[s].id) || null
+            : (s === String(state.your_seat) ? playerId : null),
+        };
+      }
+
+      const row = {
+        user_id: userId,
+        player_id: playerId,
+        game_id: gameId,
+        room_code: state.code || null,
+        host_player_id: seatNames["0"] || null,
+        seat1: seatNames["0"] || null,
+        seat2: seatNames["1"] || null,
+        seat3: seatNames["2"] || null,
+        seat4: seatNames["3"] || null,
         score_a: Number(scores["0"]) || 0,
         score_b: Number(scores["1"]) || 0,
         winner_team: Number(state.winner_team),
-        my_seat: seatNumber,
-        my_team: seatNumber === null ? null : seatNumber % 2,
-        players: state.seats_names || null,
+        game_data: gameData || null,
       };
 
       savedGames.add(gameId);
       const tries = (attempts.get(gameId) || 0) + 1;
       attempts.set(gameId, tries);
-      client
-        .from("game_history")
-        .insert(row)
-        .then(({ error }) => {
-          if (!error) return;
-          console.warn("[auth] partie non enregistrée :", error.message);
-          // Deux ou trois diffusion sont émises en fin de partie : on autorise
-          // une nouvelle tentative, sans boucle infinie en cas d'erreur RLS.
-          if (tries < 3) savedGames.delete(gameId);
-        });
+      const { error } = await client.from("game_history").insert(row);
+      if (!error) return;
+      console.warn("[auth] partie non enregistrée :", error.message);
+      // Deux ou trois diffusion sont émises en fin de partie : on autorise
+      // une nouvelle tentative, sans boucle infinie en cas d'erreur RLS.
+      if (tries < 3) savedGames.delete(gameId);
+    };
     };
 
     // ----------------------------------------------------------------
