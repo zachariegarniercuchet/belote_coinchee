@@ -109,6 +109,10 @@ condition to keep result artifacts small without removing data.
 
 ## Saved comparisons
 
+- [V5 TA support after our suited bid](2026-11-07-ta-switch.md): 400 paired
+  full games before/after `bd86f1d`, fresh seeds 58000–58049, identical card
+  play. Both win 85/200 and make 73/94 TA contracts. Four TA contracts drop
+  from 100 to 90 and remain made; no observed win gain.
 - [V5 support after an SA/TA opening](2026-11-02-sa-switch.md): 400 paired
   full games before/after `42d3661`, fresh seeds 56000–56049, identical V5
   card play and de Belote opponents. Both win 99/200 and make 504/616

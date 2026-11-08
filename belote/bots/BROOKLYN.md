@@ -283,6 +283,13 @@ credit and a fresh ordinary TA opening, while preserving V1/V2/V3/V4 choices.
 A possible small two-ten support bonus remains a TODO;
 its amount and required protection are not yet specified.
 
+The [paired TA-switch comparison](../../benchmarks/2026-11-07-ta-switch.md)
+isolates `bd86f1d` from `a640745` on 400 full games, seeds 58000–58049.
+Both win 85/200 and make 73/94 TA contracts. Four TA contracts drop from
+100 to 90 and remain made. Mean TA bid falls from 101.17 to 100.74; no
+win gain is observed. Only two seed clusters have changed records, so the
+sample does not establish equivalence or measure play with a human partner.
+
 The [paired before/after comparison](../../benchmarks/2026-11-02-sa-switch.md)
 at `42d3661` isolates this SA/TA-to-suit support correction from `6029e7c`,
 with identical card play. On 400 games (200 per revision), both win 99/200

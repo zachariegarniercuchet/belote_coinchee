@@ -1,0 +1,1372 @@
+{
+  "revisions": {
+    "before": "a640745083ed24fd6445475644b6f6c76690c405",
+    "after": "bd86f1d2e2697059690c992760b7908188a1a741"
+  },
+  "games": 400,
+  "first_seed": 58000,
+  "pairs_per_matchup": 50,
+  "target": 1000,
+  "pooled": {
+    "before": {
+      "games": 200,
+      "wins": 85,
+      "played_deals": 1241,
+      "cancelled": 70,
+      "takes": 618,
+      "made": 492,
+      "win_pct": 42.5,
+      "take_pct": 49.8,
+      "made_pct": 79.6,
+      "by_mode": {
+        "SUIT": {
+          "takes": 401,
+          "made": 348,
+          "made_pct": 86.8,
+          "take_pct": 32.3,
+          "mean_bid": 102.92,
+          "margin_all": {
+            "n": 401,
+            "mean": 34.62,
+            "median": 27,
+            "sd": 39.81,
+            "buckets": {
+              "below_bid": {
+                "n": 52,
+                "pct": 13.0
+              },
+              "0_to_9": {
+                "n": 22,
+                "pct": 5.5
+              },
+              "10_to_20": {
+                "n": 70,
+                "pct": 17.5
+              },
+              "over_20": {
+                "n": 257,
+                "pct": 64.1
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 365,
+            "mean": 23.78,
+            "median": 25,
+            "sd": 20.46,
+            "buckets": {
+              "below_bid": {
+                "n": 52,
+                "pct": 14.2
+              },
+              "0_to_9": {
+                "n": 22,
+                "pct": 6.0
+              },
+              "10_to_20": {
+                "n": 70,
+                "pct": 19.2
+              },
+              "over_20": {
+                "n": 221,
+                "pct": 60.5
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 36
+        },
+        "SANS_ATOUT": {
+          "takes": 123,
+          "made": 71,
+          "made_pct": 57.7,
+          "take_pct": 9.9,
+          "mean_bid": 102.6,
+          "margin_all": {
+            "n": 123,
+            "mean": 9.11,
+            "median": 3,
+            "sd": 38.65,
+            "buckets": {
+              "below_bid": {
+                "n": 50,
+                "pct": 40.7
+              },
+              "0_to_9": {
+                "n": 25,
+                "pct": 20.3
+              },
+              "10_to_20": {
+                "n": 18,
+                "pct": 14.6
+              },
+              "over_20": {
+                "n": 30,
+                "pct": 24.4
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 116,
+            "mean": 1.09,
+            "median": 2.0,
+            "sd": 21.01,
+            "buckets": {
+              "below_bid": {
+                "n": 50,
+                "pct": 43.1
+              },
+              "0_to_9": {
+                "n": 25,
+                "pct": 21.6
+              },
+              "10_to_20": {
+                "n": 18,
+                "pct": 15.5
+              },
+              "over_20": {
+                "n": 23,
+                "pct": 19.8
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 7
+        },
+        "TOUT_ATOUT": {
+          "takes": 94,
+          "made": 73,
+          "made_pct": 77.7,
+          "take_pct": 7.6,
+          "mean_bid": 101.17,
+          "margin_all": {
+            "n": 94,
+            "mean": 18.55,
+            "median": 17.0,
+            "sd": 38.09,
+            "buckets": {
+              "below_bid": {
+                "n": 21,
+                "pct": 22.3
+              },
+              "0_to_9": {
+                "n": 16,
+                "pct": 17.0
+              },
+              "10_to_20": {
+                "n": 20,
+                "pct": 21.3
+              },
+              "over_20": {
+                "n": 37,
+                "pct": 39.4
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 90,
+            "mean": 12.84,
+            "median": 16.5,
+            "sd": 27.21,
+            "buckets": {
+              "below_bid": {
+                "n": 21,
+                "pct": 23.3
+              },
+              "0_to_9": {
+                "n": 16,
+                "pct": 17.8
+              },
+              "10_to_20": {
+                "n": 20,
+                "pct": 22.2
+              },
+              "over_20": {
+                "n": 33,
+                "pct": 36.7
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 4
+        }
+      },
+      "win_ci95_seed_cluster": [
+        35.0,
+        50.0
+      ]
+    },
+    "after": {
+      "games": 200,
+      "wins": 85,
+      "played_deals": 1241,
+      "cancelled": 70,
+      "takes": 618,
+      "made": 492,
+      "win_pct": 42.5,
+      "take_pct": 49.8,
+      "made_pct": 79.6,
+      "by_mode": {
+        "SUIT": {
+          "takes": 401,
+          "made": 348,
+          "made_pct": 86.8,
+          "take_pct": 32.3,
+          "mean_bid": 102.92,
+          "margin_all": {
+            "n": 401,
+            "mean": 34.62,
+            "median": 27,
+            "sd": 39.81,
+            "buckets": {
+              "below_bid": {
+                "n": 52,
+                "pct": 13.0
+              },
+              "0_to_9": {
+                "n": 22,
+                "pct": 5.5
+              },
+              "10_to_20": {
+                "n": 70,
+                "pct": 17.5
+              },
+              "over_20": {
+                "n": 257,
+                "pct": 64.1
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 365,
+            "mean": 23.78,
+            "median": 25,
+            "sd": 20.46,
+            "buckets": {
+              "below_bid": {
+                "n": 52,
+                "pct": 14.2
+              },
+              "0_to_9": {
+                "n": 22,
+                "pct": 6.0
+              },
+              "10_to_20": {
+                "n": 70,
+                "pct": 19.2
+              },
+              "over_20": {
+                "n": 221,
+                "pct": 60.5
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 36
+        },
+        "SANS_ATOUT": {
+          "takes": 123,
+          "made": 71,
+          "made_pct": 57.7,
+          "take_pct": 9.9,
+          "mean_bid": 102.6,
+          "margin_all": {
+            "n": 123,
+            "mean": 9.11,
+            "median": 3,
+            "sd": 38.65,
+            "buckets": {
+              "below_bid": {
+                "n": 50,
+                "pct": 40.7
+              },
+              "0_to_9": {
+                "n": 25,
+                "pct": 20.3
+              },
+              "10_to_20": {
+                "n": 18,
+                "pct": 14.6
+              },
+              "over_20": {
+                "n": 30,
+                "pct": 24.4
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 116,
+            "mean": 1.09,
+            "median": 2.0,
+            "sd": 21.01,
+            "buckets": {
+              "below_bid": {
+                "n": 50,
+                "pct": 43.1
+              },
+              "0_to_9": {
+                "n": 25,
+                "pct": 21.6
+              },
+              "10_to_20": {
+                "n": 18,
+                "pct": 15.5
+              },
+              "over_20": {
+                "n": 23,
+                "pct": 19.8
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 7
+        },
+        "TOUT_ATOUT": {
+          "takes": 94,
+          "made": 73,
+          "made_pct": 77.7,
+          "take_pct": 7.6,
+          "mean_bid": 100.74,
+          "margin_all": {
+            "n": 94,
+            "mean": 18.98,
+            "median": 17.0,
+            "sd": 38.3,
+            "buckets": {
+              "below_bid": {
+                "n": 21,
+                "pct": 22.3
+              },
+              "0_to_9": {
+                "n": 16,
+                "pct": 17.0
+              },
+              "10_to_20": {
+                "n": 18,
+                "pct": 19.1
+              },
+              "over_20": {
+                "n": 39,
+                "pct": 41.5
+              }
+            }
+          },
+          "margin_no_capot": {
+            "n": 90,
+            "mean": 13.29,
+            "median": 16.5,
+            "sd": 27.62,
+            "buckets": {
+              "below_bid": {
+                "n": 21,
+                "pct": 23.3
+              },
+              "0_to_9": {
+                "n": 16,
+                "pct": 17.8
+              },
+              "10_to_20": {
+                "n": 18,
+                "pct": 20.0
+              },
+              "over_20": {
+                "n": 35,
+                "pct": 38.9
+              }
+            }
+          },
+          "capot_bids": 0,
+          "capot_deals": 4
+        }
+      },
+      "win_ci95_seed_cluster": [
+        35.0,
+        50.0
+      ]
+    }
+  },
+  "matchups": {
+    "before": {
+      "spark_v2": {
+        "games": 100,
+        "wins": 45,
+        "played_deals": 616,
+        "cancelled": 34,
+        "takes": 311,
+        "made": 246,
+        "win_pct": 45.0,
+        "take_pct": 50.5,
+        "made_pct": 79.1,
+        "by_mode": {
+          "SUIT": {
+            "takes": 203,
+            "made": 176,
+            "made_pct": 86.7,
+            "take_pct": 33.0,
+            "mean_bid": 102.81,
+            "margin_all": {
+              "n": 203,
+              "mean": 32.7,
+              "median": 27,
+              "sd": 38.15,
+              "buckets": {
+                "below_bid": {
+                  "n": 27,
+                  "pct": 13.3
+                },
+                "0_to_9": {
+                  "n": 15,
+                  "pct": 7.4
+                },
+                "10_to_20": {
+                  "n": 32,
+                  "pct": 15.8
+                },
+                "over_20": {
+                  "n": 129,
+                  "pct": 63.5
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 188,
+              "mean": 23.66,
+              "median": 25.0,
+              "sd": 21.34,
+              "buckets": {
+                "below_bid": {
+                  "n": 27,
+                  "pct": 14.4
+                },
+                "0_to_9": {
+                  "n": 15,
+                  "pct": 8.0
+                },
+                "10_to_20": {
+                  "n": 32,
+                  "pct": 17.0
+                },
+                "over_20": {
+                  "n": 114,
+                  "pct": 60.6
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 15
+          },
+          "SANS_ATOUT": {
+            "takes": 61,
+            "made": 34,
+            "made_pct": 55.7,
+            "take_pct": 9.9,
+            "mean_bid": 102.46,
+            "margin_all": {
+              "n": 61,
+              "mean": 7.54,
+              "median": 2,
+              "sd": 37.16,
+              "buckets": {
+                "below_bid": {
+                  "n": 26,
+                  "pct": 42.6
+                },
+                "0_to_9": {
+                  "n": 12,
+                  "pct": 19.7
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 14.8
+                },
+                "over_20": {
+                  "n": 14,
+                  "pct": 23.0
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 58,
+              "mean": 0.59,
+              "median": 1.5,
+              "sd": 21.19,
+              "buckets": {
+                "below_bid": {
+                  "n": 26,
+                  "pct": 44.8
+                },
+                "0_to_9": {
+                  "n": 12,
+                  "pct": 20.7
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 15.5
+                },
+                "over_20": {
+                  "n": 11,
+                  "pct": 19.0
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 3
+          },
+          "TOUT_ATOUT": {
+            "takes": 47,
+            "made": 36,
+            "made_pct": 76.6,
+            "take_pct": 7.6,
+            "mean_bid": 101.06,
+            "margin_all": {
+              "n": 47,
+              "mean": 17.94,
+              "median": 17,
+              "sd": 38.46,
+              "buckets": {
+                "below_bid": {
+                  "n": 11,
+                  "pct": 23.4
+                },
+                "0_to_9": {
+                  "n": 8,
+                  "pct": 17.0
+                },
+                "10_to_20": {
+                  "n": 10,
+                  "pct": 21.3
+                },
+                "over_20": {
+                  "n": 18,
+                  "pct": 38.3
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 45,
+              "mean": 12.2,
+              "median": 16,
+              "sd": 27.46,
+              "buckets": {
+                "below_bid": {
+                  "n": 11,
+                  "pct": 24.4
+                },
+                "0_to_9": {
+                  "n": 8,
+                  "pct": 17.8
+                },
+                "10_to_20": {
+                  "n": 10,
+                  "pct": 22.2
+                },
+                "over_20": {
+                  "n": 16,
+                  "pct": 35.6
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 2
+          }
+        }
+      },
+      "spark_v3": {
+        "games": 100,
+        "wins": 40,
+        "played_deals": 625,
+        "cancelled": 36,
+        "takes": 307,
+        "made": 246,
+        "win_pct": 40.0,
+        "take_pct": 49.1,
+        "made_pct": 80.1,
+        "by_mode": {
+          "SUIT": {
+            "takes": 198,
+            "made": 172,
+            "made_pct": 86.9,
+            "take_pct": 31.7,
+            "mean_bid": 103.03,
+            "margin_all": {
+              "n": 198,
+              "mean": 36.58,
+              "median": 28.5,
+              "sd": 41.45,
+              "buckets": {
+                "below_bid": {
+                  "n": 25,
+                  "pct": 12.6
+                },
+                "0_to_9": {
+                  "n": 7,
+                  "pct": 3.5
+                },
+                "10_to_20": {
+                  "n": 38,
+                  "pct": 19.2
+                },
+                "over_20": {
+                  "n": 128,
+                  "pct": 64.6
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 177,
+              "mean": 23.9,
+              "median": 26,
+              "sd": 19.55,
+              "buckets": {
+                "below_bid": {
+                  "n": 25,
+                  "pct": 14.1
+                },
+                "0_to_9": {
+                  "n": 7,
+                  "pct": 4.0
+                },
+                "10_to_20": {
+                  "n": 38,
+                  "pct": 21.5
+                },
+                "over_20": {
+                  "n": 107,
+                  "pct": 60.5
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 21
+          },
+          "SANS_ATOUT": {
+            "takes": 62,
+            "made": 37,
+            "made_pct": 59.7,
+            "take_pct": 9.9,
+            "mean_bid": 102.74,
+            "margin_all": {
+              "n": 62,
+              "mean": 10.65,
+              "median": 3.5,
+              "sd": 40.31,
+              "buckets": {
+                "below_bid": {
+                  "n": 24,
+                  "pct": 38.7
+                },
+                "0_to_9": {
+                  "n": 13,
+                  "pct": 21.0
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 14.5
+                },
+                "over_20": {
+                  "n": 16,
+                  "pct": 25.8
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 58,
+              "mean": 1.59,
+              "median": 2.0,
+              "sd": 21.0,
+              "buckets": {
+                "below_bid": {
+                  "n": 24,
+                  "pct": 41.4
+                },
+                "0_to_9": {
+                  "n": 13,
+                  "pct": 22.4
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 15.5
+                },
+                "over_20": {
+                  "n": 12,
+                  "pct": 20.7
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 4
+          },
+          "TOUT_ATOUT": {
+            "takes": 47,
+            "made": 37,
+            "made_pct": 78.7,
+            "take_pct": 7.5,
+            "mean_bid": 101.28,
+            "margin_all": {
+              "n": 47,
+              "mean": 19.17,
+              "median": 17,
+              "sd": 38.12,
+              "buckets": {
+                "below_bid": {
+                  "n": 10,
+                  "pct": 21.3
+                },
+                "0_to_9": {
+                  "n": 8,
+                  "pct": 17.0
+                },
+                "10_to_20": {
+                  "n": 10,
+                  "pct": 21.3
+                },
+                "over_20": {
+                  "n": 19,
+                  "pct": 40.4
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 45,
+              "mean": 13.49,
+              "median": 17,
+              "sd": 27.25,
+              "buckets": {
+                "below_bid": {
+                  "n": 10,
+                  "pct": 22.2
+                },
+                "0_to_9": {
+                  "n": 8,
+                  "pct": 17.8
+                },
+                "10_to_20": {
+                  "n": 10,
+                  "pct": 22.2
+                },
+                "over_20": {
+                  "n": 17,
+                  "pct": 37.8
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 2
+          }
+        }
+      }
+    },
+    "after": {
+      "spark_v2": {
+        "games": 100,
+        "wins": 45,
+        "played_deals": 616,
+        "cancelled": 34,
+        "takes": 311,
+        "made": 246,
+        "win_pct": 45.0,
+        "take_pct": 50.5,
+        "made_pct": 79.1,
+        "by_mode": {
+          "SUIT": {
+            "takes": 203,
+            "made": 176,
+            "made_pct": 86.7,
+            "take_pct": 33.0,
+            "mean_bid": 102.81,
+            "margin_all": {
+              "n": 203,
+              "mean": 32.7,
+              "median": 27,
+              "sd": 38.15,
+              "buckets": {
+                "below_bid": {
+                  "n": 27,
+                  "pct": 13.3
+                },
+                "0_to_9": {
+                  "n": 15,
+                  "pct": 7.4
+                },
+                "10_to_20": {
+                  "n": 32,
+                  "pct": 15.8
+                },
+                "over_20": {
+                  "n": 129,
+                  "pct": 63.5
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 188,
+              "mean": 23.66,
+              "median": 25.0,
+              "sd": 21.34,
+              "buckets": {
+                "below_bid": {
+                  "n": 27,
+                  "pct": 14.4
+                },
+                "0_to_9": {
+                  "n": 15,
+                  "pct": 8.0
+                },
+                "10_to_20": {
+                  "n": 32,
+                  "pct": 17.0
+                },
+                "over_20": {
+                  "n": 114,
+                  "pct": 60.6
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 15
+          },
+          "SANS_ATOUT": {
+            "takes": 61,
+            "made": 34,
+            "made_pct": 55.7,
+            "take_pct": 9.9,
+            "mean_bid": 102.46,
+            "margin_all": {
+              "n": 61,
+              "mean": 7.54,
+              "median": 2,
+              "sd": 37.16,
+              "buckets": {
+                "below_bid": {
+                  "n": 26,
+                  "pct": 42.6
+                },
+                "0_to_9": {
+                  "n": 12,
+                  "pct": 19.7
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 14.8
+                },
+                "over_20": {
+                  "n": 14,
+                  "pct": 23.0
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 58,
+              "mean": 0.59,
+              "median": 1.5,
+              "sd": 21.19,
+              "buckets": {
+                "below_bid": {
+                  "n": 26,
+                  "pct": 44.8
+                },
+                "0_to_9": {
+                  "n": 12,
+                  "pct": 20.7
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 15.5
+                },
+                "over_20": {
+                  "n": 11,
+                  "pct": 19.0
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 3
+          },
+          "TOUT_ATOUT": {
+            "takes": 47,
+            "made": 36,
+            "made_pct": 76.6,
+            "take_pct": 7.6,
+            "mean_bid": 100.64,
+            "margin_all": {
+              "n": 47,
+              "mean": 18.36,
+              "median": 17,
+              "sd": 38.68,
+              "buckets": {
+                "below_bid": {
+                  "n": 11,
+                  "pct": 23.4
+                },
+                "0_to_9": {
+                  "n": 8,
+                  "pct": 17.0
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 19.1
+                },
+                "over_20": {
+                  "n": 19,
+                  "pct": 40.4
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 45,
+              "mean": 12.64,
+              "median": 16,
+              "sd": 27.88,
+              "buckets": {
+                "below_bid": {
+                  "n": 11,
+                  "pct": 24.4
+                },
+                "0_to_9": {
+                  "n": 8,
+                  "pct": 17.8
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 20.0
+                },
+                "over_20": {
+                  "n": 17,
+                  "pct": 37.8
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 2
+          }
+        }
+      },
+      "spark_v3": {
+        "games": 100,
+        "wins": 40,
+        "played_deals": 625,
+        "cancelled": 36,
+        "takes": 307,
+        "made": 246,
+        "win_pct": 40.0,
+        "take_pct": 49.1,
+        "made_pct": 80.1,
+        "by_mode": {
+          "SUIT": {
+            "takes": 198,
+            "made": 172,
+            "made_pct": 86.9,
+            "take_pct": 31.7,
+            "mean_bid": 103.03,
+            "margin_all": {
+              "n": 198,
+              "mean": 36.58,
+              "median": 28.5,
+              "sd": 41.45,
+              "buckets": {
+                "below_bid": {
+                  "n": 25,
+                  "pct": 12.6
+                },
+                "0_to_9": {
+                  "n": 7,
+                  "pct": 3.5
+                },
+                "10_to_20": {
+                  "n": 38,
+                  "pct": 19.2
+                },
+                "over_20": {
+                  "n": 128,
+                  "pct": 64.6
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 177,
+              "mean": 23.9,
+              "median": 26,
+              "sd": 19.55,
+              "buckets": {
+                "below_bid": {
+                  "n": 25,
+                  "pct": 14.1
+                },
+                "0_to_9": {
+                  "n": 7,
+                  "pct": 4.0
+                },
+                "10_to_20": {
+                  "n": 38,
+                  "pct": 21.5
+                },
+                "over_20": {
+                  "n": 107,
+                  "pct": 60.5
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 21
+          },
+          "SANS_ATOUT": {
+            "takes": 62,
+            "made": 37,
+            "made_pct": 59.7,
+            "take_pct": 9.9,
+            "mean_bid": 102.74,
+            "margin_all": {
+              "n": 62,
+              "mean": 10.65,
+              "median": 3.5,
+              "sd": 40.31,
+              "buckets": {
+                "below_bid": {
+                  "n": 24,
+                  "pct": 38.7
+                },
+                "0_to_9": {
+                  "n": 13,
+                  "pct": 21.0
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 14.5
+                },
+                "over_20": {
+                  "n": 16,
+                  "pct": 25.8
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 58,
+              "mean": 1.59,
+              "median": 2.0,
+              "sd": 21.0,
+              "buckets": {
+                "below_bid": {
+                  "n": 24,
+                  "pct": 41.4
+                },
+                "0_to_9": {
+                  "n": 13,
+                  "pct": 22.4
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 15.5
+                },
+                "over_20": {
+                  "n": 12,
+                  "pct": 20.7
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 4
+          },
+          "TOUT_ATOUT": {
+            "takes": 47,
+            "made": 37,
+            "made_pct": 78.7,
+            "take_pct": 7.5,
+            "mean_bid": 100.85,
+            "margin_all": {
+              "n": 47,
+              "mean": 19.6,
+              "median": 17,
+              "sd": 38.33,
+              "buckets": {
+                "below_bid": {
+                  "n": 10,
+                  "pct": 21.3
+                },
+                "0_to_9": {
+                  "n": 8,
+                  "pct": 17.0
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 19.1
+                },
+                "over_20": {
+                  "n": 20,
+                  "pct": 42.6
+                }
+              }
+            },
+            "margin_no_capot": {
+              "n": 45,
+              "mean": 13.93,
+              "median": 17,
+              "sd": 27.65,
+              "buckets": {
+                "below_bid": {
+                  "n": 10,
+                  "pct": 22.2
+                },
+                "0_to_9": {
+                  "n": 8,
+                  "pct": 17.8
+                },
+                "10_to_20": {
+                  "n": 9,
+                  "pct": 20.0
+                },
+                "over_20": {
+                  "n": 18,
+                  "pct": 40.0
+                }
+              }
+            },
+            "capot_bids": 0,
+            "capot_deals": 2
+          }
+        }
+      }
+    }
+  },
+  "paired_changes": {
+    "win": {
+      "delta_pp": 0.0,
+      "ci95_seed_cluster_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    "take": {
+      "delta_pp": 0.0,
+      "ci95_seed_cluster_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    "made": {
+      "delta_pp": 0.0,
+      "ci95_seed_cluster_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    "ta_take": {
+      "delta_pp": 0.0,
+      "ci95_seed_cluster_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    "ta_made": {
+      "delta_pp": 0.0,
+      "ci95_seed_cluster_pp": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "bootstrap": {
+    "draws": 4000,
+    "seed": 20261107,
+    "cluster": "seed, both opponents and team swaps"
+  },
+  "changed_games": [
+    {
+      "opponent": "spark_v2",
+      "seed": 58014,
+      "team": 1,
+      "before_won": true,
+      "after_won": true,
+      "before_deals": 7,
+      "after_deals": 7,
+      "first_changed_deal": {
+        "before": {
+          "number": 3,
+          "bot": "brooklyn_v5",
+          "bid": 100,
+          "made": true,
+          "capot": false,
+          "capot_bid": false,
+          "contract_suit": "TOUT_ATOUT",
+          "margin": 18,
+          "failure_net_loss": null,
+          "opening_trumps": null,
+          "opening_honours": null,
+          "opening_belote": true,
+          "opening_belotes": 1,
+          "belote_points": {
+            "0": 0,
+            "1": 20
+          }
+        },
+        "after": {
+          "number": 3,
+          "bot": "brooklyn_v5",
+          "bid": 90,
+          "made": true,
+          "capot": false,
+          "capot_bid": false,
+          "contract_suit": "TOUT_ATOUT",
+          "margin": 28,
+          "failure_net_loss": null,
+          "opening_trumps": null,
+          "opening_honours": null,
+          "opening_belote": true,
+          "opening_belotes": 1,
+          "belote_points": {
+            "0": 0,
+            "1": 20
+          }
+        }
+      }
+    },
+    {
+      "opponent": "spark_v2",
+      "seed": 58017,
+      "team": 1,
+      "before_won": true,
+      "after_won": true,
+      "before_deals": 6,
+      "after_deals": 6,
+      "first_changed_deal": {
+        "before": {
+          "number": 2,
+          "bot": "brooklyn_v5",
+          "bid": 100,
+          "made": true,
+          "capot": false,
+          "capot_bid": false,
+          "contract_suit": "TOUT_ATOUT",
+          "margin": 48,
+          "failure_net_loss": null,
+          "opening_trumps": null,
+          "opening_honours": null,
+          "opening_belote": false,
+          "opening_belotes": 0,
+          "belote_points": {
+            "0": 0,
+            "1": 0
+          }
+        },
+        "after": {
+          "number": 2,
+          "bot": "brooklyn_v5",
+          "bid": 90,
+          "made": true,
+          "capot": false,
+          "capot_bid": false,
+          "contract_suit": "TOUT_ATOUT",
+          "margin": 58,
+          "failure_net_loss": null,
+          "opening_trumps": null,
+          "opening_honours": null,
+          "opening_belote": false,
+          "opening_belotes": 0,
+          "belote_points": {
+            "0": 0,
+            "1": 0
+          }
+        }
+      }
+    },
+    {
+      "opponent": "spark_v3",
+      "seed": 58014,
+      "team": 1,
+      "before_won": false,
+      "after_won": false,
+      "before_deals": 7,
+      "after_deals": 7,
+      "first_changed_deal": {
+        "before": {
+          "number": 3,
+          "bot": "brooklyn_v5",
+          "bid": 100,
+          "made": true,
+          "capot": false,
+          "capot_bid": false,
+          "contract_suit": "TOUT_ATOUT",
+          "margin": 18,
+          "failure_net_loss": null,
+          "opening_trumps": null,
+          "opening_honours": null,
+          "opening_belote": true,
+          "opening_belotes": 1,
+          "belote_points": {
+            "0": 0,
+            "1": 20
+          }
+        },
+        "after": {
+          "number": 3,
+          "bot": "brooklyn_v5",
+          "bid": 90,
+          "made": true,
+          "capot": false,
+          "capot_bid": false,
+          "contract_suit": "TOUT_ATOUT",
+          "margin": 28,
+          "failure_net_loss": null,
+          "opening_trumps": null,
+          "opening_honours": null,
+          "opening_belote": true,
+          "opening_belotes": 1,
+          "belote_points": {
+            "0": 0,
+            "1": 20
+          }
+        }
+      }
+    },
+    {
+      "opponent": "spark_v3",
+      "seed": 58017,
+      "team": 1,
+      "before_won": true,
+      "after_won": true,
+      "before_deals": 6,
+      "after_deals": 6,
+      "first_changed_deal": {
+        "before": {
+          "number": 2,
+          "bot": "brooklyn_v5",
+          "bid": 100,
+          "made": true,
+          "capot": false,
+          "capot_bid": false,
+          "contract_suit": "TOUT_ATOUT",
+          "margin": 48,
+          "failure_net_loss": null,
+          "opening_trumps": null,
+          "opening_honours": null,
+          "opening_belote": false,
+          "opening_belotes": 0,
+          "belote_points": {
+            "0": 0,
+            "1": 0
+          }
+        },
+        "after": {
+          "number": 2,
+          "bot": "brooklyn_v5",
+          "bid": 90,
+          "made": true,
+          "capot": false,
+          "capot_bid": false,
+          "contract_suit": "TOUT_ATOUT",
+          "margin": 58,
+          "failure_net_loss": null,
+          "opening_trumps": null,
+          "opening_honours": null,
+          "opening_belote": false,
+          "opening_belotes": 0,
+          "belote_points": {
+            "0": 0,
+            "1": 0
+          }
+        }
+      }
+    }
+  ],
+  "gained_wins": 0,
+  "lost_wins": 0
+}
