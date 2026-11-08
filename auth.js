@@ -230,6 +230,7 @@
           '<button type="button" id="btn-auth-open" class="auth-chip auth-chip-primary">Connexion</button>' +
           "</div>" +
           '<span class="auth-hint">Connecte-toi pour conserver ton historique de parties.</span>';
+        area.classList.remove("hidden");
         const open = byId("btn-auth-open");
         if (open) open.onclick = () => openAuth("login");
         return;
