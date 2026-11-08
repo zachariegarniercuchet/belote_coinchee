@@ -76,7 +76,8 @@ class BrooklynBotV5(BrooklynBotV4):
             return super().choose_card(hand, trick, staying)
         return super().choose_card(hand, trick, legal_cards)
 
-    def _partner_support(self, hand, suit):
+    def _partner_switch(self):
+        """Last team switch, only when partner replaced our own announcement."""
         previous, switch = None, None
         if self._auction is not None:
             for seat, action in self._auction.history:
@@ -86,9 +87,34 @@ class BrooklynBotV5(BrooklynBotV4):
                     switch = (previous, (seat, action))
                 previous = (seat, action)
         if switch is not None:
-            (old_seat, old), (new_seat, entry) = switch
-            if (old_seat == self.player_id and new_seat == partner_of(self.player_id)
-                    and isinstance(entry.suit, Suit) and entry.suit == suit):
+            (old_seat, _), (new_seat, _) = switch
+            if old_seat == self.player_id and new_seat == partner_of(self.player_id):
+                return switch[0][1], switch[1][1]
+        return None
+
+    def _mode_support(self, hand, mode):
+        switch = self._partner_switch()
+        if switch is not None and mode is ContractMode.TOUT_ATOUT:
+            old, entry = switch
+            if isinstance(old.suit, Suit) and entry.suit is mode:
+                # The old suit was already described. Only new J/belotes
+                # fund support, never its honours or extra J/9/A sequences.
+                credit = 0
+                for suit in Suit:
+                    if suit == old.suit:
+                        continue
+                    ranks = {c.rank for c in hand if c.suit == suit}
+                    credit += 10 if Rank.VALET in ranks else 0
+                    if {Rank.ROI, Rank.DAME} <= ranks:
+                        credit += 20
+                return credit
+        return super()._mode_support(hand, mode)
+
+    def _partner_support(self, hand, suit):
+        switch = self._partner_switch()
+        if switch is not None:
+            old, entry = switch
+            if isinstance(entry.suit, Suit) and entry.suit == suit:
                 ranks = {c.rank for c in hand if c.suit == suit}
                 credit = 10 if Rank.NEUF in ranks else 0
                 if {Rank.ROI, Rank.DAME} <= ranks:

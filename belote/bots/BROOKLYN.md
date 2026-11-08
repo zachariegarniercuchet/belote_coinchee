@@ -272,8 +272,15 @@ after partner switches. The reported 90 SA / enemy 100 spades / partner
 120 clubs sequence now passes with two side aces and no club 9/belote,
 instead of bidding 140 clubs. An ordinary partner opening at 100 clubs
 still allows the same hand to support to 120. Existing nominal journeys
-cover both paths. Ordinary partner openings and support of a SA/TA contract
-are unchanged. A possible small two-ten support bonus remains a TODO;
+cover both paths. After our suited announcement and partner's switch to TA,
+support only J (+10 each) and belotes (+20 each) in OTHER suits. Nothing in
+our previously announced suit adds credit again. Other-suit 9/aces and
+longer master sequences add no further credit. Deduct our already spent TA
+raises, including after enemy overcalls or partner rebids. Ordinary partner
+TA openings and SA support are unchanged. A representative auction journey
+checks passing with only old-suit honours, new J/belote support, no repeated
+credit and a fresh ordinary TA opening, while preserving V1/V2/V3/V4 choices.
+A possible small two-ten support bonus remains a TODO;
 its amount and required protection are not yet specified.
 
 The [paired before/after comparison](../../benchmarks/2026-11-02-sa-switch.md)

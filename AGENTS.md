@@ -367,9 +367,16 @@ montants à l'entrée de cet épisode de couleur, pas ceux d'une surenchère
 ultérieure. Déduire les crédits déjà dépensés ; conserver le retrait de 10
 sans atout. Une annonce SA décrit déjà notamment les as : ne pas les ajouter
 de nouveau après le changement de couleur (90 SA → 120 trèfle n'autorise
-pas 140 trèfle avec deux as sans 9 ni belote). Sans changement de couleur
-par le partenaire, ou quand le contrat à soutenir est SA/TA, garder les
-enchères de v4. Tous les choix utilisent seulement la main propre
+pas 140 trèfle avec deux as sans 9 ni belote).
+Après notre annonce à une couleur puis le passage du partenaire à Tout Atout,
+ne soutenir que de +10 par valet et +20 par belote dans les AUTRES couleurs.
+Aucun honneur ni belote de notre couleur déjà annoncée ne doit être recompté ;
+les 9, as et séquences des autres couleurs n'ajoutent aucun crédit à ce soutien.
+Déduire les hausses déjà dépensées dans l'épisode TA, même après une surenchère
+adverse ou une nouvelle hausse du partenaire. Sans ce changement vers TA,
+garder son soutien habituel ; le soutien SA reste celui de v4.
+Sans changement de couleur par le partenaire, garder les enchères de v4.
+Tous les choix utilisent seulement la main propre
 et l'historique public. La variante défensive envisagée plus haut reste
 différée et n'est pas la v5. Ne pas modifier v1/v2/v3/v4 ni de Belote en
 ajustant v5 ; le bot par défaut reste inchangé.

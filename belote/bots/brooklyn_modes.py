@@ -137,7 +137,7 @@ def choose_mode_bid(bot, hand, state, legal, suited_action):
             if episode[0][0] == bot.player_id:
                 ceiling += spent[partner_of(bot.player_id)]
             else:
-                ceiling = latest.points + max(0, mode_support(hand, mode) - spent[bot.player_id])
+                ceiling = latest.points + max(0, bot._mode_support(hand, mode) - spent[bot.player_id])
         candidates = [a for a in legal if a.type is ActionType.ENCHERE and a.suit is mode
                       and not a.is_capot and a.points <= ceiling]
         if candidates:

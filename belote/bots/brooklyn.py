@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from ..cards import Card, Rank, ContractMode
 from .contract_modes import choose_mode_card, qualified_purges
-from .brooklyn_modes import choose_mode_bid
+from .brooklyn_modes import choose_mode_bid, mode_support
 from ..trick import TrickState, partner_of, team_of, trick_winner
 from .spark import SparkBot
 
@@ -33,6 +33,10 @@ class BrooklynBot(SparkBot):
         suited = [a for a in legal_actions if not isinstance(a.suit, ContractMode)]
         action = super().choose_bid(hand, bidding_state, suited)
         return choose_mode_bid(self, hand, bidding_state, legal_actions, action)
+
+    @staticmethod
+    def _mode_support(hand, mode):
+        return mode_support(hand, mode)
 
     def _infer_voids(self, plays):
         voids = []

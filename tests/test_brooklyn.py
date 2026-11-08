@@ -305,6 +305,47 @@ class BrooklynTests(unittest.TestCase):
             self.assertFalse(bots[0]._trump_led)
             self.assertEqual(bots[0].partner_raises, [])
 
+    def test_partner_switch_to_ta_counts_only_new_jacks_and_belotes_once(self):
+        ta = ContractMode.TOUT_ATOUT
+        # Our spade J/9/belote have already been described. Even a new J/9/A
+        # sequence funds only +10 after partner switches to TA, not +30.
+        for side_cards, credit, ordinary_credit in (
+            (("9_COEUR", "A_COEUR", "7_TREFLE", "8_CARREAU"), 0, 40),
+            (("V_COEUR", "9_COEUR", "A_COEUR", "7_TREFLE"), 10, 70),
+            (("R_COEUR", "D_COEUR", "9_COEUR", "A_COEUR"), 20, 60),
+            (("V_COEUR", "R_COEUR", "D_COEUR", "7_TREFLE"), 30, 70),
+            (("V_COEUR", "V_TREFLE", "7_COEUR", "8_CARREAU"), 20, 60),
+        ):
+            with self.subTest(side_cards=side_cards):
+                hand = cards("V_PIQUE", "9_PIQUE", "R_PIQUE", "D_PIQUE", *side_cards)
+                state = BiddingState(dealer=1)
+                for action in (BidAction.enchere(100, Suit.PIQUE),
+                               BidAction.enchere(110, Suit.CARREAU),
+                               BidAction.enchere(120, ta), BidAction.passe()):
+                    state.apply(action)
+                bot = create_bot("brooklyn_v5", 0)
+                expected = BidAction.enchere(120 + credit, ta) if credit else BidAction.passe()
+                self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), expected)
+                self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), expected)
+                # Published versions retain ordinary TA support on this history.
+                for version in range(1, 5):
+                    old = create_bot("brooklyn_v" + str(version), 0)
+                    self.assertEqual(old.choose_bid(hand, state, state.legal_actions()),
+                                     BidAction.enchere(120 + ordinary_credit, ta))
+                if credit:
+                    state.apply(expected)
+                    state.apply(BidAction.enchere(expected.points + 10, Suit.CARREAU))
+                    state.apply(BidAction.enchere(expected.points + 20, ta))
+                    state.apply(BidAction.passe())
+                    self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), BidAction.passe())
+                # A fresh partner TA opening still asks for the whole hand.
+                bot.notify_donne_start()
+                fresh = BiddingState(dealer=3)
+                fresh.apply(BidAction.enchere(100, ta))
+                fresh.apply(BidAction.passe())
+                self.assertEqual(bot.choose_bid(hand, fresh, fresh.legal_actions()),
+                                 BidAction.enchere(100 + ordinary_credit, ta))
+
     def test_trump_hunt_then_bank_points_with_public_information(self):
         # A public first belote locates its unplayed mate, even while the
         # current trick is unfinished; sampled worlds must keep that fact.
