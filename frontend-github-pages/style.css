@@ -126,7 +126,8 @@ button {
 }
 
 /* ---------- Visibilité du salon ---------- */
-.visibility-picker { display: grid; gap: 8px; }
+.visibility-picker { display: flex; gap: 8px; }
+.vis-option { flex: 1; }
 .vis-option {
   display: flex !important;
   align-items: flex-start;
@@ -168,7 +169,6 @@ button {
 }
 
 /* ---------- Annuaire des salons publics ---------- */
-#btn-refresh-rooms { margin-top: 8px; }
 .public-rooms { display: grid; gap: 8px; margin-top: 12px; }
 .public-room {
   display: flex;

@@ -157,9 +157,8 @@
   }
 
   function joinPublicRoom(code) {
-    const name = document.getElementById("public-name").value.trim();
-    if (!name) { showToast("Entre ton prénom."); return; }
-    myName = name;
+    const name = myName;
+    if (!name) { showToast("Entre ton prénom au début."); return; }
     roomCode = code;
     socket.emit("join_lobby", { code, name, token: clientToken() });
   }
@@ -196,8 +195,6 @@
       wrap.appendChild(row);
     });
   }
-
-  document.getElementById("btn-refresh-rooms").addEventListener("click", requestPublicRooms);
 
   document.getElementById("btn-join").addEventListener("click", () => {
     const name = document.getElementById("join-name").value.trim();
