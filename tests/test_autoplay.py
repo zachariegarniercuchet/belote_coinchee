@@ -43,7 +43,7 @@ class AutoplayTests(unittest.TestCase):
         self.assertEqual([(phase, delay) for phase, delay in pauses if phase != "bidding"],
                          [("donne_annulee", REDEAL_STAGE_PAUSE), ("dealing", REDEAL_STAGE_PAUSE),
                           ("donne_annulee", REDEAL_STAGE_PAUSE)])
-        self.assertEqual(states[dealing]["dealer"], (first_dealer - 1) % 4)
+        self.assertEqual(states[dealing]["dealer"], (first_dealer + 1) % 4)
         self.assertEqual(states[dealing]["hand_counts"], {str(seat): 8 for seat in range(4)})
         self.assertIsNone(states[dealing]["waiting_kind"])
         self.assertEqual(states[dealing]["bidding_history"], [])

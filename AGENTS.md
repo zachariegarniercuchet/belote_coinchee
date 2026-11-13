@@ -216,6 +216,9 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   `NetworkGame` dans `game_session.py`. Pour une modification de déroulement,
   vérifier les chemins console et web.
 - Quatre joueurs, sièges `0` à `3` : équipe 0 = `0/2`, équipe 1 = `1/3`.
+  Le voisin de droite du donneur commence les enchères et le premier pli au
+  siège `(dealer + 1) % 4` ; les tours et le donneur suivant suivent les
+  indices croissants. Les anciens exports conservent leur historique réel.
   Le siège optionnel `"board"` affiche le plateau sans main ni action de jeu.
   Chaque joueur voit son propre siège en bas et son partenaire en face ; les
   attributs `data-position` des marqueurs et emplacements de cartes assurent

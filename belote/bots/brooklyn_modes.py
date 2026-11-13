@@ -124,7 +124,7 @@ def choose_mode_bid(bot, hand, state, legal, suited_action):
         return max(certain_capots, key=lambda a: a.suit is ContractMode.TOUT_ATOUT)
     for mode in ContractMode:
         ceiling = mode_opening(hand, mode,
-                               on_lead=bot.player_id == (state.dealer - 1) % 4)
+                               on_lead=bot.player_id == (state.dealer + 1) % 4)
         supporting = bool(episode and episode[-1][1].suit is mode)
         if supporting:
             latest = episode[-1][1]

@@ -157,9 +157,8 @@
   }
 
   function joinPublicRoom(code) {
-    const name = document.getElementById("public-name").value.trim();
-    if (!name) { showToast("Entre ton prénom."); return; }
-    myName = name;
+    const name = myName;
+    if (!name) { showToast("Entre ton prénom au début."); return; }
     roomCode = code;
     socket.emit("join_lobby", { code, name, token: clientToken() });
   }
@@ -196,8 +195,6 @@
       wrap.appendChild(row);
     });
   }
-
-  document.getElementById("btn-refresh-rooms").addEventListener("click", requestPublicRooms);
 
   document.getElementById("btn-join").addEventListener("click", () => {
     const name = document.getElementById("join-name").value.trim();
@@ -574,6 +571,81 @@
   });
 
   socket.on("public_rooms", data => renderPublicRooms(data && data.rooms));
+
+  // ------------------------------------------------------------------
+  // Déclaration temporaire de fin de partie (voir declaration.py)
+  // ------------------------------------------------------------------
+  let declarationPrompt = null;
+  let declarationScreen = null;
+  let declarationCode = null;
+
+  function hideDeclarationPrompt() {
+    if (!declarationPrompt) return;
+    declarationPrompt.remove();
+    declarationPrompt = null;
+  }
+
+  function hideDeclarationScreen() {
+    if (!declarationScreen) return;
+    declarationScreen.remove();
+    declarationScreen = null;
+  }
+
+  function showDeclarationPrompt(code) {
+    if (declarationPrompt) return; // pas de double popup sur un état rediffusé.
+    declarationCode = code;
+    const box = document.createElement("div");
+    box.className = "overlay interactive declaration-overlay";
+    box.innerHTML =
+      '<div class="overlay-box declaration-box">' +
+      "<h2>Un mot pour ta partenaire ?</h2>" +
+      "<p>Envoyer ta déclaration d'amour pour clore la partie ?</p>" +
+      '<div class="recap-actions">' +
+      '<button type="button" class="btn btn-primary" data-send>Oui, envoyer</button>' +
+      '<button type="button" class="btn btn-ghost" data-skip>Pas maintenant</button>' +
+      "</div></div>";
+    box.addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      socket.emit("declaration_reply", {
+        code: declarationCode,
+        accept: button.hasAttribute("data-send"),
+      });
+      hideDeclarationPrompt();
+    });
+    document.body.appendChild(box);
+    declarationPrompt = box;
+  }
+
+  function showDeclarationScreen(data) {
+    if (declarationScreen) return; // déjà affiché : pas de rejeu après reconnexion.
+    declarationCode = data.code;
+    const box = document.createElement("div");
+    box.className = "overlay interactive declaration-overlay";
+    const panel = document.createElement("div");
+    panel.className = "overlay-box declaration-box";
+    const title = document.createElement("h2");
+    title.textContent = "Pour toi ♥";
+    const text = document.createElement("p");
+    text.className = "declaration-text";
+    text.textContent = data.text || "";
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "btn btn-primary";
+    close.textContent = "Fermer";
+    close.addEventListener("click", () => {
+      socket.emit("declaration_closed", { code: declarationCode });
+      hideDeclarationScreen();
+    });
+    panel.append(title, text, close);
+    box.appendChild(panel);
+    document.body.appendChild(box);
+    declarationScreen = box;
+  }
+
+  socket.on("declaration_ask", d => showDeclarationPrompt((d && d.code) || roomCode));
+  socket.on("declaration_show", d => showDeclarationScreen(d || {}));
+  socket.on("declaration_sent", () => showToast("Déclaration envoyée."));
 
   socket.on("connect", () => {
     if (roomCode && myName) {

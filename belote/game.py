@@ -43,7 +43,9 @@ class Donne:
             player.notify_donne_start()
         deck = new_shuffled_deck(self.rng)
         deck = cut_deck(deck, self.rng)
-        starting_player = (self.dealer - 1) % 4
+        # Premier joueur : voisin de droite du donneur, dans le sens
+        # anti-horaire (index croissant, modulo).
+        starting_player = (self.dealer + 1) % 4
         hands = deal(deck, starting_player)
         initial_hands = {p: list(h) for p, h in hands.items()}
 
@@ -70,7 +72,8 @@ class Donne:
             pl.notify_contract(contract)
         atout = contract.suit
         belotes = find_belotes(initial_hands, atout)
-        leader = (self.dealer - 1) % 4
+        # Le premier pli est entamé par le voisin de droite du donneur.
+        leader = (self.dealer + 1) % 4
 
         trick_points = {0: 0, 1: 0}
         tricks_won_by_team = {0: 0, 1: 0}
@@ -166,7 +169,7 @@ class Game:
             self._check_end_conditions(log.result)
 
         # Le donneur suivant est toujours le voisin de droite, même après une donne annulée.
-        self.dealer = (self.dealer - 1) % 4
+        self.dealer = (self.dealer + 1) % 4
         return log
 
     def _check_end_conditions(self, result: DonneResult) -> None:

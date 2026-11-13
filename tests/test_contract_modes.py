@@ -30,7 +30,7 @@ class ContractModeTests(unittest.TestCase):
         for mode, values, winner in ((SA, (19, 10, 4, 3, 2, 0, 0, 0), 0),
                                      (TA, (13, 9, 6, 5, 3, 2, 0, 0), 1)):
             with self.subTest(mode=mode):
-                state = BiddingState(dealer=1)
+                state = BiddingState(dealer=3)
                 state.apply(BidAction.enchere(80, mode))
                 for _ in range(3):
                     state.apply(BidAction.passe())
@@ -62,14 +62,14 @@ class ContractModeTests(unittest.TestCase):
         for version in range(1, 5):
             for mode, hand in openings.items():
                 bot = create_bot('brooklyn_v' + str(version), 0)
-                state = BiddingState(dealer=1)
+                state = BiddingState(dealer=3)
                 action = bot.choose_bid(hand, state, state.legal_actions())
                 self.assertEqual(action.suit, mode)
                 self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), action)
                 if mode is SA:
                     hand = cards('A_PIQUE', '10_PIQUE', 'A_COEUR', '7_COEUR', '7_TREFLE', '8_TREFLE', '7_CARREAU', '8_CARREAU')
                 bot.notify_donne_start()
-                state = BiddingState(dealer=1)
+                state = BiddingState(dealer=3)
                 mode_legal = [a for a in state.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
                 action = bot.choose_bid(hand, state, mode_legal)
                 state.apply(action)
@@ -93,12 +93,12 @@ class ContractModeTests(unittest.TestCase):
                 state.apply(BidAction.enchere(raised.points + 10, mode))
                 self.assertEqual(partner.choose_bid(support, state, only_mode()), BidAction.passe())
                 bot.notify_donne_start()
-                fresh = BiddingState(dealer=1)
+                fresh = BiddingState(dealer=3)
                 fresh_legal = [a for a in fresh.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
                 self.assertEqual(bot.choose_bid(hand, fresh, fresh_legal), action)
                 # An eight-card master sequence guarantees a mode capot.
                 certain = [Card(rank, Suit.PIQUE) for rank in Rank]
-                fresh = BiddingState(dealer=1)
+                fresh = BiddingState(dealer=3)
                 only_mode = [a for a in fresh.legal_actions() if a.type is not ActionType.ENCHERE or a.suit is mode]
                 self.assertEqual(bot.choose_bid(certain, fresh, only_mode), BidAction.capot(mode))
 
@@ -107,32 +107,32 @@ class ContractModeTests(unittest.TestCase):
         for version in range(1, 5):
             for hand, dealer, expected in (
                 (cards('10_PIQUE', 'R_PIQUE', '9_PIQUE', 'D_COEUR', '7_COEUR',
-                       'A_TREFLE', '10_TREFLE', '8_TREFLE'), 1, BidAction.passe()),
+                       'A_TREFLE', '10_TREFLE', '8_TREFLE'), 3, BidAction.passe()),
                 (cards('A_PIQUE', '10_COEUR', '7_COEUR', '10_TREFLE', '7_TREFLE',
-                       'R_CARREAU', '8_CARREAU', '7_CARREAU'), 1, BidAction.enchere(80, SA)),
+                       'R_CARREAU', '8_CARREAU', '7_CARREAU'), 3, BidAction.enchere(80, SA)),
                 (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'A_COEUR', '10_COEUR',
-                       'R_TREFLE', '8_TREFLE', '7_TREFLE'), 1, BidAction.enchere(100, SA)),
+                       'R_TREFLE', '8_TREFLE', '7_TREFLE'), 3, BidAction.enchere(100, SA)),
                 (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
-                       '9_COEUR', '8_COEUR', '7_COEUR'), 1, BidAction.passe()),
+                       '9_COEUR', '8_COEUR', '7_COEUR'), 3, BidAction.passe()),
                 (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
-                       '9_COEUR', '8_COEUR', '7_COEUR'), 2, BidAction.passe()),
+                       '9_COEUR', '8_COEUR', '7_COEUR'), 0, BidAction.passe()),
                 (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
-                       '9_PIQUE', '8_COEUR', '7_COEUR'), 1, BidAction.passe()),
+                       '9_PIQUE', '8_COEUR', '7_COEUR'), 3, BidAction.passe()),
                 (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
-                       '9_PIQUE', '8_PIQUE', '7_COEUR'), 1, BidAction.enchere(80, SA)),
+                       '9_PIQUE', '8_PIQUE', '7_COEUR'), 3, BidAction.enchere(80, SA)),
                 (cards('A_PIQUE', '10_PIQUE', 'R_PIQUE', 'D_PIQUE', 'V_PIQUE',
-                       '9_PIQUE', '8_PIQUE', '7_COEUR'), 2, BidAction.passe()),
+                       '9_PIQUE', '8_PIQUE', '7_COEUR'), 0, BidAction.passe()),
             ):
                 bot = create_bot('brooklyn_v' + str(version), 0)
                 state = BiddingState(dealer=dealer)
-                if dealer == 2:
+                if dealer == 0:
                     for _ in range(3):
                         state.apply(BidAction.passe())
                 legal = [a for a in state.legal_actions()
                          if a.type is not ActionType.ENCHERE or a.suit is SA]
                 self.assertEqual(bot.choose_bid(hand, state, legal), expected)
             # Two protected kings fund +10 together, a ten second another +10.
-            state = BiddingState(dealer=1)
+            state = BiddingState(dealer=3)
             state.apply(BidAction.enchere(80, SA))
             state.apply(BidAction.passe())
             supporter = create_bot('brooklyn_v' + str(version), 2)
