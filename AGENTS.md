@@ -345,6 +345,14 @@ Toute modification de ce jeu partagé exige de refaire le benchmark v1 aussi :
 les anciens résultats restent attachés à leur révision, pas à un nom de bot.
 Brooklyn v5 (`brooklyn_v5`) reprend les ouvertures et le socle de v4, avec
 les priorités de partenaire suivantes (le jeu de v4 reste inchangé) :
+- À l'entame en attaque, après un tour d'atout, garder le dernier atout si
+  une couleur annexe est jouable et qu'au plus deux atouts restent possibles
+  chez les adversaires, même si le partenaire a annoncé cette couleur en
+  premier. Compter uniquement les cibles adverses possibles à partir des
+  cartes jouées, coupes franches publiques et cartes localisées par belote ;
+  les atouts connus du partenaire ne sont pas des cibles. Avant le premier
+  tour, ou avec davantage de cibles possibles, garder la chasse héritée de
+  v4. Fourniture, coupe et surcoupe forcées restent obligatoires. SA/TA inchangés.
 - En défense à une couleur, en fourniture hors atout avant le dernier joueur,
   conserver un dix accompagné s'il est le seul gagnant actuel, qu'aucun
   gagnant n'est jugé sûr et qu'une carte légale perdante permet de laisser

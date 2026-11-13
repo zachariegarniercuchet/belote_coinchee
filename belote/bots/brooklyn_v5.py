@@ -7,6 +7,23 @@ from .brooklyn_v4 import BrooklynBotV4
 
 
 class BrooklynBotV5(BrooklynBotV4):
+    def _draw_trump(self, hand, trick, legal):
+        if (self.is_attacking and self._trump_led
+                and sum(c.suit == trick.atout for c in hand) == 1
+                and any(c.suit != trick.atout for c in legal)):
+            voids = self._known_voids(trick)
+            opponents = [p for p in range(4) if team_of(p) != team_of(self.player_id)
+                         and trick.atout not in voids[p]]
+            possible = sum(any(self.known_card_owner(Card(rank, trick.atout)) in (None, p)
+                               for p in opponents)
+                           for rank in self._unknown_ranks(trick.atout, hand, trick))
+            if possible <= 2:
+                # A low-yield hunt is not worth our last trump control merely
+                # because partner named the suit first. Publicly located
+                # partner cards are not enemy targets; no hidden hands used.
+                return None
+        return super()._draw_trump(hand, trick, legal)
+
     def _bank_partner_points(self, hand, trick, legal):
         """Last defender: bank vulnerable points, including by overtaking."""
         atout = trick.atout

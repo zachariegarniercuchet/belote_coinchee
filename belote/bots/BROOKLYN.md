@@ -266,6 +266,24 @@ development sample does not establish a gain in full-game win rate.
 
 V5 builds on V4's openings, ordinary partnership bidding and card play,
 with the partner-specific overrides below.
+After a trump round, retain the last trump on an attacking lead when a side
+suit is available and at most two enemy trumps remain possible. Partner's
+first announcement no longer overrides this control preservation. Count
+possible enemy cards from public plays, voids and belote ownership; do not
+count located partner cards as enemy targets. First-round drawing and the
+existing return with more possible enemy trumps remain. Forced following,
+cutting and overcutting, plus SA/TA play, are unchanged. The reported game
+`8c41a72bf410469cad63f751b8216de5`, deal 2, now leads the diamond ace at
+trick 3, retaining the last spade 9 instead of drawing partner's spades.
+V4 still leads the 9 on the identical history. Without the public belote,
+three spades remain possible enemy cards and V5 retains its old return.
+This is a conservative control rule, not a calibrated strength gain. A
+paired replay freezes those hands, auction and first two tricks, then uses
+four V5 bots for the continuation, changing only Nora's trump-drawing rule.
+Console/web logs match for both policies. The old continuation scores
+0–380 (capot), the new one 10–280; retaining control can cost a capot.
+This simulation does not reproduce the human players' later choices or
+establish a general improvement in win rate.
 Support must never describe the same contribution twice, across the whole
 public auction. Our earlier suited/SA bids already describe the aces; no
 later switch adds ace credit again, including 80 -> 90. Our earlier TA bid

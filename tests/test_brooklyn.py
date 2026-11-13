@@ -465,6 +465,42 @@ class BrooklynTests(unittest.TestCase):
             bot.notify_donne_start()
             self.assertIsNone(bot.known_card_owner(cards(mate)[0]))
 
+        # Real game 8c41a72bf410469cad63f751b8216de5, deal 2. Nora's
+        # last 9 must not chase David's known rebelote just because he opened
+        # spades. Only A/8 are still unlocated after the first trump round.
+        for version, announced, expected in (("brooklyn_v4", True, "9_PIQUE"),
+                                             ("brooklyn_v5", True, "A_CARREAU"),
+                                             ("brooklyn_v5", False, "9_PIQUE")):
+            bot = create_bot(version, 1)
+            hand = cards("A_CARREAU", "9_PIQUE", "8_COEUR", "V_PIQUE",
+                         "7_COEUR", "R_CARREAU", "9_COEUR", "9_CARREAU")
+            auction = BiddingState(dealer=1)
+            for action in (BidAction.passe(), BidAction.enchere(80, ContractMode.TOUT_ATOUT),
+                           BidAction.passe(), BidAction.enchere(90, Suit.PIQUE),
+                           BidAction.enchere(100, Suit.COEUR), BidAction.enchere(110, Suit.PIQUE),
+                           BidAction.passe(), BidAction.passe(), BidAction.passe()):
+                if auction.current_player == 1:
+                    bot.choose_bid(hand, auction, auction.legal_actions())
+                auction.apply(action)
+            bot.notify_contract(auction.contract)
+            self.assertEqual(bot._trump_opener, 3)
+            first = list(zip((0, 1, 2, 3), cards("V_COEUR", "7_COEUR", "R_COEUR", "A_COEUR")))
+            bot.notify_trick_result(first, 3)
+            hand.remove(cards("7_COEUR")[0])
+            if announced:
+                bot.notify_belote(3, cards("D_PIQUE")[0])
+            second = list(zip((3, 0, 1, 2), cards("D_PIQUE", "7_PIQUE", "V_PIQUE", "10_PIQUE")))
+            bot.notify_trick_result(second, 1)
+            hand.remove(cards("V_PIQUE")[0])
+            lead = TrickState(1, Suit.PIQUE)
+            self.assertEqual(bot.known_card_owner(cards("R_PIQUE")[0]), 3 if announced else None)
+            self.assertTrue(bot._opponents_have_trumps(hand, lead))
+            self.assertEqual(bot.choose_card(hand, lead, lead.legal_cards_for(hand)), cards(expected)[0])
+            # Keeping the 9 at the lead never overrides forced follow/cutting.
+            for led in ("8_PIQUE", "7_TREFLE"):
+                forced = TrickState(0, Suit.PIQUE, [(0, cards(led)[0])])
+                self.assertEqual(bot.choose_card(hand, forced, forced.legal_cards_for(hand)), cards("9_PIQUE")[0])
+
         bot = BrooklynBot(0)
         bot.notify_contract(contract())
         hand = cards("V_PIQUE", "9_PIQUE", "A_PIQUE", "7_PIQUE", "A_COEUR", "R_COEUR", "10_TREFLE", "7_CARREAU")

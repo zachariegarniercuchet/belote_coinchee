@@ -170,7 +170,7 @@ BOT_REGISTRY: dict[str, dict] = {
         "avatars": [None, None, None, None],
         "version": "v5",
         "author": "David",
-        "description": "Ouvertures de v4. Soutien sans recompter les annonces propres précédentes : les as sont déjà décrits à une couleur/SA, les J/9 et belotes à TA. Après changement de couleur du partenaire, compter seulement les J/9 et belote du nouvel atout encore non décrits. Au jeu : respecte le partenaire gagnant, évite les coupes volontaires avant le dernier joueur ; en dernière position en défense, charge les points exposés même en surprenant. En défense à une couleur, garde un dix accompagné hors atout si la prise est incertaine avant le dernier joueur. Préserve as et maîtres. Soutien SA/TA sans recompter les crédits ; jeu TA inchangé.",
+        "description": "Ouvertures de v4. Soutien sans recompter les annonces propres précédentes : les as sont déjà décrits à une couleur/SA, les J/9 et belotes à TA. Après changement de couleur du partenaire, compter seulement les J/9 et belote du nouvel atout encore non décrits. Au jeu : après un tour de chasse, garde le dernier atout face à au plus deux atouts adverses possibles, même si le partenaire a ouvert la couleur. Respecte le partenaire gagnant, évite les coupes volontaires avant le dernier joueur ; en dernière position en défense, charge les points exposés même en surprenant. En défense à une couleur, garde un dix accompagné hors atout si la prise est incertaine avant le dernier joueur. Préserve as et maîtres. Soutien SA/TA sans recompter les crédits ; jeu TA inchangé.",
         "level": 3,
         "names": ["Miles", "Nora", "Eli", "Maya"],
         "factory": lambda seat, name: _brooklyn_bot_v5(seat, name),
