@@ -116,7 +116,9 @@ class BrooklynBotV5(BrooklynBotV4):
             old, entry = switch
             if isinstance(entry.suit, Suit) and entry.suit == suit:
                 ranks = {c.rank for c in hand if c.suit == suit}
-                credit = 10 if Rank.NEUF in ranks else 0
+                # Honours in the new trump suit were not described by our
+                # previous announcement: either J or 9 is fresh support.
+                credit = 10 * len(ranks & {Rank.VALET, Rank.NEUF})
                 if {Rank.ROI, Rank.DAME} <= ranks:
                     credit += 20
                 # Our earlier bid may describe SA/TA strength too: side aces

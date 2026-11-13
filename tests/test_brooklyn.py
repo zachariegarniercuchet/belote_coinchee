@@ -160,10 +160,11 @@ class BrooklynTests(unittest.TestCase):
         self.assertEqual(partner.partner_raises, [])
 
         # After our own bid, partner's new suit no longer asks us to repeat
-        # side aces or J. Only the exact 80 -> 90 switch retains ace support.
+        # side aces. J/9 in the NEW trump suit and belote are fresh support.
+        # Only the exact 80 -> 90 switch retains ace support.
         switch_hand = cards("V_TREFLE", "9_TREFLE", "R_TREFLE", "D_TREFLE",
                             "A_PIQUE", "A_COEUR", "7_PIQUE", "8_PIQUE")
-        for opening, entry, credit in ((80, 100, 30), (80, 90, 50), (90, 100, 30)):
+        for opening, entry, credit in ((80, 100, 40), (80, 90, 60), (90, 100, 40)):
             state = BiddingState(dealer=1)
             state.apply(BidAction.enchere(opening, Suit.PIQUE))
             state.apply(BidAction.enchere(entry - 10, Suit.CARREAU)
@@ -194,7 +195,7 @@ class BrooklynTests(unittest.TestCase):
                              BidAction.enchere(140, Suit.TREFLE))
 
         # Full reported sequence: N 90 SA, E 100 spades, S 120 clubs.
-        # Two side aces cannot fund N 140 clubs without 9/belote. Initial
+        # Two side aces cannot fund N 140 clubs without J/9/belote. Initial
         # partner openings remain ordinary support, including above 90.
         with patch("belote.bidding.CONTRACT_SUITS", tuple(Suit) + tuple(ContractMode)):
             hand = cards("A_PIQUE", "10_PIQUE", "A_COEUR", "10_COEUR",
@@ -218,6 +219,37 @@ class BrooklynTests(unittest.TestCase):
                 state.apply(BidAction.passe())
                 self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()),
                                  BidAction.enchere(120, Suit.TREFLE))
+
+        # Reported game 22ff8a7fffa344d0a548977f372d174c, deal 1:
+        # Miles 80 hearts / enemy 90 spades / David 100 clubs. His club J
+        # was not described by 80 hearts: announce 110 clubs, not a pass.
+        # Replay with all six contracts available, as in the live auction.
+        with patch("belote.bidding.CONTRACT_SUITS", tuple(Suit) + tuple(ContractMode)):
+            hand = cards("10_COEUR", "R_CARREAU", "10_CARREAU", "V_COEUR",
+                         "8_CARREAU", "8_COEUR", "V_TREFLE", "A_TREFLE")
+            bot = create_bot("brooklyn_v5", 0)
+            state = BiddingState(dealer=1)
+            opening = bot.choose_bid(hand, state, state.legal_actions())
+            self.assertEqual(opening, BidAction.enchere(80, Suit.COEUR))
+            for action in (opening, BidAction.enchere(90, Suit.PIQUE),
+                           BidAction.enchere(100, Suit.TREFLE), BidAction.passe()):
+                state.apply(action)
+            support = BidAction.enchere(110, Suit.TREFLE)
+            self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), support)
+            self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), support)
+            # Neither an already described heart J nor the trump ace funds
+            # support without the new club J; a side ace adds no credit either.
+            no_club_j = [c if c != cards("V_TREFLE")[0] else cards("7_TREFLE")[0]
+                         for c in hand]
+            self.assertEqual(bot.choose_bid(no_club_j, state, state.legal_actions()), BidAction.passe())
+            side_ace = [c if c != cards("A_TREFLE")[0] else cards("A_PIQUE")[0]
+                        for c in hand]
+            self.assertEqual(bot.choose_bid(side_ace, state, state.legal_actions()), support)
+            state.apply(support)
+            for action in (BidAction.enchere(120, Suit.PIQUE),
+                           BidAction.enchere(130, Suit.TREFLE), BidAction.passe()):
+                state.apply(action)
+            self.assertEqual(bot.choose_bid(hand, state, state.legal_actions()), BidAction.passe())
 
         # Recoverable-card v3 rejects unsupported strength, then each partner's
         # J/9, side aces and two-trump belote count once.

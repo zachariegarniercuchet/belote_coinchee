@@ -361,8 +361,10 @@ les priorités de partenaire suivantes (le jeu de v4 reste inchangé) :
   obligatoire. Ce choix vaut à une couleur et en SA ; le TA reste inchangé.
 Si le partenaire annonce une nouvelle couleur après la dernière annonce
 du joueur, y compris si celle-ci était SA ou TA, son soutien ne compte que
-le 9 (+10) et la belote (+20), sans valet ni as. Exception : un changement
-exact de 80 à 90 autorise aussi +10 par as hors du nouvel atout. Lire les
+le valet et le 9 (+10 chacun) et la belote (+20), sans les as. Ces honneurs
+du nouvel atout n'ont pas été décrits par notre annonce précédente.
+Exception : un changement exact de 80 à 90 autorise aussi +10 par as hors
+du nouvel atout. Lire les
 montants à l'entrée de cet épisode de couleur, pas ceux d'une surenchère
 ultérieure. Déduire les crédits déjà dépensés ; conserver le retrait de 10
 sans atout. Une annonce SA décrit déjà notamment les as : ne pas les ajouter
