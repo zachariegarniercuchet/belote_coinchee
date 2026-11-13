@@ -633,7 +633,6 @@
       // une nouvelle tentative, sans boucle infinie en cas d'erreur RLS.
       if (tries < 3) savedGames.delete(gameId);
     };
-    };
 
     // ----------------------------------------------------------------
     // Écoute de session
