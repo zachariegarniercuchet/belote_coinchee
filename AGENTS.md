@@ -203,7 +203,11 @@ Tests de l'automatisme web (avec les dépendances de `requirements.txt`) :
   Réinitialiser à chaque donne/contrat. Ne jamais fournir la détection privée
   des paires à l'acceptation du contrat, ni annoncer les cartes simulées après
   tablage. SA reste sans belote ; chaque paire TA est indépendante.
-  Brooklyn utilise ces localisations pour les menaces adverses ; les mondes
+  Brooklyn utilise ces localisations pour les menaces adverses et la chasse :
+  si les seuls atouts hors de sa main sont publiquement chez son partenaire,
+  il entame une couleur annexe disponible, sans aller chercher la rebelote.
+  Une carte de belote encore inconnue reste un atout adverse possible ; une
+  carte localisée chez un adversaire reste à chasser. Les mondes
   Spark v2/v3 réservent les cartes connues à leur détenteur et ne relâchent
   JAMAIS ce fait en relâchant une hypothèse d'enchère/coupe franche. Les
   simulations et ombres reçoivent les mêmes annonces publiques, pas les

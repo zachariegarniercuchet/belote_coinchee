@@ -439,12 +439,31 @@ class BrooklynTests(unittest.TestCase):
             bot.notify_donne_start()
             self.assertEqual(bot.public_belotes, {})
             self.assertEqual(bot.belote_events, [])
-        for holder, expected in ((2, False), (1, True)):
-            bot = create_bot("brooklyn_v4", 0)
+        # Complete first trump round: after V/R/8/7, our 9/A/10 and the
+        # publicly located Q account for every remaining trump. Do not hunt
+        # partner's rebelote; do draw it when the holder is an opponent.
+        for version, holder, first in product(
+                range(1, 6), (2, 1), ("R_PIQUE", "D_PIQUE")):
+            mate = "D_PIQUE" if first == "R_PIQUE" else "R_PIQUE"
+            bot = create_bot("brooklyn_v" + str(version), 0)
             bot.notify_contract(contract())
-            bot.played_by_suit[Suit.PIQUE] = set(Rank) - {Rank.DAME}
-            bot.notify_belote(holder, cards("R_PIQUE")[0])
-            self.assertEqual(bot._opponents_have_trumps(hand, TrickState(0, Suit.PIQUE)), expected)
+            hand = cards("V_PIQUE", "9_PIQUE", "A_PIQUE", "10_PIQUE",
+                         "A_COEUR", "7_COEUR", "7_TREFLE", "7_CARREAU")
+            plays = list(zip(range(4), cards("V_PIQUE", "8_PIQUE", first, "7_PIQUE")
+                             if holder == 2 else cards("V_PIQUE", first, "8_PIQUE", "7_PIQUE")))
+            current = TrickState(0, Suit.PIQUE, plays)
+            # Before the actual announcement, the unplayed mate is unlocated.
+            self.assertTrue(bot._opponents_have_trumps(hand, current))
+            bot.notify_belote(holder, cards(first)[0])
+            self.assertEqual(bot.known_card_owner(cards(mate)[0]), holder)
+            self.assertEqual(bot._opponents_have_trumps(hand, current), holder == 1)
+            bot.notify_trick_result(plays, 0)
+            hand.remove(cards("V_PIQUE")[0])
+            lead = TrickState(0, Suit.PIQUE)
+            expected = "A_COEUR" if holder == 2 else "9_PIQUE"
+            self.assertEqual(bot.choose_card(hand, lead, lead.legal_cards_for(hand)), cards(expected)[0])
+            bot.notify_donne_start()
+            self.assertIsNone(bot.known_card_owner(cards(mate)[0]))
 
         bot = BrooklynBot(0)
         bot.notify_contract(contract())

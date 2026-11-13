@@ -11,6 +11,11 @@ in that seat in every sampled world, including relaxed samples. Public bonus
 information is also retained in their playouts. These shared information
 changes are separate from the versioned Brooklyn trump-play rules; older
 benchmarks remain attached to their recorded revision.
+This includes trump drawing: when the only outstanding trump is partner's
+publicly located rebelote, lead a side suit if available. Before the actual
+belote announcement its owner remains unknown; an opponent's located mate
+is still a trump to draw. The existing card-play journey now verifies the
+actual next lead for both announcement orders and all five Brooklyn versions.
 
 ## Sans Atout / Tout Atout
 
