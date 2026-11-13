@@ -261,29 +261,32 @@ development sample does not establish a gain in full-game win rate.
 
 V5 builds on V4's openings, ordinary partnership bidding and card play,
 with the partner-specific overrides below.
-After our earlier bid (including SA/TA) and partner's switch to a suit, support only the
-J/9 (+10 each) and belote (+20): honours in the new trump suit were not
-described by our previous announcement. Side aces add no credit, except on
-the exact 80 -> 90 switch (+10 each). Trump aces never count as side aces.
-Read the original amounts at the switch even after further raises in the
-same suit episode. Existing spent
-credits and the no-trump-in-hand deduction remain. A new deal resets memory.
-An earlier SA bid already describes side-ace strength: do not count it again
-after partner switches. The reported 90 SA / enemy 100 spades / partner
+Support must never describe the same contribution twice, across the whole
+public auction. Our earlier suited/SA bids already describe the aces; no
+later switch adds ace credit again, including 80 -> 90. Our earlier TA bid
+already describes every J/9/belote. Earlier suited bids describe the honours
+and belote of those suits. After partner switches to a new suit, only its
+previously undescribed J/9 (+10 each) and belote (+20) fund support. Returning
+to an already described suit, or switching from our TA to a suit, adds none.
+Existing spent credits and the no-trump-in-hand deduction remain. A new
+deal resets memory. The reported 90 SA / enemy 100 spades / partner
 120 clubs sequence now passes with two side aces and no club J/9/belote,
 instead of bidding 140 clubs. An ordinary partner opening at 100 clubs
 still allows the same hand to support to 120. Existing nominal journeys
 cover both paths, as well as game `22ff8a7fffa344d0a548977f372d174c`, deal 1:
 80 hearts / enemy 90 spades / partner 100 clubs now receives 110 clubs
 with the club J, instead of a pass. The club ace adds no further credit.
-After our suited announcement and partner's switch to TA,
-support only J (+10 each) and belotes (+20 each) in OTHER suits. Nothing in
-our previously announced suit adds credit again. Other-suit 9/aces and
+After our suited/SA announcements and partner's switch to TA, support only
+J (+10 each) and belotes (+20 each) in still undescribed suits. Nothing in
+any previously announced suit adds credit again. Other-suit 9/aces and
 longer master sequences add no further credit. Deduct our already spent TA
-raises, including after enemy overcalls or partner rebids. Ordinary partner
-TA openings and SA support are unchanged. A representative auction journey
-checks passing with only old-suit honours, new J/belote support, no repeated
-credit and a fresh ordinary TA opening, while preserving V1/V2/V3/V4 choices.
+raises, including after enemy overcalls or partner rebids. A return to our
+previous TA adds no support. Switching to SA after our suited bid deducts
+the already described aces from ordinary SA support; returning to our SA
+adds no support. Without our own announcement in an earlier team episode,
+ordinary partner support remains unchanged. Existing auction journeys cover
+the reported deal, SA/TA switches, returns to earlier descriptions, spending
+credits once and fresh ordinary openings, while preserving V1/V2/V3/V4.
 A possible small two-ten support bonus remains a TODO;
 its amount and required protection are not yet specified.
 

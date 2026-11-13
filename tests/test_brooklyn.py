@@ -161,10 +161,10 @@ class BrooklynTests(unittest.TestCase):
 
         # After our own bid, partner's new suit no longer asks us to repeat
         # side aces. J/9 in the NEW trump suit and belote are fresh support.
-        # Only the exact 80 -> 90 switch retains ace support.
+        # The amounts do not change which cards have already been described.
         switch_hand = cards("V_TREFLE", "9_TREFLE", "R_TREFLE", "D_TREFLE",
                             "A_PIQUE", "A_COEUR", "7_PIQUE", "8_PIQUE")
-        for opening, entry, credit in ((80, 100, 40), (80, 90, 60), (90, 100, 40)):
+        for opening, entry, credit in ((80, 100, 40), (80, 90, 40), (90, 100, 40)):
             state = BiddingState(dealer=1)
             state.apply(BidAction.enchere(opening, Suit.PIQUE))
             state.apply(BidAction.enchere(entry - 10, Suit.CARREAU)
@@ -193,6 +193,41 @@ class BrooklynTests(unittest.TestCase):
             state.apply(BidAction.passe())
             self.assertEqual(bot.choose_bid(switch_hand, state, only_clubs()),
                              BidAction.enchere(140, Suit.TREFLE))
+
+        # Public descriptions survive further team switches. A prior TA
+        # describes every J/9/belote; SA describes aces, not club honours.
+        # Returning to an earlier suit must not reset its contribution.
+        with patch("belote.bidding.CONTRACT_SUITS", tuple(Suit) + tuple(ContractMode)):
+            sa, ta = ContractMode.SANS_ATOUT, ContractMode.TOUT_ATOUT
+            for descriptions, target, credit in (
+                ((ta,), Suit.TREFLE, 0),
+                ((sa,), Suit.TREFLE, 40),
+                ((Suit.PIQUE,), sa, 0),
+                ((sa,), ta, 30),
+                ((Suit.TREFLE, Suit.PIQUE), Suit.TREFLE, 0),
+                ((ta, Suit.PIQUE), Suit.TREFLE, 0),
+                ((ta, Suit.PIQUE), ta, 0),
+                ((sa, Suit.PIQUE), sa, 0),
+            ):
+                with self.subTest(descriptions=descriptions, target=target):
+                    state = BiddingState(dealer=1)
+                    amount = 80
+                    for described in descriptions:
+                        for action in (BidAction.enchere(amount, described), BidAction.passe(),
+                                       BidAction.enchere(amount + 10, Suit.CARREAU), BidAction.passe()):
+                            state.apply(action)
+                        amount += 20
+                    state.apply(BidAction.passe())
+                    state.apply(BidAction.enchere(amount, Suit.CARREAU))
+                    amount += 10
+                    state.apply(BidAction.enchere(amount, target))
+                    state.apply(BidAction.passe())
+                    legal = [a for a in state.legal_actions() if a.type == ActionType.PASSE
+                             or a.type == ActionType.ENCHERE and a.suit == target]
+                    bot = create_bot("brooklyn_v5", 0)
+                    expected = BidAction.enchere(amount + credit, target) if credit else BidAction.passe()
+                    self.assertEqual(bot.choose_bid(switch_hand, state, legal), expected)
+                    self.assertEqual(bot.choose_bid(switch_hand, state, legal), expected)
 
         # Full reported sequence: N 90 SA, E 100 spades, S 120 clubs.
         # Two side aces cannot fund N 140 clubs without J/9/belote. Initial

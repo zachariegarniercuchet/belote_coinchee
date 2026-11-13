@@ -76,56 +76,55 @@ class BrooklynBotV5(BrooklynBotV4):
             return super().choose_card(hand, trick, staying)
         return super().choose_card(hand, trick, legal_cards)
 
-    def _partner_switch(self):
-        """Last team switch, only when partner replaced our own announcement."""
-        previous, switch = None, None
+    def _prior_announcements(self):
+        """Our descriptions before the current team episode, from public bids."""
+        announced, episode = set(), set()
+        current = None
         if self._auction is not None:
             for seat, action in self._auction.history:
                 if team_of(seat) != team_of(self.player_id) or action.type != ActionType.ENCHERE:
                     continue
-                if previous is not None and action.suit != previous[1].suit:
-                    switch = (previous, (seat, action))
-                previous = (seat, action)
-        if switch is not None:
-            (old_seat, _), (new_seat, _) = switch
-            if old_seat == self.player_id and new_seat == partner_of(self.player_id):
-                return switch[0][1], switch[1][1]
-        return None
+                if action.suit != current:
+                    announced.update(episode)
+                    episode = set()
+                    current = action.suit
+                if seat == self.player_id:
+                    episode.add(action.suit)
+        return announced
 
     def _mode_support(self, hand, mode):
-        switch = self._partner_switch()
-        if switch is not None and mode is ContractMode.TOUT_ATOUT:
-            old, entry = switch
-            if isinstance(old.suit, Suit) and entry.suit is mode:
-                # The old suit was already described. Only new J/belotes
-                # fund support, never its honours or extra J/9/A sequences.
-                credit = 0
-                for suit in Suit:
-                    if suit == old.suit:
-                        continue
-                    ranks = {c.rank for c in hand if c.suit == suit}
-                    credit += 10 if Rank.VALET in ranks else 0
-                    if {Rank.ROI, Rank.DAME} <= ranks:
-                        credit += 20
-                return credit
+        announced = self._prior_announcements()
+        if announced and mode is ContractMode.TOUT_ATOUT:
+            if mode in announced:
+                return 0  # All J/9/belotes were already described at TA.
+            credit = 0
+            for suit in Suit:
+                if suit in announced:
+                    continue
+                ranks = {c.rank for c in hand if c.suit == suit}
+                credit += 10 if Rank.VALET in ranks else 0
+                if {Rank.ROI, Rank.DAME} <= ranks:
+                    credit += 20
+            return credit
+        if announced and mode is ContractMode.SANS_ATOUT:
+            if mode in announced:
+                return 0
+            credit = super()._mode_support(hand, mode)
+            if any(isinstance(suit, Suit) for suit in announced):
+                credit -= 10 * sum(c.rank == Rank.AS for c in hand)
+            return credit
         return super()._mode_support(hand, mode)
 
     def _partner_support(self, hand, suit):
-        switch = self._partner_switch()
-        if switch is not None:
-            old, entry = switch
-            if isinstance(entry.suit, Suit) and entry.suit == suit:
-                ranks = {c.rank for c in hand if c.suit == suit}
-                # Honours in the new trump suit were not described by our
-                # previous announcement: either J or 9 is fresh support.
-                credit = 10 * len(ranks & {Rank.VALET, Rank.NEUF})
-                if {Rank.ROI, Rank.DAME} <= ranks:
-                    credit += 20
-                # Our earlier bid may describe SA/TA strength too: side aces
-                # must not be charged again after partner switches to a suit.
-                # The cheap 80 -> 90 switch still requests side-ace support.
-                # Read entry amounts, so subsequent raises cannot reset credit.
-                if old.points == 80 and entry.points == 90:
-                    credit += 10 * sum(c.rank == Rank.AS and c.suit != suit for c in hand)
-                return credit
+        announced = self._prior_announcements()
+        if announced:
+            if ContractMode.TOUT_ATOUT in announced or suit in announced:
+                return 0
+            # Earlier SA/suited bids describe the aces, not the new trump's
+            # J/9/belote. No exception depends on the auction amounts.
+            ranks = {c.rank for c in hand if c.suit == suit}
+            credit = 10 * len(ranks & {Rank.VALET, Rank.NEUF})
+            if {Rank.ROI, Rank.DAME} <= ranks:
+                credit += 20
+            return credit
         return super()._partner_support(hand, suit)

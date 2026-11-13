@@ -359,25 +359,25 @@ les priorités de partenaire suivantes (le jeu de v4 reste inchangé) :
   sauf A-10 en main ou as publiquement menacé de coupe dans les deux dernières
   cartes. Quand toutes les cartes légales sont protégées, en jouer une reste
   obligatoire. Ce choix vaut à une couleur et en SA ; le TA reste inchangé.
-Si le partenaire annonce une nouvelle couleur après la dernière annonce
-du joueur, y compris si celle-ci était SA ou TA, son soutien ne compte que
-le valet et le 9 (+10 chacun) et la belote (+20), sans les as. Ces honneurs
-du nouvel atout n'ont pas été décrits par notre annonce précédente.
-Exception : un changement exact de 80 à 90 autorise aussi +10 par as hors
-du nouvel atout. Lire les
-montants à l'entrée de cet épisode de couleur, pas ceux d'une surenchère
-ultérieure. Déduire les crédits déjà dépensés ; conserver le retrait de 10
-sans atout. Une annonce SA décrit déjà notamment les as : ne pas les ajouter
-de nouveau après le changement de couleur (90 SA → 120 trèfle n'autorise
-pas 140 trèfle avec deux as sans 9 ni belote).
-Après notre annonce à une couleur puis le passage du partenaire à Tout Atout,
-ne soutenir que de +10 par valet et +20 par belote dans les AUTRES couleurs.
-Aucun honneur ni belote de notre couleur déjà annoncée ne doit être recompté ;
+Ne pas recompter ce que le joueur a déjà annoncé dans la donne, même après
+plusieurs changements de contrat. Ses annonces propres à une couleur ou SA
+décrivent déjà les as : ils ne financent plus un nouveau soutien après un
+changement, même de 80 à 90. Une annonce propre TA décrit déjà les J/9 et
+belotes de toutes les couleurs ; ils ne financent plus de soutien ultérieur.
+Si le partenaire change vers une couleur encore non décrite par le joueur,
+compter le valet et le 9 (+10 chacun) et la belote (+20) de ce nouvel atout,
+sauf s'ils ont déjà été décrits à TA. Un retour à une couleur déjà annoncée
+par le joueur ne recrée aucun crédit. Déduire les hausses déjà dépensées dans
+l'épisode courant ; conserver le retrait de 10 sans atout.
+Après nos annonces à une couleur ou SA puis le passage du partenaire à TA,
+ne soutenir que de +10 par valet et +20 par belote dans les couleurs encore
+non décrites par le joueur. Aucun honneur ni belote déjà annoncé ne doit être recompté ;
 les 9, as et séquences des autres couleurs n'ajoutent aucun crédit à ce soutien.
 Déduire les hausses déjà dépensées dans l'épisode TA, même après une surenchère
-adverse ou une nouvelle hausse du partenaire. Sans ce changement vers TA,
-garder son soutien habituel ; le soutien SA reste celui de v4.
-Sans changement de couleur par le partenaire, garder les enchères de v4.
+adverse ou une nouvelle hausse du partenaire. Vers SA après une couleur,
+retirer les as du soutien habituel ; un retour à SA déjà annoncé ne recrée
+pas son soutien. Sans annonce propre dans un épisode précédent, garder
+le soutien de v4. Réinitialiser ces descriptions à la donne suivante.
 Tous les choix utilisent seulement la main propre
 et l'historique public. La variante défensive envisagée plus haut reste
 différée et n'est pas la v5. Ne pas modifier v1/v2/v3/v4 ni de Belote en
